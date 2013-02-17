@@ -11,7 +11,7 @@ SYNOPSIS
     use LWP::UserAgent;
 
     my $ua = LWP::UserAgent.new;
-    $ua.timeout(10);
+    $ua.timeout = 10;
 
     my $response = $ua.get("URL");
 
