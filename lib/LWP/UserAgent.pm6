@@ -8,7 +8,7 @@ method get(Str $url) {
     my ($domain, $file) = split_url($url);
 
     my $request = HTTP::Request.new(:method<GET>).request($domain, $file);
-    my $conn = IO::Socket::INET.new(host => $domain, port => 80);
+    my $conn = IO::Socket::INET.new(host => $domain, port => 80, timeout => $.timeout);
     $conn.send($request);
 
     my $s = $conn.lines.join("\n");
