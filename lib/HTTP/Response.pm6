@@ -1,13 +1,14 @@
-grammar HTTP::Response;
+class HTTP::Response;
+use HTTP::Response::Grammar;
 
-token TOP {
-    .*?<status>.*?<CRLF>.*
+has $!res;
+
+method is_success() {
+    return True if $!res<status> ~~ "200";
+    return False;
 }
 
-token CRLF {
-    \r\n
-}
-
-token status {
-    \d\d\d
+method parse(Str $raw_response) {
+    $!res = HTTP::Response::Grammar.new.parse($raw_response);
+    return self;
 }

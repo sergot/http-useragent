@@ -9,8 +9,7 @@ method get(Str $url) {
     # GET REQUEST
     ## TODO
     my $s = "HTTP/1.0 200 OK\r\nlalalala\r\nkasldasd";
-    my $r = HTTP::Response.new;
-    return $r.parse($s);
+    return HTTP::Response.new.parse($s);
 }
 
 sub split_url($url is copy) {
