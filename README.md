@@ -16,7 +16,7 @@ SYNOPSIS
     my $response = $ua.get("URL");
 
     if $response.is_success {
-        print $response.content;
+        say $response.content;
     } else {
         die $response.status_line;
     }
