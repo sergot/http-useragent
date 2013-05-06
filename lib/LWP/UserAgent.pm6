@@ -1,4 +1,5 @@
 class LWP::UserAgent;
+use HTTP::Response;
 
 has Int $.timeout = 180;
 
@@ -7,6 +8,9 @@ method get(Str $url) {
 
     # GET REQUEST
     ## TODO
+    my $s = "HTTP/1.0 200 OK\r\nlalalala\r\nkasldasd";
+    my $r = HTTP::Response.new;
+    return $r.parse($s);
 }
 
 sub split_url($url is copy) {
