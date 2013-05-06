@@ -1,7 +1,11 @@
 grammar HTTP::Response::Grammar;
 
 token TOP {
-    HTTP\/<http_version>\s+<status>\s+.*?<CRLF>.*
+    <status_line>.*?<content>
+}
+
+token status_line {
+    HTTP\/<http_version>\s+<status>\s+.*?<CRLF>
 }
 
 token status {
@@ -14,4 +18,20 @@ token http_version {
 
 token CRLF {
     \r\n
+}
+
+token content {
+    Content\-Type\:\s+<content_type><content_encoding><content_text>
+}
+
+token content_type {
+    .*?\;
+}
+
+token content_text {
+    .*
+}
+
+token content_encoding {
+    .*?<CRLF>
 }
