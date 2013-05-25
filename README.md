@@ -23,6 +23,12 @@ SYNOPSIS
 
 
 
+TODO
+====
+
+* built-in list of user agents, what will allow us to write only: e.g. (...).new(:useragent\<\"chrome-linux\"\>)
+
+
 
 INFO (in progress...)
 =====================
