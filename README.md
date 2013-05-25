@@ -26,7 +26,13 @@ SYNOPSIS
 TODO
 ====
 
-* built-in list of user agents, what will allow us to write only: e.g. (...).new(:useragent\<\"chrome-linux\"\>)
+* built-in list of user agents, what will allow us to write only: e.g.
+    
+    
+    my $lwp = LWP::UserAgent.new(:useragent\<"chrome-linux"\>);
+    
+    
+* HTTP::{Request,Response} improvements (maybe - two separate modules??)
 
 
 
