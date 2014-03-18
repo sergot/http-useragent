@@ -32,7 +32,7 @@ TODO
 
 
 
-* HTTP::{Request,Response} improvements (maybe - two separate modules??)
+* use official HTTP::{Request,Response}
 
 
 
