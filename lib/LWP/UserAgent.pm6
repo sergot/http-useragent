@@ -7,14 +7,16 @@ has Int $.timeout is rw = 180;
 method get(Str $url) {
     my ($domain, $file) = split_url($url);
 
-    my $request = HTTP::Request.new(:method<GET>).request($domain, $file);
+    my $request = HTTP::Request.new(GET => $url);
     my $conn = IO::Socket::INET.new(host => $domain, port => 80, timeout => $.timeout);
-    $conn.send($request);
 
-    my $s = $conn.lines.join("\n");
+    my $s;
+    if $conn.send($request.as_string) {
+        $s = $conn.lines.join("\n");
+    }
 
     $conn.close;
-    return HTTP::Response.new.parse($s);
+    return HTTP::Response.new(200).parse($s);
 }
 
 sub split_url($url is copy) {
