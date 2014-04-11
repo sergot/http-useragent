@@ -16,7 +16,7 @@ method get(Str $url) {
     }
 
     $conn.close;
-    return HTTP::Response.new(200).parse($s);
+    return HTTP::Response.new.parse($s);
 }
 
 sub split_url($url is copy) {
