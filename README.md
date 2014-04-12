@@ -32,10 +32,6 @@ TODO
 
 
 
-* use official HTTP::{Request,Response}
-
-
-
 INFO (in progress...)
 =====================
 
