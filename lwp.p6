@@ -8,7 +8,7 @@ my $req = HTTP::Request.new( GET => "http://$url/$file" );
 
 say 'Request:';
 say $req.perl;
-my $req_as_string = $req.as_string;
+my $req_as_string = $req.Str;
 say $req_as_string.perl;
 
 say '--';
@@ -38,4 +38,4 @@ say $response.perl;
 
 say '--';
 say 'get():';
-say $response.as_string;
+say $response.Str;

@@ -9,7 +9,7 @@ method get(Str $url) {
     my $conn = IO::Socket::INET.new(host => $request.header('Host'), port => 80, timeout => $.timeout);
 
     my $s;
-    if $conn.send($request.as_string) {
+    if $conn.send($request.Str) {
         $s = $conn.lines.join("\n");
     }
 
