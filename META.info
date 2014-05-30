@@ -1,0 +1,7 @@
+{
+    "name"      : "HTTP::UserAgent",
+    "version"   : "*",
+    "description"   : "Web user agent",
+    "depends"   : ["HTTP::Request", "HTTP::Response"],
+    "source-url"    : "git://github.com/sergot/http-useragent.git"
+}
