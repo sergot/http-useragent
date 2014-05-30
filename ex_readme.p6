@@ -1,6 +1,6 @@
-use LWP::UserAgent;
+use HTTP::UserAgent;
 
-my $ua = LWP::UserAgent.new;
+my $ua = HTTP::UserAgent.new;
 $ua.timeout = 1;
 
 my $response = $ua.get('http://filip.sergot.pl/');

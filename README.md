@@ -1,4 +1,4 @@
-LWP::UserAgent
+HTTP::UserAgent
 =============
 
 Basics of Web user agent class for Perl 6.
@@ -8,9 +8,9 @@ Basics of Web user agent class for Perl 6.
 SYNOPSIS
 ========
 
-    use LWP::UserAgent;
+    use HTTP::UserAgent;
 
-    my $ua = LWP::UserAgent.new;
+    my $ua = HTTP::UserAgent.new;
     $ua.timeout = 10;
 
     my $response = $ua.get("URL");
@@ -28,7 +28,7 @@ TODO
 
 * built-in list of user agents, what will allow us to write only: e.g.
 
-    my $lwp = LWP::UserAgent.new(:useragent\<chrome_linux\>);
+    my $lwp = HTTP::UserAgent.new(:useragent\<chrome_linux\>);
 
 
 
@@ -44,10 +44,10 @@ Constructors
     max_redirect,
     timeout
 )
-    creates a LWP::UserAgent object
+    creates a HTTP::UserAgent object
 
 * clone()
-    returns a copy of LWP::UserAgent object
+    returns a copy of HTTP::UserAgent object
 
 
 
