@@ -3,6 +3,6 @@ use Test;
 
 plan *;
 
-my $lwp = HTTP::UserAgent.new;
+my $http = HTTP::UserAgent.new;
 
-is $lwp.timeout, 180, 'new';
+is $http.timeout, 180, 'new';
