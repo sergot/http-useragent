@@ -31,5 +31,17 @@ sub head(Str $url) is export(:simple) {
 }
 
 sub getprint(Str $url) is export(:simple) {
-    say get($url);
+    my $response = get($url);
+    say $response;
+    # TODO: return response code
+}
+
+sub is_success($rc) is export(:simple) {
+    return True if $rc ~~ 200;
+    False;
+}
+
+sub is_error($rc) is export(:simple) {
+    return True if $rc !~~ 200;
+    False;
 }
