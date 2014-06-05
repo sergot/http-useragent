@@ -1,8 +1,12 @@
 class HTTP::UserAgent;
+
 use HTTP::Response;
 use HTTP::Request;
 
+use HTTP::UserAgent::Common;
+
 has Int $.timeout is rw = 180;
+has $.useragent;
 
 method get(Str $url) {
     my $request = HTTP::Request.new(GET => $url);
@@ -17,3 +21,7 @@ method get(Str $url) {
     return HTTP::Response.new.parse($s);
 }
 
+# :simple
+sub get(Str $url) is export(:simple) {
+    ...
+}
