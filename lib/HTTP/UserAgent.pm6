@@ -21,3 +21,7 @@ sub get(Str $url) is export(:simple) {
     $conn.close;
     return HTTP::Response.new.parse($s).content;
 }
+
+sub getprint(Str $url) is export(:simple) {
+    say get($url);
+}
