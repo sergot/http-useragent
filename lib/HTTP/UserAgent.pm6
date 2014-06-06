@@ -24,7 +24,9 @@ class X::HTTP::Server is X::HTTP {
 has Int $.timeout is rw = 180;
 has $.useragent;
 
-method get(Str $url) {
+method get(Str $url is copy) {
+    $url = _clear-url($url);
+
     my $request = HTTP::Request.new(GET => $url);
     my $conn = IO::Socket::INET.new(:host($request.header('Host')), :port(80), :timeout($.timeout));
 
@@ -65,6 +67,12 @@ sub getprint(Str $url) is export(:simple) {
     # TODO: return response code
 }
 
-sub getstore(Str $url, Str $file) {
-    ...
+sub getstore(Str $url, Str $file) is export(:simple) {
+    $file.IO.spurt: get($url);
+}
+
+sub _clear-url(Str $url is copy) {
+    $url = 'http://' ~ $url if $url.substr(0, 4) ne 'http';
+    $url ~= '/' unless $url.substr($url.chars - 1) eq '/';
+    $url;
 }

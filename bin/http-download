@@ -1,4 +1,20 @@
 #!/usr/bin/env perl6
 use HTTP::UserAgent :simple;
 
+sub MAIN(Str $url) {
+    my $file = get-filename($url);
 
+    getstore($url, $file);
+}
+
+sub get-filename($url is copy) {
+    my $filename;
+
+    # add / to the end of URL if not a dir
+    $url ~= '/' if $url ~~ m/ '.' \w+$/;
+
+    $filename = $url.substr($url.chars - 1, 1) eq '/' ??
+        'index' !! $url.substr($url.rindex('/') + 1);
+
+    "$filename.html";
+}
