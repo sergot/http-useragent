@@ -51,7 +51,7 @@ sub get(Str $url) is export(:simple) {
     my $ua = HTTP::UserAgent.new;
     my $response = $ua.get($url);
 
-    return $response.content;
+    return $response.decoded-content;
 }
 
 sub head(Str $url) is export(:simple) {
