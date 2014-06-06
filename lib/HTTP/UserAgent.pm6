@@ -5,8 +5,20 @@ use HTTP::Request;
 
 use HTTP::UserAgent::Common;
 
-class X::HTTP::Error is Exception {
+class X::HTTP is Exception {
+    has $.rc;
+}
 
+class X::HTTP::Response is X::HTTP {
+    method message {
+        "Response error: '$.rc'";
+    }
+}
+
+class X::HTTP::Server is X::HTTP {
+    method message {
+        "Server error: '$.rc'";
+    }
 }
 
 has Int $.timeout is rw = 180;
@@ -28,7 +40,15 @@ method get(Str $url) {
 # :simple
 sub get(Str $url) is export(:simple) {
     my $ua = HTTP::UserAgent.new;
-    return $ua.get($url).content;
+    my $response = $ua.get($url);
+
+    X::HTTP::Response.new(:rc($response.status_line)).throw
+        if $response.status_line.substr(0, 1) eq '4';
+
+    X::HTTP::Server.new(:rc($response.status_line)).throw
+        if $response.status_line.substr(0, 1) eq '5';
+
+    return $response.content;
 }
 
 sub head(Str $url) is export(:simple) {
