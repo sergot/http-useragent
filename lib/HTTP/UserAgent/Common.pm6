@@ -13,6 +13,6 @@ firefox_linux  => 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:29.0) Gecko/201001
 chrome_linux   => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.132 Safari/537.36',
 ;
 
-sub get_ua($ua) is export {
+sub get-ua($ua) is export {
     return %useragents{$ua} // $ua;
 }

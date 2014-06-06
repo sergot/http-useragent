@@ -37,11 +37,11 @@ method get(Str $url) {
 
     my $response = HTTP::Response.new.parse($s);
 
-    X::HTTP::Response.new(:rc($response.status_line)).throw
-        if $response.status_line.substr(0, 1) eq '4';
+    X::HTTP::Response.new(:rc($response.status-line)).throw
+        if $response.status-line.substr(0, 1) eq '4';
 
-    X::HTTP::Server.new(:rc($response.status_line)).throw
-        if $response.status_line.substr(0, 1) eq '5';
+    X::HTTP::Server.new(:rc($response.status-line)).throw
+        if $response.status-line.substr(0, 1) eq '5';
 
     return $response;
 }
