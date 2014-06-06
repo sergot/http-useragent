@@ -34,19 +34,22 @@ method get(Str $url) {
     }
 
     $conn.close;
-    return HTTP::Response.new.parse($s);
-}
 
-# :simple
-sub get(Str $url) is export(:simple) {
-    my $ua = HTTP::UserAgent.new;
-    my $response = $ua.get($url);
+    my $response = HTTP::Response.new.parse($s);
 
     X::HTTP::Response.new(:rc($response.status_line)).throw
         if $response.status_line.substr(0, 1) eq '4';
 
     X::HTTP::Server.new(:rc($response.status_line)).throw
         if $response.status_line.substr(0, 1) eq '5';
+
+    return $response;
+}
+
+# :simple
+sub get(Str $url) is export(:simple) {
+    my $ua = HTTP::UserAgent.new;
+    my $response = $ua.get($url);
 
     return $response.content;
 }

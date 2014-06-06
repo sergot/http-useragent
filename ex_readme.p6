@@ -12,10 +12,3 @@ if $response.is_success {
 }
 
 $response = $ua.get('http://filip.sergot.pl/404here');
-
-if $response.is_success {
-    say $response.content;
-} else {
-    die $response.status_line;
-}
-
