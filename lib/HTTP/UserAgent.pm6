@@ -64,3 +64,7 @@ sub getprint(Str $url) is export(:simple) {
     say $response;
     # TODO: return response code
 }
+
+sub getstore(Str $url, Str $file) {
+    ...
+}
