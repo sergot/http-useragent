@@ -40,7 +40,7 @@ method get(Str $url is copy) {
     my $response = HTTP::Response.new.parse($s);
 
     X::HTTP::Response.new(:rc($response.status-line)).throw
-        if $response.status-line.substr(0, 1) eq '4';
+        if $response.status-line.substr(0, 1) eq any('3', '4');
 
     X::HTTP::Server.new(:rc($response.status-line)).throw
         if $response.status-line.substr(0, 1) eq '5';
@@ -72,7 +72,6 @@ sub getstore(Str $url, Str $file) is export(:simple) {
 }
 
 sub _clear-url(Str $url is copy) {
-    $url = 'http://' ~ $url if $url.substr(0, 4) ne 'http';
-    $url ~= '/' unless $url.substr($url.chars - 1) eq '/';
+    $url = "http://$url" if $url.substr(0, 4) ne 'http';
     $url;
 }

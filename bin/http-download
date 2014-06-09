@@ -10,11 +10,7 @@ sub MAIN(Str $url) {
 sub get-filename($url is copy) {
     my $filename;
 
-    # add / to the end of URL if not a dir
-    $url ~= '/' if $url ~~ m/ '.' \w+$/;
-
     $filename = $url.substr($url.chars - 1, 1) eq '/' ??
-        'index' !! $url.substr($url.rindex('/') + 1);
+        'index.html' !! $url.substr($url.rindex('/') + 1);
 
-    "$filename.html";
 }
