@@ -27,20 +27,26 @@ has $.useragent;
 method get(Str $url is copy) {
     $url = _clear-url($url);
 
-    my $request = HTTP::Request.new(GET => $url);
-    my $conn = IO::Socket::INET.new(:host($request.header('Host')), :port(80), :timeout($.timeout));
+    my $response;
 
-    my $s;
-    if $conn.send($request.Str ~ "\r\n") {
-        $s = $conn.lines.join("\n");
+    for 1..* -> $i {
+        # a loop of redirections
+        last if $i > 5;
+
+        my $request = HTTP::Request.new(GET => $url);
+        my $conn = IO::Socket::INET.new(:host($request.header('Host')), :port(80), :timeout($.timeout));
+
+        my $s = $conn.lines.join("\n")
+            if $conn.send($request.Str ~ "\r\n");
+        $conn.close;
+
+        $response = HTTP::Response.new.parse($s);
+        last unless $response.status-line.substr(0, 1) eq '3' && $response.header('Location').defined;
+        $url = $response.header('Location');
     }
 
-    $conn.close;
-
-    my $response = HTTP::Response.new.parse($s);
-
     X::HTTP::Response.new(:rc($response.status-line)).throw
-        if $response.status-line.substr(0, 1) eq any('3', '4');
+        if $response.status-line.substr(0, 1) eq '4';
 
     X::HTTP::Server.new(:rc($response.status-line)).throw
         if $response.status-line.substr(0, 1) eq '5';
