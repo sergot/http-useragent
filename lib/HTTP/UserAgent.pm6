@@ -69,7 +69,7 @@ sub head(Str $url) is export(:simple) {
 
 sub getprint(Str $url) is export(:simple) {
     my $response = get($url);
-    say $response;
+    print $response;
     # TODO: return response code
 }
 
