@@ -2,6 +2,8 @@ use Test;
 use HTTP::UserAgent :simple;
 use Test::IO::Capture;
 
+plan 4;
+
 my $url = 'http://filip.sergot.pl';
 
 my $get = get $url;
