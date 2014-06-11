@@ -31,7 +31,7 @@ method get(Str $url is copy) {
 
     for 1..5 -> $i {
         my $request = HTTP::Request.new(GET => $url);
-        my $conn = IO::Socket::INET.new(:host($request.header('Host')), :port(80), :timeout($.timeout));
+        my $conn = IO::Socket::INET.new(:host(~$request.header('Host').values), :port(80), :timeout($.timeout));
 
         my $s = $conn.lines.join("\n")
             if $conn.send($request.Str ~ "\r\n");
