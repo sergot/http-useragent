@@ -29,10 +29,7 @@ method get(Str $url is copy) {
 
     my $response;
 
-    for 1..* -> $i {
-        # a loop of redirections
-        last if $i > 5;
-
+    for 1..5 -> $i {
         my $request = HTTP::Request.new(GET => $url);
         my $conn = IO::Socket::INET.new(:host($request.header('Host')), :port(80), :timeout($.timeout));
 
