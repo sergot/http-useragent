@@ -24,6 +24,28 @@ class X::HTTP::Server is X::HTTP {
 has Int $.timeout is rw = 180;
 has $.useragent;
 
+# Helper method which implements the same logic as Str.split() but for Bufs.
+multi _split_buf(Str $delimiter, Buf $input, $limit = Inf --> List) {
+    _split_buf($delimiter.encode, $input, $limit);
+}
+multi _split_buf(Blob $delimiter, Buf $input, $limit = Inf --> List) {
+    my @result;
+    my @a            = $input.list;
+    my @b            = $delimiter.list;
+    my $old_delim_pos = 0;
+    
+    while $old_delim_pos >= 0 && +@result + 1 < $limit {
+        my $new_delim_pos = @a.first-index({ @a[(state $i = -1) .. $i++ + @b] ~~ @b }) // last;
+        last if $new_delim_pos < 0;
+        @result.push: $input.subbuf($old_delim_pos, $new_delim_pos);
+        $old_delim_pos = $new_delim_pos + $delimiter.bytes;
+    }
+    if $old_delim_pos < +@a {
+        @result.push: $input.subbuf($old_delim_pos);
+    }
+    @result
+}
+
 method get(Str $url is copy) {
     $url = _clear-url($url);
 
@@ -50,14 +72,56 @@ method get(Str $url is copy) {
             my ($response-line, $header) = $first-chunk.decode('ascii').substr(0, $msg-body-pos).split("\r\n", 2);
             $response.code( $response-line.split(' ')[1].Int );
             $response.headers.parse( $header );
-            
-            # TODO We also need to handle 'Transfer-Encoding: chunked', which might mean that we pass $conn to
-            # some method in HTTP::Message which can request and assemble chunks...
-            
-            $response.content = buf8.new( @a[($msg-body-pos + 2)..*] );
+
+            my $content = buf8.new( @a[($msg-body-pos + 2)..*] );
+
+            # We also need to handle 'Transfer-Encoding: chunked', which means that we request more chunks
+            # and assemble the response body.
+            if $response.headers.header('Transfer-Encoding') eq 'chunked' {
+                my sub recv-entire-chunk($content is rw) {
+                    if $content {
+                        # The first line is our desired chunk size.
+                        (my $chunk-size, $content) = _split_buf("\r\n", $content, 2);
+                        $chunk-size                = :16($chunk-size.decode);
+                        if $chunk-size {
+                            # Let the content grow until we have reached the desired size.
+                            while $chunk-size > $content.bytes {
+                                $content ~= $conn.recv($chunk-size - $content.bytes, :bin);
+                            }
+                        }
+                    }
+                    $content
+                }
+
+                my $chunk = $content;
+                $content  = Buf.new;
+                # We carry on as long as we receive something.
+                while recv-entire-chunk($chunk) {
+                    $content ~= $chunk;
+                    # We only request five bytes here, and check if it is the message terminator, which is
+                    # "\r\n0\r\n". When we would try to read more bytes we would block for a few seconds.
+                    $chunk    = $conn.recv(5, :bin);
+                    if !$chunk || $chunk.list eqv [0x0d, 0x0a, 0x30, 0x0d, 0x0a] {
+                        # Done with this message!
+                        last
+                    }
+                    else {
+                        # Read more of this chunk, which includes the rest of a chunk-size field followed
+                        # by <CRLF> and a single byte of the message content.
+                        $chunk ~= $conn.recv(6, :bin);
+                        $chunk.=subbuf(2)
+                    }
+                }
+            }
+
+            # We have now the content as a Buf and need to decode it depending on some header informations.
+            $response.content = $content;
             my $content-type  = $response.headers.header('Content-Type').values[0] // '';
-            if $content-type ~~ /^ text .+? [ 'charset=' $<charset>=[ \S+ ] ]?/ {
-                $response.content.=decode( $<charset> ?? $<charset>.Str.lc !! 'ascii');
+            if $content-type ~~ /^ text / {
+                my $charset = $content-type ~~ / charset '=' $<charset>=[ \S+ ] /
+                            ?? $<charset>.Str.lc
+                            !! 'ascii';
+                $response.content.=decode($charset);
             }
         }
         $conn.close;
