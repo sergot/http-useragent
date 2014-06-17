@@ -2,6 +2,6 @@
     "name"      : "HTTP::UserAgent",
     "version"   : "*",
     "description"   : "Web user agent",
-    "depends"   : ["HTTP::Request", "HTTP::Response", "IO::Capture::Simple"],
+    "depends"   : ["HTTP::Status", "DateTime::Parse", "IO::Capture::Simple"],
     "source-url"    : "git://github.com/sergot/http-useragent.git"
 }
