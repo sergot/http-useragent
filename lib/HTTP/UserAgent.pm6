@@ -51,7 +51,7 @@ method get(Str $url is copy) {
 
     my $response;
 
-    for 1..5 -> $i {
+    for 1..5 {
         my $request = HTTP::Request.new(GET => $url);
         my $conn = IO::Socket::INET.new(:host(~$request.header('Host').values), :port(80), :timeout($.timeout));
 
