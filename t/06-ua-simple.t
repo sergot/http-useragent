@@ -8,7 +8,7 @@ my $url = 'http://filip.sergot.pl';
 
 my $get = get $url;
 
-is $get.substr($get.chars - 7), '</html>', 'get 1/1';
+is $get.substr($get.chars - 9), "</html>\n\n", 'get 1/1';
 prints-stdout-ok { getprint $url }, $get, 'getprint 1/1';
 getstore $url, 'newfile';
 is slurp('newfile'), $get, 'getstore 1/1';
