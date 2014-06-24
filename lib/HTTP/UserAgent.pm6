@@ -46,6 +46,10 @@ multi _split_buf(Blob $delimiter, Buf $input, $limit = Inf --> List) {
     @result
 }
 
+submethod BUILD(:$!useragent?) {
+    $!useragent = get-ua($!useragent) if $!useragent.defined;
+}
+
 method get(Str $url is copy) {
     $url = _clear-url($url);
 
