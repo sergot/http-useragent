@@ -16,7 +16,7 @@ my $newua = get-ua('chrome_linux');
 $ua = HTTP::UserAgent.new(:useragent('chrome_linux'));
 is $ua.useragent, $newua, 'new 3/3';
 
-# user agnet
+# user agent
 is $ua.get('http://ua.offensivecoder.com/').content, "$newua\n", 'useragent 1/1';
 
 # get
