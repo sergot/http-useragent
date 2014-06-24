@@ -57,6 +57,8 @@ method get(Str $url is copy) {
 
     for 1..5 {
         my $request = HTTP::Request.new(GET => $url);
+        $request.headers.header(User-Agent => $.useragent) if $.useragent.defined;
+
         my $conn = IO::Socket::INET.new(:host(~$request.header('Host').values), :port(80), :timeout($.timeout));
 
         if $conn.send($request.Str ~ "\r\n") {

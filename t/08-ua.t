@@ -3,7 +3,7 @@ use HTTP::UserAgent;
 use HTTP::UserAgent::Common;
 use Test;
 
-plan 6;
+plan 7;
 
 # new
 my $ua = HTTP::UserAgent.new;
@@ -15,6 +15,9 @@ is $ua.useragent, 'test', 'new 2/3';
 my $newua = get-ua('chrome_linux');
 $ua = HTTP::UserAgent.new(:useragent('chrome_linux'));
 is $ua.useragent, $newua, 'new 3/3';
+
+# user agnet
+is $ua.get('http://ua.offensivecoder.com/').content, "$newua\n", 'useragent 1/1';
 
 # get
 my $response = $ua.get('filip.sergot.pl');
