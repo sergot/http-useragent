@@ -18,6 +18,6 @@ is $ua.useragent, $newua, 'new 3/3';
 
 # get
 my $response = $ua.get('filip.sergot.pl');
-ok $response, 'get 1/?';
-isa_ok $response, HTTP::Response, 'get 2/?';
-ok $response.is-success, 'get 3/?';
+ok $response, 'get 1/3';
+isa_ok $response, HTTP::Response, 'get 2/3';
+ok $response.is-success, 'get 3/3';
