@@ -7,7 +7,7 @@ plan 7;
 
 # new
 my $ua = HTTP::UserAgent.new;
-is $ua.useragent, '', 'new 1/3';
+nok $ua.useragent, 'new 1/3';
 
 $ua = HTTP::UserAgent.new(:useragent('test'));
 is $ua.useragent, 'test', 'new 2/3';
