@@ -5,10 +5,10 @@ $ua.timeout = 1;
 
 my $response = $ua.get('http://filip.sergot.pl/');
 
-if $response.is_success {
+if $response.is-success {
     say $response.content;
 } else {
-    die $response.status_line;
+    die $response.status-line;
 }
 
 $response = $ua.get('http://filip.sergot.pl/404here');
