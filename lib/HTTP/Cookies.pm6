@@ -15,8 +15,11 @@ method extract-cookies(HTTP::Response $response) {
 }
 
 method add-cookie-header(HTTP::Request $request) {
-    # TODO : domain and path restrictions
     for @.cookies -> $cookie {
+        next if $cookie.fields<Domain>.defined
+                && $cookie.fields<Domain> ne $request.header('Host');
+        # TODO : path restrictions
+
         if $request.header('Cookie').defined {
             $request.push-header( Cookie => $cookie.Str );
         } else {
