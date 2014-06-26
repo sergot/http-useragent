@@ -23,6 +23,10 @@ class X::HTTP::Server is X::HTTP {
 
 has Int $.timeout is rw = 180;
 has $.useragent;
+has $.cookies = HTTP::Cookies.new(
+    file     => '/tmp/cookies.dat',
+    autosave => 1,
+);
 
 # Helper method which implements the same logic as Str.split() but for Bufs.
 multi _split_buf(Str $delimiter, Buf $input, $limit = Inf --> List) {
@@ -57,6 +61,11 @@ method get(Str $url is copy) {
 
     for 1..5 {
         my $request = HTTP::Request.new(GET => $url);
+
+        # add cookies to the request
+        $.cookies.add-cookie-header($request) if $.cookies.cookies.elems;
+
+        # set the useragent
         $request.headers.header(User-Agent => $.useragent) if $.useragent.defined;
 
         my $conn = IO::Socket::INET.new(:host(~$request.header('Host').values), :port(80), :timeout($.timeout));
@@ -149,6 +158,9 @@ method get(Str $url is copy) {
 
     X::HTTP::Server.new(:rc($response.status-line)).throw
         if $response.status-line.substr(0, 1) eq '5';
+
+    # save cookies
+    $.cookies.extract-cookies($response);
 
     return $response;
 }

@@ -31,7 +31,7 @@ multi method parse(Str $s is copy) {
 }
 
 method Str {
-    my $s = "Set-Cookie: $.name=$.value; {(%.fields.map( *.fmt("%s=%s") )).join('; ')}";
+    my $s = "$.name=$.value; {(%.fields.map( *.fmt("%s=%s") )).join('; ')}";
     $s ~= "; $.secure" if $.secure;
     $s;
 }

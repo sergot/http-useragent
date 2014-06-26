@@ -1,18 +1,28 @@
 class HTTP::Cookies;
 
 use HTTP::Cookie;
+use HTTP::Response;
+use HTTP::Request;
 use DateTime::Parse;
 
 has @.cookies;
 has $.file;
 has $.autosave is rw = 0;
 
-method extract-cookies($response) {
-    ...
+method extract-cookies(HTTP::Response $response) {
+    self.set-cookie($_) for $response.header('Set-Cookie').map({ "Set-Cookie: $_" });
+    self.save if $.autosave;
 }
 
-method add-cookie-header($request) {
-    ...
+method add-cookie-header(HTTP::Request $request) {
+    # TODO : domain and path restrictions
+    for @.cookies -> $cookie {
+        if $request.header('Cookie').defined {
+            $request.push-header( Cookie => $cookie.Str );
+        } else {
+            $request.header( Cookie => $cookie.Str );
+        }
+    }
 }
 
 method save {
@@ -57,5 +67,5 @@ method set-cookie($str) {
 }
 
 method Str {
-    @.cookies.map( *.Str ).join("\n");
+    @.cookies.map({ "Set-Cookie: {$_.Str}" }).join("\n");
 }
