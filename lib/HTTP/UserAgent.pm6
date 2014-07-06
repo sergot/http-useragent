@@ -2,6 +2,7 @@ class HTTP::UserAgent;
 
 use HTTP::Response;
 use HTTP::Request;
+use HTTP::Cookies;
 
 use HTTP::UserAgent::Common;
 
