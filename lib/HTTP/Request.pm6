@@ -66,12 +66,12 @@ method parse($raw_request) {
 }
 
 sub _get_host($url is copy) {
-    $url ~~ s:i/http\:\/\///;
+    $url ~~ s:i/http[s?]\:\/\///;
     $url ~~ s/\/.*//;
     $url;
 }
 
 sub _get_file($url is copy) {
-    $url ~~ s:i/http\:\/\/.*?\//\//;
+    $url ~~ s:i/http[s?]\:\/\/.*?\//\//;
     $url;
 }

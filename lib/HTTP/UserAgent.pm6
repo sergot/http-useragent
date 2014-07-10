@@ -6,6 +6,8 @@ use HTTP::Cookies;
 
 use HTTP::UserAgent::Common;
 
+use IO::Socket::SSL;
+
 class X::HTTP is Exception {
     has $.rc;
 }
@@ -69,7 +71,9 @@ method get(Str $url is copy) {
         # set the useragent
         $request.headers.header(User-Agent => $.useragent) if $.useragent.defined;
 
-        my $conn = IO::Socket::INET.new(:host(~$request.header('Host').values), :port(80), :timeout($.timeout));
+        my $conn = $url.substr(4, 1) eq 's'
+            ?? IO::Socket::SSL.new(:host(~$request.header('Host').values), :port(443), :timeout($.timeout))
+            !! IO::Socket::INET.new(:host(~$request.header('Host').values), :port(80), :timeout($.timeout));
 
         if $conn.send($request.Str ~ "\r\n") {
             # We expect that the first chunk contains the entire header, including <CRLF><CRLF>.
@@ -190,6 +194,6 @@ sub getstore(Str $url, Str $file) is export(:simple) {
 }
 
 sub _clear-url(Str $url is copy) {
-    $url = "http://$url" if $url.substr(0, 4) ne 'http';
+    $url = "http://$url" if $url.substr(0, 5) ne any('http:', 'https');
     $url;
 }
