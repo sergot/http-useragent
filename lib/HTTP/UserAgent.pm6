@@ -155,7 +155,7 @@ method get(Str $url is copy) {
         $conn.close;
 
         last unless $response.status-line.substr(0, 1) eq '3' && $response.header('Location').defined;
-        $url = $response.header('Location');
+        $url = ~$response.header('Location');
     }
 
     X::HTTP::Response.new(:rc($response.status-line)).throw
