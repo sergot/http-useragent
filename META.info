@@ -3,6 +3,6 @@
     "version"   : "0.0.1",
     "author"   : "github:sergot",
     "description"   : "Web user agent",
-    "depends"   : ["HTTP::Status", "DateTime::Parse", "IO::Capture::Simple"],
+    "depends"   : ["HTTP::Status", "DateTime::Parse", "IO::Capture::Simple", "IO::Socket::SSL"],
     "source-url"    : "git://github.com/sergot/http-useragent.git"
 }
