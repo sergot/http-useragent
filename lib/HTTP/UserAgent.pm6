@@ -8,6 +8,8 @@ use HTTP::UserAgent::Common;
 
 use IO::Socket::SSL;
 
+use Encode;
+
 class X::HTTP is Exception {
     has $.rc;
 }
@@ -149,7 +151,7 @@ method get(Str $url is copy) {
                 my $charset = $content-type ~~ / charset '=' $<charset>=[ \S+ ] /
                             ?? $<charset>.Str.lc
                             !! 'ascii';
-                $response.content.=decode($charset);
+                $response.content = Encode::decode($charset, $response.content);
             }
         }
         $conn.close;
