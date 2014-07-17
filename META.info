@@ -10,5 +10,16 @@
         "IO::Socket::SSL",
         "Encode"
     ],
+    "provides" : {
+        "HTTP::UserAgent" : "lib/HTTP/UserAgent.pm6",
+        "HTTP::UserAgent::Common" : "lib/HTTP/UserAgent/Common.pm6",
+        "HTTP::Cookie" : "lib/HTTP/Cookie.pm6",
+        "HTTP::Cookies" : "lib/HTTP/Cookies.pm6",
+        "HTTP::Header" : "lib/HTTP/Header.pm6",
+        "HTTP::Headers" : "lib/HTTP/Headers.pm6",
+        "HTTP::Message" : "lib/HTTP/Message.pm6",
+        "HTTP::Request" : "lib/HTTP/Response.pm6",
+        "HTTP::Response" : "lib/HTTP/Request.pm6"
+    },
     "source-url"    : "git://github.com/sergot/http-useragent.git"
 }
