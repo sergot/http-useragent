@@ -78,14 +78,21 @@ method get(Str $url is copy) {
             !! IO::Socket::INET.new(:host(~$request.header('Host').values), :port(80), :timeout($.timeout));
 
         if $conn.send($request.Str ~ "\r\n") {
-            # We expect that the first chunk contains the entire header, including <CRLF><CRLF>.
-            my $first-chunk  = $conn.recv( :bin );
-            my @a            = $first-chunk.list;
-            my @b            = "\r\n\r\n".ords;
+            my $first-chunk;
+            my $msg-body-pos;
+            my @a;
+            my @b = "\r\n\r\n".ords;
 
-            # Find the header/body separator in the chunk, which means we can parse the header seperately and are
-            # able to figure out the correct encoding of the body.
-            my $msg-body-pos = @a.first-index({ @a[(state $i = -1) .. $i++ + @b] ~~ @b });
+            # Header can be longer than one chunk
+            while my $t = $conn.recv( :bin ) {
+                $first-chunk = Blob[uint8].new($first-chunk.list, $t.list);
+                @a           = $first-chunk.list;
+
+                # Find the header/body separator in the chunk, which means we can parse the header seperately and are
+                # able to figure out the correct encoding of the body.
+                $msg-body-pos = @a.first-index({ @a[(state $i = -1) .. $i++ + @b] ~~ @b });
+                last if $msg-body-pos;
+            }
 
             # +2 because we need a trailing CRLF in the header.
             $msg-body-pos   += 2 if $msg-body-pos >= 0;
