@@ -9,6 +9,37 @@ has @.cookies;
 has $.file;
 has $.autosave is rw = 0;
 
+my grammar HTTP::Cookies::Grammar {
+    token TOP {
+        'Set-Cookie:' [\s* <cookie> ','?]*
+    }
+
+    token cookie   {
+        <name> '=' <value> ';'? \s* [<arg> \s*]* <secure>? ';'? \s* <httponly>? ';'?
+    }
+    token name     { \w+ }
+    token value    { <[\w \s , / :]>+ }
+    token arg      { <name> '=' <value> ';'? }
+    token secure   { Secure }
+    token httponly { HttpOnly }
+}
+
+my class HTTP::Cookies::Actions {
+    method cookie($/) {
+        my $h = HTTP::Cookie.new;
+        $h.name     = ~$<name>;
+        $h.value    = ~$<value>;
+        $h.secure   = $<secure>.defined ?? ~$<secure> !! False;;
+        $h.httponly = $<httponly>.defined ?? ~$<httponly> !! False;
+
+        for $<arg>.list -> $a {
+            $h.fields.push: $a<name> => ~$a<value>;
+        }
+
+        $*OBJ.push-cookie($h);
+    }
+}
+
 method extract-cookies(HTTP::Response $response) {
     self.set-cookie($_) for $response.header('Set-Cookie').map({ "Set-Cookie: $_" });
     self.save if $.autosave;
@@ -42,7 +73,7 @@ method load {
     for $.file.IO.lines -> $l {
         # we don't need #LWP6-Cookies-$VER
         next if $l.substr(0, 1) eq '#';
-        @.cookies.push: HTTP::Cookie.new.parse($l.chomp);
+        self.set-cookie($l.chomp);
     }
 }
 
@@ -61,10 +92,15 @@ method clear {
 }
 
 method set-cookie($str) {
-    given HTTP::Cookie.new.parse($str) -> $new {
-        @.cookies .= grep({ .name ne $new.name });
-        $.cookies.push: $new;
-    }
+    my $*OBJ = self;
+    HTTP::Cookies::Grammar.parse($str, :actions(HTTP::Cookies::Actions));
+
+    self.save if $.autosave;
+}
+
+method push-cookie(HTTP::Cookie $c) {
+    @.cookies .= grep({ .name ne $c.name });
+    @.cookies.push: $c;
 
     self.save if $.autosave;
 }
