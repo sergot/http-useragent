@@ -6,6 +6,21 @@ has $.secure is rw;
 
 has %.fields;
 
+my grammar Cookie {
+    token TOP {
+        'Set-Cookie:' [\s* <cookie> ','?]*
+    }
+
+    token cookie   {
+        <name> '=' <value> ';'? \s* [<arg> \s*]* <secure>? ';'? \s* <httponly>? ';'?
+    }
+    token name     { \w+ }
+    token value    { <[\w \s ,]>+ }
+    token arg      { <name> '=' <value> ';'? }
+    token secure   { Secure }
+    token httponly { HttpOnly }
+}
+
 multi method parse(Str $s is copy) {
     # 11 = 'set-cookies:'.chars
     $s .= substr(11) if $s ~~ m:i/^ 'set-cookie' /;
