@@ -6,7 +6,8 @@ my $start_url = 'http://filip.sergot.pl/';
 my $c = HTTP::UserAgent.new(:useragent<chrome_linux>);
 
 my $content = $c.get($start_url).content;
-my @urls = $content.match(/ \s 'href="' (<-["]>+) '"' /, :g).map({ $_[0] }).grep({ $_ ~~ m:i/^http/ });
+
+my @urls = get-urls($content);
 
 for @urls -> $url {
     print "trying: $url ... ";
@@ -19,4 +20,8 @@ for @urls -> $url {
             say '[OK]';
         }
     }
+}
+
+sub get-urls($content) {
+    $content.match(/ \s 'href="' (<-["]>+) '"' /, :g).map({ $_[0] }).grep({ $_ ~~ m:i/^http/ });
 }
