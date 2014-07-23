@@ -15,10 +15,10 @@ SYNOPSIS
 
     my $response = $ua.get("URL");
 
-    if $response.is_success {
+    if $response.is-success {
         say $response.content;
     } else {
-        die $response.status_line;
+        die $response.status-line;
     }
 
 
