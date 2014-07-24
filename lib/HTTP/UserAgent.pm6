@@ -60,6 +60,7 @@ submethod BUILD(:$!useragent?) {
 }
 
 method get(Str $url is copy) {
+    my $port = _get-port($url);
     $url = _clear-url($url);
 
     my $response;
@@ -74,8 +75,8 @@ method get(Str $url is copy) {
         $request.headers.header(User-Agent => $.useragent) if $.useragent.defined;
 
         my $conn = $url.substr(4, 1) eq 's'
-            ?? IO::Socket::SSL.new(:host(~$request.header('Host').values), :port(443), :timeout($.timeout))
-            !! IO::Socket::INET.new(:host(~$request.header('Host').values), :port(80), :timeout($.timeout));
+            ?? IO::Socket::SSL.new(:host(~$request.header('Host').values), :port($port // 443), :timeout($.timeout))
+            !! IO::Socket::INET.new(:host(~$request.header('Host').values), :port($port // 80), :timeout($.timeout));
 
         if $conn.send($request.Str ~ "\r\n") {
             my $first-chunk;
@@ -205,5 +206,9 @@ sub getstore(Str $url, Str $file) is export(:simple) {
 sub _clear-url(Str $url is copy) {
     $url = "http://$url" if $url.substr(0, 5) ne any('http:', 'https');
     $url;
+}
+
+sub _get-port(Str $url) {
+    (~$/[0]).Int if $url ~~ m/':' (\d+) \/?/;
 }
 
