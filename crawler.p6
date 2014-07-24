@@ -9,15 +9,16 @@ my $content = $c.get($start_url).content;
 
 my @urls = get-urls($content);
 
-for @urls -> $url {
+while my $url = @urls.shift {
     print "trying: $url ... ";
     try {
-        $c.get(~$url);
+        $content = $c.get(~$url).content;
         CATCH {
             say '[NOT OK]';
         }
         default {
             say '[OK]';
+            @urls.push: get-urls($content) if $content ~~ Str;
         }
     }
 }
