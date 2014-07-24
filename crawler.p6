@@ -12,13 +12,23 @@ sub MAIN(Str $start_url) {
     while my $url = @urls.shift {
         print "trying: $url ... ";
         try {
-            $content = $c.get(~$url).content;
+            my $r = $c.get(~$url);
             CATCH {
+                when X::HTTP {
+                    say '[ALMOST OK - X::HTTP exception]';
+                }
+
                 say '[NOT OK]';
             }
             default {
                 say '[OK]';
-                @urls.push: get-urls($content) if $content ~~ Str;
+
+                $content = $r.content;
+                if $content ~~ Str {
+                    #say ~$r.headers;
+                    #say $content;
+                    @urls.push: get-urls($content);
+                }
             }
         }
     }
