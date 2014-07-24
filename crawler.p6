@@ -2,23 +2,24 @@ use v6;
 
 use HTTP::UserAgent;
 
-my $start_url = 'http://filip.sergot.pl/';
-my $c = HTTP::UserAgent.new(:useragent<chrome_linux>);
+sub MAIN(Str $start_url) {
+    my $c = HTTP::UserAgent.new(:useragent<chrome_linux>);
 
-my $content = $c.get($start_url).content;
+    my $content = $c.get($start_url).content;
 
-my @urls = get-urls($content);
+    my @urls = get-urls($content);
 
-while my $url = @urls.shift {
-    print "trying: $url ... ";
-    try {
-        $content = $c.get(~$url).content;
-        CATCH {
-            say '[NOT OK]';
-        }
-        default {
-            say '[OK]';
-            @urls.push: get-urls($content) if $content ~~ Str;
+    while my $url = @urls.shift {
+        print "trying: $url ... ";
+        try {
+            $content = $c.get(~$url).content;
+            CATCH {
+                say '[NOT OK]';
+            }
+            default {
+                say '[OK]';
+                @urls.push: get-urls($content) if $content ~~ Str;
+            }
         }
     }
 }
