@@ -27,7 +27,8 @@ sub MAIN(Str $start_url) {
                 if $content ~~ Str {
                     #say ~$r.headers;
                     #say $content;
-                    @urls.push: get-urls($content);
+                    my @new_url = get-urls($content);
+                    @urls.push: $_ unless $_ ~~ any(@new_url) for @new_url;
                 }
             }
         }
