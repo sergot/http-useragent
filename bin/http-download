@@ -4,7 +4,11 @@ use HTTP::UserAgent :simple;
 sub MAIN(Str $url, Str $filename?) {
     my $file = $filename.defined ?? $filename !! get-filename($url);
 
+    say "Saving to '$file'...";
+
     getstore($url, $file);
+
+    say "{($file.path.s / 1024).fmt("%.1f")} KB received";
 }
 
 sub get-filename($url is copy) {
