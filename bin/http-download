@@ -1,8 +1,8 @@
 #!/usr/bin/env perl6
 use HTTP::UserAgent :simple;
 
-sub MAIN(Str $url) {
-    my $file = get-filename($url);
+sub MAIN(Str $url, Str $filename?) {
+    my $file = $filename.defined ?? $filename !! get-filename($url);
 
     getstore($url, $file);
 }
