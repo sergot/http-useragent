@@ -37,5 +37,5 @@ sub MAIN(Str $start_url) {
 }
 
 sub get-urls($content) {
-    $content.match(/ \s 'href="' (<-["]>+) '"' /, :g).map({ $_[0] }).grep({ $_ ~~ m:i/^http/ });
+    $content.match(/ \s 'href="' (<-["]>+) '"' /, :g).map({ $_[0] }).grep({ rx:i/^http/ });
 }
