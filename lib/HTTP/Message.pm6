@@ -1,6 +1,7 @@
 class HTTP::Message;
 
 use HTTP::Headers;
+use Encode;
 
 has $.headers;
 has $.content is rw;
@@ -20,8 +21,15 @@ method add-content($content) {
 }
 
 method decoded-content {
-    # TODO : decode
-    $.content
+    return $!content if $!content ~~ Str;
+    my $decoded_content;
+    my $content-type  = $!headers.header('Content-Type').values[0] // '';
+    my $charset = $content-type ~~ / charset '=' $<charset>=[ \S+ ] /
+                ?? $<charset>.Str.lc
+                !! 'ascii';
+    $decoded_content = Encode::decode($charset, $!content);
+
+    $decoded_content;
 }
 
 multi method header(Str $h) {
