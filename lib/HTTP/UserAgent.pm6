@@ -151,6 +151,11 @@ method get(Str $url is copy) {
                     $content ~= $conn.recv($content-length - $content.bytes, :bin);
                 }
             }
+            else {
+                while my $new_content = $conn.recv(:bin) {
+                    $content ~= $new_content;
+                }
+            }
 
             # We have now the content as a Buf and need to decode it depending on some header informations.
             $response.content = $content;
