@@ -4,7 +4,7 @@ use HTTP::Cookies;
 use HTTP::Request;
 use HTTP::Response;
 
-plan 23;
+plan 24;
 
 my $file = './cookies.dat';
 
