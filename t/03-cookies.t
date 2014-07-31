@@ -19,27 +19,28 @@ is $c.autosave, 0, 'new 3/3';
 
 # set-cookie
 $c.set-cookie(
-    'Set-Cookie: name1=value1; expires=DATE; Path=/; Domain=gugle; Secure'
+    'Set-Cookie: name1=value1; expires=DATE; Path=/; Domain=gugle; Secure; HttpOnly'
 );
 my $c1 = $c.cookies[0];
-ok $c1, 'set-cookie 1/10';
-is $c1.name, 'name1', 'set-cookie 2/10';
-is $c1.value, 'value1', 'set-cookie 3/10';
-is $c1.fields.elems, 3, 'set-cookie 4/10';
-is $c1.secure, 'Secure', 'set-cookie 5/10';
+ok $c1, 'set-cookie 1/11';
+is $c1.name, 'name1', 'set-cookie 2/11';
+is $c1.value, 'value1', 'set-cookie 3/11';
+is $c1.fields.elems, 3, 'set-cookie 4/11';
+is $c1.secure, 'Secure', 'set-cookie 5/11';
+is $c1.httponly, 'HttpOnly', 'set-cookie 6/11';
 
 $c.set-cookie(
     'Set-Cookie: name2=value2; expires=DATE2; Path=/path; Domain=gugle;'
 );
 my $c2 = $c.cookies[1];
-ok $c2, 'set-cookie 6/10';
-is $c2.name, 'name2', 'set-cookie 7/10';
-is $c2.value, 'value2', 'set-cookie 8/10';
-is $c2.fields.elems, 3, 'set-cookie 9/10';
-ok !$c2.secure, 'set-cookie 10/10';
+ok $c2, 'set-cookie 7/11';
+is $c2.name, 'name2', 'set-cookie 8/11';
+is $c2.value, 'value2', 'set-cookie 9/11';
+is $c2.fields.elems, 3, 'set-cookie 10/11';
+ok !$c2.secure, 'set-cookie 11/11';
 
 # Str
-my $result = "Set-Cookie: name1=value1; expires=DATE; Path=/; Domain=gugle; Secure\nSet-Cookie: name2=value2; expires=DATE2; Path=/path; Domain=gugle";
+my $result = "Set-Cookie: name1=value1; expires=DATE; Path=/; Domain=gugle; Secure; HttpOnly\nSet-Cookie: name2=value2; expires=DATE2; Path=/path; Domain=gugle";
 is $c.Str, $result, 'Str 1/1';
 
 # save
