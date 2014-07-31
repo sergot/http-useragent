@@ -195,7 +195,7 @@ sub get(Str $url) is export(:simple) {
 
 sub head(Str $url) is export(:simple) {
     my $ua = HTTP::UserAgent.new;
-    return $ua.get($url).headers.headers<Content-Type Document-Length Modified-Time Expires Server>;
+    return $ua.get($url).headers.headers<Content-Type Content-Length Last-Modified Expires Server>;
 }
 
 sub getprint(Str $url) is export(:simple) {
