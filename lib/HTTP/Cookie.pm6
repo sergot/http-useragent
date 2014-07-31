@@ -10,5 +10,6 @@ has %.fields;
 method Str {
     my $s = "$.name=$.value; {(%.fields.map( *.fmt("%s=%s") )).join('; ')}";
     $s ~= "; $.secure" if $.secure;
+    $s ~= "; $.httponly" if $.httponly;
     $s;
 }
