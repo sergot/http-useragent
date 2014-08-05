@@ -108,3 +108,74 @@ method push-cookie(HTTP::Cookie $c) {
 method Str {
     @.cookies.map({ "Set-Cookie: {$_.Str}" }).join("\n");
 }
+
+=begin pod
+
+=head1 NAME
+
+HTTP::Cookies - HTTP cookie jars
+
+=head1 SYNOPSIS
+
+    use HTTP::Cookies;
+    my $cookies = HTTP::Cookies.new(
+        :file<./cookies>,
+        :autosave(1)
+    );
+    $cookies.load;
+
+=head1 DESCRIPTION
+
+TODO
+
+=head1 METHODS
+
+=head2 method new
+
+    multi method new(*%params)
+
+=head2 method save
+
+    method save(HTTP::Cookies:)
+
+=head2 method load
+
+    method load(HTTP::Cookies:)
+
+=head2 method extract-cookies
+
+    method extract-cookies(HTTP::Cookies:, HTTP::Response $response)
+
+=head2 method add-cookie-header
+
+    method add-cookie-header(HTTP::Cookies:, HTTP::Request $request)
+
+=head2 method clear-expired
+
+    method clear-expired(HTTP::Cookies:)
+
+=head2 method clear
+
+    method clear(HTTP::Cookies:)
+
+=head2 method set-cookie
+
+    method set-cookie(HTTP::Cookies:, Str $str)
+
+=head2 method push-cookie
+
+    method push-cookie(HTTP::Cookies:, HTTP::Cookie $c)
+
+=head2 method Str
+
+    method Str(HTTP::Cookies:)
+
+=head1 SEE ALSO
+
+L<HTTP::Request>, L<HTTP::Response>, L<HTTP::Cookie>
+
+=head1 AUTHOR
+
+Filip Sergot (sergot)
+
+=end pod
