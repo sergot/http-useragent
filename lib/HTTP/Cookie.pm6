@@ -29,15 +29,15 @@ HTTP::Cookie - HTTP cookie class
 
 =head1 DESCRIPTION
 
-
+TODO
 
 =head1 METHODS
 
 The following methods are provided:
 
-=over 4
+=head2 method new
 
-=item my $cookie = HTTP::Cookie.new
+    method new(HTTP::Cookie:, *%params)
 
 A constructor, it takes hash parameters, like:
 
@@ -47,7 +47,9 @@ A constructor, it takes hash parameters, like:
     httponly: HttpOnly param
     fields:   hash of fields (field => value)
 
-=item $cookie.Str
+=head2 method Str
+
+    method Str(HTTP::Cookie:)
 
 Returns a cookie (as String) in readable (RFC2109) form.
 
