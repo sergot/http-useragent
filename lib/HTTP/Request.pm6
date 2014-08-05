@@ -20,7 +20,7 @@ method new(*%args) {
         }
     }
 
-    my $headers = HTTP::Headers.new(|%headers);
+    my $headers = HTTP::Header.new(|%headers);
     my $file;
 
     if $url {

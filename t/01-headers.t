@@ -1,11 +1,11 @@
 use Test;
 
-use HTTP::Headers;
+use HTTP::Header;
 
 plan 13;
 
 # new
-my $h = HTTP::Headers.new(a => "A", b => "B");
+my $h = HTTP::Header.new(a => "A", b => "B");
 
 is ~$h.header('b'), 'B', 'new';
 

@@ -1,45 +1,107 @@
-use v6;
-
 class HTTP::Header;
 
-has $.name;
-has @.values;
+use HTTP::Header::Field;
 
-method Str {
-    @.values.join(', ');
+# headers container
+has @.headers;
+
+our grammar HTTP::Header::Grammar {
+    token TOP {
+        [ <message-header> "\r\n" ]*
+    }
+
+    token message-header {
+        $<field-name>=[ <-[:]>+ ] ':' <field-value>
+    }
+
+    token field-value {
+        [ <!before \h> $<field-content>=[ <-[\r\n]>+ ] | \h+ ]*
+    }
 }
 
-=begin pod
+our class HTTP::Header::Actions {
+    method message-header($/) {
+        my $k = ~$<field-name>;
+        if $k && $<field-value>.made -> $v {
+            if $*OBJ.header($k) {
+                $*OBJ.push-header: |($k => $v);
+            } else {
+                $*OBJ.header: |($k => $v);
+            }
+        }
+    }
+    method field-value($/) {
+        make $<field-content>
+            ?? $<field-content>.Str.split(',')>>.trim !! Nil
+    }
+}
 
-=head1 NAME
+# we want to pass arguments like this: .new(a => 1, b => 2 ...)
+method new(*%headers) {
+    my @headers;
 
-HTTP::Header
+    for %headers.kv -> $k, $v {
+        @headers.push: HTTP::Header::Field.new(:name($k), :values($v.list));
+    }
 
-=head1 SYNOPSIS
+    self.bless(:@headers);
+}
 
-    use HTTP::Header;
-    my $header = HTTP::Header.new(:name<Date>, values => (123, 456));
+# set headers
+multi method header(*%headers) {
+    for %headers.kv -> $k, $v {
+        my $h = HTTP::Header::Field.new(:name($k), :values($v.list));
+        if @.headers.first({ .name eq $k }) {
+            @.headers[@.headers.first-index({ .name eq $k })] = $h;
+        } else {
+            @.headers.push: $h;
+        }
+    }
+}
 
-=head1 DESCRIPTION
+# get headers
+multi method header($header) {
+    return @.headers.first({ .name eq $header });
+}
 
-This module provides a class encapsulating HTTP Message header field.
+# initialize headers
+method init-header(*%headers) {
+    for %headers.kv -> $k, $v {
+        if not @.headers.grep({ .name eq $k }) {
+            @.headers.push: HTTP::Header::Field.new(:name($k), :values($v.list));
+        }
+    }
+}
 
-=head1 METHODS
+# add value to existing headers
+method push-header(*%headers) {
+    for %headers.kv -> $k, $v {
+        @.headers.first({ .name eq $k }).values.push: $v.list;
+    }
+}
 
-=head2 method new
+# remove a headers
+method remove-header(Str $header) {
+    my $index = @.headers.first-index({ .name eq $header });
+    @.headers.splice($index, 1);
+}
 
-    multi method new(*%params) returns HTTP::Header
+# get headers names
+method header-field-names() {
+    @.headers>>.name;
+}
 
-=head2 method Str
+# remove all headers
+method clear() {
+    @.headers = ();
+}
 
-    method Str(HTTP::Header:) returns Str
+# get headers as string
+method Str($eol = "\n") {
+    @.headers.map({ "{$_.name}: {self.header($_.name)}$eol" }).join;
+}
 
-=head1 SEE ALSO
-
-L<HTTP::Headers>
-
-=head1 AUTHOR
-
-Filip Sergot (sergot)
-
-=end pod
+method parse($raw) {
+    my $*OBJ = self;
+    HTTP::Header::Grammar.parse($raw, :actions(HTTP::Header::Actions));
+}

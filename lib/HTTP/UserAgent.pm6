@@ -144,7 +144,7 @@ method get(Str $url is copy) {
                 }
             }
             elsif $response.headers.header('Content-Length').values[0] -> $content-length is copy {
-                X::HTTP::Headers.new( :rc("Content-Length header value '$content-length' is not numeric") ).throw
+                X::HTTP::Header.new( :rc("Content-Length header value '$content-length' is not numeric") ).throw
                     unless $content-length = try +$content-length;
                 # Let the content grow until we have reached the desired size.
                 while $content-length > $content.bytes {

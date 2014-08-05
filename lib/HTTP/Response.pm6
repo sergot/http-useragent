@@ -13,7 +13,7 @@ submethod BUILD(:$!code) {
 }
 
 method new($code? = 200, *%headers) {
-    my $headers = HTTP::Headers.new(|%headers);
+    my $headers = HTTP::Header.new(|%headers);
     self.bless(:$code, :$headers);
 }
 

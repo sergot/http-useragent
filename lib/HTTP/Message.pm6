@@ -1,6 +1,6 @@
 class HTTP::Message;
 
-use HTTP::Headers;
+use HTTP::Header;
 use Encode;
 
 has $.headers;
@@ -11,7 +11,7 @@ has $.protocol is rw = 'HTTP/1.1';
 my $CRLF = "\r\n";
 
 method new($content?, *%headers) {
-    my $headers = HTTP::Headers.new(|%headers);
+    my $headers = HTTP::Header.new(|%headers);
 
     self.bless(:$headers, :$content);
 }
