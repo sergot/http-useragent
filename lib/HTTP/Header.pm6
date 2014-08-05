@@ -105,3 +105,72 @@ method parse($raw) {
     my $*OBJ = self;
     HTTP::Header::Grammar.parse($raw, :actions(HTTP::Header::Actions));
 }
+
+=begin pod
+
+=head1 NAME
+
+HTTP::Header - class encapsulating HTTP message header
+
+=head1 SYNOPSIS
+
+    use HTTP::Header;
+    my $h = HTTP::Header.new;
+    $h.header(Accept => 'text/plain');
+    say $h.header('Accept');
+    $h.remove_header('Accept');
+
+=head1 DESCRIPTION
+
+This module provides a class with a set of methods making us able to easily handle HTTP message header.
+
+=head1 METHODS
+
+=head2 method new
+
+    method new(*%fields) returns HTTP::Header
+
+=head2 method header
+
+    multi method header(HTTP::Header:, Str $s) returns HTTP::Header::Field
+    multi method header(HTTP::Header:, *%fields)
+
+=head2 method init-header
+
+    method init-header(HTTP::Header:, *%fields)
+
+=head2 method push-header
+
+    method push-header(HTTP::Header:, HTTP::Header::Field $field)
+
+=head2 method remove-header
+
+    method remove-header(HTTP::Header:, Str $field)
+
+=head2 method header-field-names
+
+    method header-field-names(HTTP::Header:) returns Parcel
+
+=head2 method clear
+
+    method clear(HTTP::Header:)
+
+=head2 method Str
+
+    method Str(HTTP::Header:, Str $eol = "\n")
+
+=head2 method parse
+
+    method parse(HTTP::Header:, Str $raw)
+
+=head1 SEE ALSO
+
+L<HTTP::Header::Field>, L<HTTP::Message>
+
+=head1 AUTHOR
+
+Filip Sergot (sergot)
+Website: filip.sergot.pl
+Contact: filip (at) sergot.pl
+
+=end pod
