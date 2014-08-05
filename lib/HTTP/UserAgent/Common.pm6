@@ -16,3 +16,34 @@ chrome_linux   => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, li
 sub get-ua($ua) is export {
     return %useragents{$ua} // $ua;
 }
+
+=begin pod
+
+=head1 NAME
+
+HTTP::UserAgent::Common - the most commonly used User-Agents.
+
+=head1 SYNOPSIS
+
+    use HTTP::UserAgent::Common;
+    say get-ua('chrome_linux');
+
+=head1 DESCRIPTION
+
+This module provides a list of the most commonly used User-Agents.
+
+=head1 ROUTINES
+
+=head2 routine get-ua
+
+    sub get-ua(Str $ua) returns Str
+
+=head1 SEE ALSO
+
+L<HTTP::UserAgent>
+
+=head1 AUTHOR
+
+Filip Sergot (sergot)
+
+=end pod
