@@ -75,3 +75,52 @@ sub _get_file($url is copy) {
     $url ~~ s:i/http[s?]\:\/\/.*?\//\//;
     $url;
 }
+
+=begin pod
+
+=head1 NAME
+
+HTTP::Request - class encapsulating HTTP request message
+
+=head1 SYNOPSIS
+
+    use HTTP::Request;
+    my $request = HTTP::Request.new(GET => 'http://www.example.com/');
+
+=head1 DESCRIPTION
+
+TODO
+
+=head1 METHODS
+
+=head2 method new
+
+    method new(*%args)
+
+=head2 method methods
+
+    method methods(Str $method)
+
+=head2 method uri
+
+    method uri(Str $url)
+
+=head2 method Str
+
+    method Str returns Str;
+
+=head2 method parse
+
+    method parse(Str $raw_request) returns HTTP::Request
+
+=head1 SEE ALSO
+
+L<HTTP::Message>, L<HTTP::Response>
+
+=head1 AUTHOR
+
+Filip Sergot (sergot)
+Website: filip.sergot.pl
+Contact: filip (at) sergot.pl
+
+=end pod
