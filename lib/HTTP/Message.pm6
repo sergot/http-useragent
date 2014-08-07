@@ -93,3 +93,75 @@ method Str($eol = "\n") {
 
     return $s;
 }
+
+=begin pod
+
+=head1 NAME
+
+HTTP::Message - class encapsulating HTTP message
+
+=head1 SYNOPSIS
+
+    use HTTP::Message;
+    my $raw_msg = 'GET / HTTP/1.1\r\nHost: somehost\r\n\r\n';
+    my $mess = HTTP::Message.new.parse($raw_msg);
+    say $mess;
+
+=head1 DESCRIPTION
+
+TODO
+
+=head1 METHODS
+
+=head2 method new
+
+    method new($content?, *%headers)
+
+=head2 method add-content
+
+    method add-content(Str $content)
+
+=head2 method decoded-content
+
+    method decoded-content()
+
+=head2 method header
+
+    multi method header(HTTP::Header:, Str $s) returns HTTP::Header::Field
+    multi method header(HTTP::Header:, *%fields)
+
+=head2 method init-header
+
+    method init-header(HTTP::Header:, *%fields)
+
+=head2 method push-header
+
+    method push-header(HTTP::Header:, HTTP::Header::Field $field)
+
+=head2 method remove-header
+
+    method remove-header(HTTP::Header:, Str $field)
+
+=head2 method clear
+
+    method clear()
+
+=head2 method parse
+
+    method parse(Str $raw_message) returns HTTP::Message
+
+=head2 method Str
+
+    method Str(Str $eol = "\n") returns Str
+
+=head1 SEE ALSO
+
+L<HTTP::Request>, L<HTTP::Response>
+
+=head1 AUTHOR
+
+Filip Sergot (sergot)
+Website: filip.sergot.pl
+Concact: filip (at) sergot.pl
+
+=end pod
