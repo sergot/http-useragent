@@ -217,3 +217,65 @@ sub _get-port(Str $url) {
     (~$/[0]).Int if $url ~~ m/':' (\d+) \/?/;
 }
 
+=begin pod
+
+=head1 NAME
+
+HTTP::UserAgent - Web user agent class
+
+=head1 SYNOPSIS
+
+    use HTTP::UserAgent;
+
+    my $ua = HTTP::UserAgent.new;
+    $ua.timeout = 10;
+
+    my $response = $ua.get("URL");
+
+    if $response.is-success {
+        say $response.content;
+    } else {
+        die $response.status-line;
+    }
+
+=head1 DESCRIPTION
+
+TODO
+
+=head1 METHODS
+
+=head2 method new
+
+Default constructor
+
+=head2 method get
+
+    method get(HTTP::UserAgent:, Str $url is copy) returns HTTP::Response
+
+=head2 routine get :simple
+
+    sub get(Str $url) returns Str is export(:simple)
+
+=head2 routine head :simple
+
+    sub head(Str $url) returns Parcel is export(:simple)
+
+=head2 routine getstore :simple
+
+    sub getstore(Str $url, Str $file) is export(:simple)
+
+=head2 routine getprint :simple
+
+    sub getprint(Str $url) is export(:simple)
+
+=head1 SEE ALSO
+
+L<HTTP::Message>
+
+=head1 AUTHOR
+
+Filip Sergot (sergot)
+Website: filip.sergot.pl
+Contact: filip (at) sergot.pl
+
+=end pod
