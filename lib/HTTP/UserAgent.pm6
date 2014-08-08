@@ -240,7 +240,9 @@ HTTP::UserAgent - Web user agent class
 
 =head1 DESCRIPTION
 
-TODO
+This module provides functionality to crawling the web with a handling cookies and correct User-Agent value.
+
+It has TLS/SSL support.
 
 =head1 METHODS
 
@@ -252,30 +254,40 @@ Default constructor
 
     method get(HTTP::UserAgent:, Str $url is copy) returns HTTP::Response
 
+Requests the $url site, returns HTTP::Response on success, otherwise it throws exceptions.
+
 =head2 routine get :simple
 
     sub get(Str $url) returns Str is export(:simple)
+
+Like method get, but returns decoded content of the response.
 
 =head2 routine head :simple
 
     sub head(Str $url) returns Parcel is export(:simple)
 
+Returns values of following header fields:
+
+=item Content-Type
+=item Content-Length
+=item Last-Modified
+=item Expires
+=item Server
+
 =head2 routine getstore :simple
 
     sub getstore(Str $url, Str $file) is export(:simple)
+
+Like routine get but writes the content to a file.
 
 =head2 routine getprint :simple
 
     sub getprint(Str $url) is export(:simple)
 
+Like routine get but prints the content.
+
 =head1 SEE ALSO
 
 L<HTTP::Message>
-
-=head1 AUTHOR
-
-Filip Sergot (sergot)
-Website: filip.sergot.pl
-Contact: filip (at) sergot.pl
 
 =end pod
