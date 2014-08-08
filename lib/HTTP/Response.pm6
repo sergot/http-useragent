@@ -50,7 +50,7 @@ HTTP::Response - class encapsulating HTTP response message
 
 =head1 DESCRIPTION
 
-TODO
+Module provides functionality to easily manage HTTP responses.
 
 =head1 METHODS
 
@@ -58,30 +58,37 @@ TODO
 
     method new(Int $code = 200, *%headers)
 
+A constructor, takes parameters like:
+
+=item code    : code of the response
+=item headers : hash of header fields (field_name => values)
+
 =head2 method is-success
 
-    method is-success returns Bool;
+    method is-success(HTTP::Response:) returns Bool;
+
+Returns True if response is successful, False otherwise.
 
 =head2 method status-line
 
-    method status-line returns Str;
+    method status-line(HTTP::Response:) returns Str;
+
+Returns status line of the response.
 
 =head2 method code
 
-    method code(Int $code)
+    method code(HTTP::Response:, Int $code)
+
+Sets code of the response.
 
 =head2 method Str
 
-    method Str returns Str
+    method Str(HTTP::Response:) returns Str
+
+Returns strigified object.
 
 =head1 SEE ALSO
 
 L<HTTP::Message>, L<HTTP::Response>
-
-=head1 AUTHOR
-
-Filip Sergot (sergot)
-Website: filip.sergot.pl
-Contact: filip (at) sergot.pl
 
 =end pod

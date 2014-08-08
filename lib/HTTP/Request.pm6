@@ -89,7 +89,7 @@ HTTP::Request - class encapsulating HTTP request message
 
 =head1 DESCRIPTION
 
-TODO
+Module provides functionality to easily manage HTTP requests.
 
 =head1 METHODS
 
@@ -97,30 +97,37 @@ TODO
 
     method new(*%args)
 
+A constructor, takes parameters like:
+
+=item method => URL, where method can be POST, GET ... etc. 
+=item field => values, header fields
+
 =head2 method methods
 
     method methods(Str $method)
+
+Sets a method of the request.
 
 =head2 method uri
 
     method uri(Str $url)
 
+Sets URL to request.
+
 =head2 method Str
 
     method Str returns Str;
+
+Returns stringified object.
 
 =head2 method parse
 
     method parse(Str $raw_request) returns HTTP::Request
 
+Parses raw HTTP request.
+
 =head1 SEE ALSO
 
 L<HTTP::Message>, L<HTTP::Response>
-
-=head1 AUTHOR
-
-Filip Sergot (sergot)
-Website: filip.sergot.pl
-Contact: filip (at) sergot.pl
 
 =end pod

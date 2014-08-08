@@ -30,16 +30,19 @@ This module provides a class encapsulating HTTP Message header field.
 
     multi method new(*%params) returns HTTP::Header::Field
 
+A constructor. Takes parameters like:
+
+=item name   : name of a header field
+=item values : array of values of a header field
+
 =head2 method Str
 
     method Str(HTTP::Header::Field:) returns Str
 
+Stringifies an HTTP::Header::Field object. Returns a header field in a human (and server) readable form.
+
 =head1 SEE ALSO
 
 L<HTTP::Header>
-
-=head1 AUTHOR
-
-Filip Sergot (sergot)
 
 =end pod

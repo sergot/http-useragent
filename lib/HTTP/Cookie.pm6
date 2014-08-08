@@ -29,7 +29,7 @@ HTTP::Cookie - HTTP cookie class
 
 =head1 DESCRIPTION
 
-TODO
+This module encapsulates single HTTP Cookie.
 
 =head1 METHODS
 
@@ -56,9 +56,5 @@ Returns a cookie (as String) in readable (RFC2109) form.
 =head1 SEE ALSO
 
 L<HTTP::Cookies>, L<HTTP::Request>, L<HTTP::Response>
-
-=head1 AUTHOR
-
-Filip Sergot (sergot)
 
 =end pod

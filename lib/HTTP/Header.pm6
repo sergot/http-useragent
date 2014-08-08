@@ -130,47 +130,59 @@ This module provides a class with a set of methods making us able to easily hand
 
     method new(*%fields) returns HTTP::Header
 
+A constructor. Takes name => value pairs as arguments.
+
 =head2 method header
 
     multi method header(HTTP::Header:, Str $s) returns HTTP::Header::Field
     multi method header(HTTP::Header:, *%fields)
 
+Gets/sets header field.
+
 =head2 method init-header
 
     method init-header(HTTP::Header:, *%fields)
+
+Initializes a header field: adds a field only if it does not exist yet.
 
 =head2 method push-header
 
     method push-header(HTTP::Header:, HTTP::Header::Field $field)
 
+Pushes a new field. Does not check if exists.
+
 =head2 method remove-header
 
     method remove-header(HTTP::Header:, Str $field)
+
+Removes a field of name $field.
 
 =head2 method header-field-names
 
     method header-field-names(HTTP::Header:) returns Parcel
 
+Returns a list of names of all fields.
+
 =head2 method clear
 
     method clear(HTTP::Header:)
+
+Removes all fields.
 
 =head2 method Str
 
     method Str(HTTP::Header:, Str $eol = "\n")
 
+Returns readable form of the whole header section.
+
 =head2 method parse
 
     method parse(HTTP::Header:, Str $raw)
 
+Parses the whole header section.
+
 =head1 SEE ALSO
 
 L<HTTP::Header::Field>, L<HTTP::Message>
-
-=head1 AUTHOR
-
-Filip Sergot (sergot)
-Website: filip.sergot.pl
-Contact: filip (at) sergot.pl
 
 =end pod

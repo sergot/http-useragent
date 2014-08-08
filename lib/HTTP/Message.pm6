@@ -109,7 +109,7 @@ HTTP::Message - class encapsulating HTTP message
 
 =head1 DESCRIPTION
 
-TODO
+This module provides a bunch of methods to easily manage HTTP message.
 
 =head1 METHODS
 
@@ -117,51 +117,68 @@ TODO
 
     method new($content?, *%headers)
 
+A constructor, takes following parameters:
+
+=item content : content of the message (optional)
+=item headers : fields of the header section
+
 =head2 method add-content
 
-    method add-content(Str $content)
+    method add-content(HTTP::Message:, Str $content)
+
+Adds HTTP message content.
 
 =head2 method decoded-content
 
-    method decoded-content()
+    method decoded-content(HTTP::Message:)
+
+Returns decoded content of the message (using L<Encode> module to decode).
 
 =head2 method header
 
-    multi method header(HTTP::Header:, Str $s) returns HTTP::Header::Field
-    multi method header(HTTP::Header:, *%fields)
+    multi method header(HTTP::Message:, HTTP::Header:, Str $s) returns HTTP::Header::Field
+    multi method header(HTTP::Message:, HTTP::Header:, *%fields)
+
+See L<HTTP::Header>.
 
 =head2 method init-header
 
-    method init-header(HTTP::Header:, *%fields)
+    method init-header(HTTP::Message:, HTTP::Header:, *%fields)
+
+See L<HTTP::Header>.
 
 =head2 method push-header
 
-    method push-header(HTTP::Header:, HTTP::Header::Field $field)
+    method push-header(HTTP::Message:, HTTP::Header:, HTTP::Header::Field $field)
+
+See L<HTTP::Header>.
 
 =head2 method remove-header
 
-    method remove-header(HTTP::Header:, Str $field)
+    method remove-header(HTTP::Message:, HTTP::Header:, Str $field)
+
+See L<HTTP::Header>.
 
 =head2 method clear
 
-    method clear()
+    method clear(HTTP::Message:)
+
+Removes the whole message.
 
 =head2 method parse
 
-    method parse(Str $raw_message) returns HTTP::Message
+    method parse(HTTP::Message:, Str $raw_message) returns HTTP::Message
+
+Parses the whole HTTP message.
 
 =head2 method Str
 
-    method Str(Str $eol = "\n") returns Str
+    method Str(HTTP::Message:, Str $eol = "\n") returns Str
+
+Returns HTTP message in a readable form.
 
 =head1 SEE ALSO
 
-L<HTTP::Request>, L<HTTP::Response>
-
-=head1 AUTHOR
-
-Filip Sergot (sergot)
-Website: filip.sergot.pl
-Concact: filip (at) sergot.pl
+L<HTTP::Request>, L<HTTP::Response>, L<Encode>
 
 =end pod

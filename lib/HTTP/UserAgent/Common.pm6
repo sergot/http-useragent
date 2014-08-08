@@ -38,6 +38,8 @@ This module provides a list of the most commonly used User-Agents.
 
     sub get-ua(Str $ua) returns Str
 
+Returns correct UserAgent or unchaged passed argument if UserAgent could not be found.
+
 =head1 SEE ALSO
 
 L<HTTP::UserAgent>
