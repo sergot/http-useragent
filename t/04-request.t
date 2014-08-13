@@ -1,7 +1,7 @@
 use HTTP::Request;
 use Test;
 
-plan 18;
+plan 19;
 
 my $url = 'http://testsite.ext/cat/f.h';
 my $file = '/cat/f.h';
@@ -32,6 +32,10 @@ is $r1.field('Accept'), 'test2', 'field 2/2';
 $r1.uri('test.');
 is $r1.url, 'test.', 'uri 1/2';
 is $r1.field('Host'), 'test.', 'uri 2/2';
+
+# set-method
+$r1.set-method: 'TEST';
+is $r1.method, 'TEST', 'set-method 1/1';
 
 # parse
 my $req = "GET /index HTTP/1.1\r\nHost: somesite\r\nAccept: test\r\n\r\nname=value&a=b\r\n";

@@ -32,7 +32,7 @@ method new(*%args) {
     self.bless(:$method, :$url, :$header, :$file);
 }
 
-method methods($method) { $.method = $method.uc }
+method set-method($method) { $.method = $method.uc }
 
 method uri($url) {
     $.url = $url;
@@ -102,9 +102,9 @@ A constructor, takes parameters like:
 =item method => URL, where method can be POST, GET ... etc. 
 =item field => values, header fields
 
-=head2 method methods
+=head2 method set-method
 
-    method methods(Str $method)
+    method set-method(Str $method)
 
 Sets a method of the request.
 
