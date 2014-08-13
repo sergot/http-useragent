@@ -3,7 +3,7 @@ class HTTP::Header;
 use HTTP::Header::Field;
 
 # headers container
-has @.headers;
+has @.fields;
 
 our grammar HTTP::Header::Grammar {
     token TOP {
@@ -23,10 +23,10 @@ our class HTTP::Header::Actions {
     method message-header($/) {
         my $k = ~$<field-name>;
         if $k && $<field-value>.made -> $v {
-            if $*OBJ.header($k) {
-                $*OBJ.push-header: |($k => $v);
+            if $*OBJ.field($k) {
+                $*OBJ.push-field: |($k => $v);
             } else {
-                $*OBJ.header: |($k => $v);
+                $*OBJ.field: |($k => $v);
             }
         }
     }
@@ -37,68 +37,68 @@ our class HTTP::Header::Actions {
 }
 
 # we want to pass arguments like this: .new(a => 1, b => 2 ...)
-method new(*%headers) {
-    my @headers;
+method new(*%fields) {
+    my @fields;
 
-    for %headers.kv -> $k, $v {
-        @headers.push: HTTP::Header::Field.new(:name($k), :values($v.list));
+    for %fields.kv -> $k, $v {
+        @fields.push: HTTP::Header::Field.new(:name($k), :values($v.list));
     }
 
-    self.bless(:@headers);
+    self.bless(:@fields);
 }
 
-# set headers
-multi method header(*%headers) {
-    for %headers.kv -> $k, $v {
-        my $h = HTTP::Header::Field.new(:name($k), :values($v.list));
-        if @.headers.first({ .name eq $k }) {
-            @.headers[@.headers.first-index({ .name eq $k })] = $h;
+# set fields
+multi method field(*%fields) {
+    for %fields.kv -> $k, $v {
+        my $f = HTTP::Header::Field.new(:name($k), :values($v.list));
+        if @.fields.first({ .name eq $k }) {
+            @.fields[@.fields.first-index({ .name eq $k })] = $f;
         } else {
-            @.headers.push: $h;
+            @.fields.push: $f;
         }
     }
 }
 
-# get headers
-multi method header($header) {
-    return @.headers.first({ .name eq $header });
+# get fields
+multi method field($field) {
+    return @.fields.first({ .name eq $field });
 }
 
-# initialize headers
-method init-header(*%headers) {
-    for %headers.kv -> $k, $v {
-        if not @.headers.grep({ .name eq $k }) {
-            @.headers.push: HTTP::Header::Field.new(:name($k), :values($v.list));
+# initialize fields
+method init-field(*%fields) {
+    for %fields.kv -> $k, $v {
+        if not @.fields.grep({ .name eq $k }) {
+            @.fields.push: HTTP::Header::Field.new(:name($k), :values($v.list));
         }
     }
 }
 
-# add value to existing headers
-method push-header(*%headers) {
-    for %headers.kv -> $k, $v {
-        @.headers.first({ .name eq $k }).values.push: $v.list;
+# add value to existing fields
+method push-field(*%fields) {
+    for %fields.kv -> $k, $v {
+        @.fields.first({ .name eq $k }).values.push: $v.list;
     }
 }
 
-# remove a headers
-method remove-header(Str $header) {
-    my $index = @.headers.first-index({ .name eq $header });
-    @.headers.splice($index, 1);
+# remove a field
+method remove-field(Str $field) {
+    my $index = @.fields.first-index({ .name eq $field });
+    @.fields.splice($index, 1);
 }
 
-# get headers names
+# get fields names
 method header-field-names() {
-    @.headers>>.name;
+    @.fields>>.name;
 }
 
-# remove all headers
+# remove all fields
 method clear() {
-    @.headers = ();
+    @.fields = ();
 }
 
-# get headers as string
+# get header as string
 method Str($eol = "\n") {
-    @.headers.map({ "{$_.name}: {self.header($_.name)}$eol" }).join;
+    @.fields.map({ "{$_.name}: {self.field($_.name)}$eol" }).join;
 }
 
 method parse($raw) {
@@ -116,9 +116,9 @@ HTTP::Header - class encapsulating HTTP message header
 
     use HTTP::Header;
     my $h = HTTP::Header.new;
-    $h.header(Accept => 'text/plain');
-    say $h.header('Accept');
-    $h.remove_header('Accept');
+    $h.field(Accept => 'text/plain');
+    say $h.field('Accept');
+    $h.remove_field('Accept');
 
 =head1 DESCRIPTION
 
@@ -134,26 +134,26 @@ A constructor. Takes name => value pairs as arguments.
 
 =head2 method header
 
-    multi method header(HTTP::Header:, Str $s) returns HTTP::Header::Field
-    multi method header(HTTP::Header:, *%fields)
+    multi method field(HTTP::Header:, Str $s) returns HTTP::Header::Field
+    multi method field(HTTP::Header:, *%fields)
 
 Gets/sets header field.
 
-=head2 method init-header
+=head2 method init-field
 
-    method init-header(HTTP::Header:, *%fields)
+    method init-field(HTTP::Header:, *%fields)
 
 Initializes a header field: adds a field only if it does not exist yet.
 
 =head2 method push-header
 
-    method push-header(HTTP::Header:, HTTP::Header::Field $field)
+    method push-field(HTTP::Header:, HTTP::Header::Field $field)
 
 Pushes a new field. Does not check if exists.
 
 =head2 method remove-header
 
-    method remove-header(HTTP::Header:, Str $field)
+    method remove-field(HTTP::Header:, Str $field)
 
 Removes a field of name $field.
 

@@ -3,17 +3,17 @@ class HTTP::Message;
 use HTTP::Header;
 use Encode;
 
-has $.headers;
+has $.header;
 has $.content is rw;
 
 has $.protocol is rw = 'HTTP/1.1';
 
 my $CRLF = "\r\n";
 
-method new($content?, *%headers) {
-    my $headers = HTTP::Header.new(|%headers);
+method new($content?, *%fields) {
+    my $header = HTTP::Header.new(|%fields);
 
-    self.bless(:$headers, :$content);
+    self.bless(:$header, :$content);
 }
 
 method add-content($content) {
@@ -23,7 +23,7 @@ method add-content($content) {
 method decoded-content {
     return $!content if $!content ~~ Str;
     my $decoded_content;
-    my $content-type  = $!headers.header('Content-Type').values[0] // '';
+    my $content-type  = $!header.field('Content-Type').values[0] // '';
     my $charset = $content-type ~~ / charset '=' $<charset>=[ \S+ ] /
                 ?? $<charset>.Str.lc
                 !! 'ascii';
@@ -32,24 +32,24 @@ method decoded-content {
     $decoded_content;
 }
 
-multi method header(Str $h) {
-    $.headers.header($h);
+multi method field(Str $f) {
+    $.header.field($f);
 }
 
-multi method header(*%headers) {
-    $.headers.header(|%headers);
+multi method field(*%fields) {
+    $.header.field(|%fields);
 }
 
-multi method push-header(*%headers) {
-    $.headers.push-header(|%headers);
+method push-field(*%fields) {
+    $.header.push-field(|%fields);
 }
 
-method remove-header(Str $header) {
-    $.headers.remove-header($header);
+method remove-field(Str $field) {
+    $.header.remove-field($field);
 }
 
 method clear {
-    $.headers.clear;
+    $.header.clear;
     $.content = '';
 }
 
@@ -72,10 +72,10 @@ method parse($raw_message) {
         if $line {
             my ($k, $v) = $line.split(/\:\s*/, 2);
             if $k and $v {
-                if $.headers.header($k) {
-                    $.headers.push-header: |($k => $v.split(',')>>.trim);
+                if $.header.field($k) {
+                    $.header.push-field: |($k => $v.split(',')>>.trim);
                 } else {
-                    $.headers.header: |($k => $v.split(',')>>.trim);
+                    $.header.field: |($k => $v.split(',')>>.trim);
                 }
             }
         } else {
@@ -88,7 +88,7 @@ method parse($raw_message) {
 }
 
 method Str($eol = "\n") {
-    my $s = $.headers.Str($eol);
+    my $s = $.header.Str($eol);
     $s ~= $eol ~ $.content ~ $eol if $.content;
 
     return $s;
@@ -134,28 +134,28 @@ Adds HTTP message content.
 
 Returns decoded content of the message (using L<Encode> module to decode).
 
-=head2 method header
+=head2 method field
 
-    multi method header(HTTP::Message:, HTTP::Header:, Str $s) returns HTTP::Header::Field
-    multi method header(HTTP::Message:, HTTP::Header:, *%fields)
-
-See L<HTTP::Header>.
-
-=head2 method init-header
-
-    method init-header(HTTP::Message:, HTTP::Header:, *%fields)
+    multi method field(HTTP::Message:, HTTP::Header:, Str $s) returns HTTP::Header::Field
+    multi method field(HTTP::Message:, HTTP::Header:, *%fields)
 
 See L<HTTP::Header>.
 
-=head2 method push-header
+=head2 method init-field
 
-    method push-header(HTTP::Message:, HTTP::Header:, HTTP::Header::Field $field)
+    method init-field(HTTP::Message:, HTTP::Header:, *%fields)
 
 See L<HTTP::Header>.
 
-=head2 method remove-header
+=head2 method push-field
 
-    method remove-header(HTTP::Message:, HTTP::Header:, Str $field)
+    method push-field(HTTP::Message:, HTTP::Header:, HTTP::Header::Field $field)
+
+See L<HTTP::Header>.
+
+=head2 method remove-field
+
+    method remove-field(HTTP::Message:, HTTP::Header:, Str $field)
 
 See L<HTTP::Header>.
 

@@ -72,11 +72,11 @@ method get(Str $url is copy) {
         $.cookies.add-cookie-header($request) if $.cookies.cookies.elems;
 
         # set the useragent
-        $request.headers.header(User-Agent => $.useragent) if $.useragent.defined;
+        $request.header.field(User-Agent => $.useragent) if $.useragent.defined;
 
         my $conn = $url.substr(4, 1) eq 's'
-            ?? IO::Socket::SSL.new(:host(~$request.header('Host').values), :port($port // 443), :timeout($.timeout))
-            !! IO::Socket::INET.new(:host(~$request.header('Host').values), :port($port // 80), :timeout($.timeout));
+            ?? IO::Socket::SSL.new(:host(~$request.header.field('Host').values), :port($port // 443), :timeout($.timeout))
+            !! IO::Socket::INET.new(:host(~$request.header.field('Host').values), :port($port // 80), :timeout($.timeout));
 
         if $conn.send($request.Str ~ "\r\n") {
             my $first-chunk;
@@ -101,13 +101,13 @@ method get(Str $url is copy) {
             $response                    = HTTP::Response.new;
             my ($response-line, $header) = $first-chunk.decode('ascii').substr(0, $msg-body-pos).split("\r\n", 2);
             $response.code( $response-line.split(' ')[1].Int );
-            $response.headers.parse( $header );
+            $response.header.parse( $header );
 
             my $content = buf8.new( @a[($msg-body-pos + 2)..*] );
 
             # We also need to handle 'Transfer-Encoding: chunked', which means that we request more chunks
             # and assemble the response body.
-            if $response.headers.header('Transfer-Encoding') eq 'chunked' {
+            if $response.header.field('Transfer-Encoding') eq 'chunked' {
                 my sub recv-entire-chunk($content is rw) {
                     if $content {
                         # The first line is our desired chunk size.
@@ -143,7 +143,7 @@ method get(Str $url is copy) {
                     }
                 }
             }
-            elsif $response.headers.header('Content-Length').values[0] -> $content-length is copy {
+            elsif $response.header.field('Content-Length').values[0] -> $content-length is copy {
                 X::HTTP::Header.new( :rc("Content-Length header value '$content-length' is not numeric") ).throw
                     unless $content-length = try +$content-length;
                 # Let the content grow until we have reached the desired size.
@@ -159,7 +159,7 @@ method get(Str $url is copy) {
 
             # We have now the content as a Buf and need to decode it depending on some header informations.
             $response.content = $content;
-            my $content-type  = $response.headers.header('Content-Type').values[0] // '';
+            my $content-type  = $response.header.field('Content-Type').values[0] // '';
             if $content-type ~~ /^ text / {
                 my $charset = $content-type ~~ / charset '=' $<charset>=[ \S+ ] /
                             ?? $<charset>.Str.lc
@@ -169,8 +169,8 @@ method get(Str $url is copy) {
         }
         $conn.close;
 
-        last unless $response.status-line.substr(0, 1) eq '3' && $response.header('Location').defined;
-        $url = ~$response.header('Location');
+        last unless $response.status-line.substr(0, 1) eq '3' && $response.header.field('Location').defined;
+        $url = ~$response.header.field('Location');
     }
 
     X::HTTP::Response.new(:rc($response.status-line)).throw
@@ -195,7 +195,7 @@ sub get(Str $url) is export(:simple) {
 
 sub head(Str $url) is export(:simple) {
     my $ua = HTTP::UserAgent.new;
-    return $ua.get($url).headers.headers<Content-Type Content-Length Last-Modified Expires Server>;
+    return $ua.get($url).header.fields<Content-Type Content-Length Last-Modified Expires Server>;
 }
 
 sub getprint(Str $url) is export(:simple) {

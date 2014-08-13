@@ -9,13 +9,13 @@ my $r = HTTP::Response.new(200, a => 'a');
 
 isa_ok $r, HTTP::Response, 'new 1/3';
 isa_ok $r, HTTP::Message, 'new 2/3';
-is $r.header('a'), 'a', 'new 3/3';
+is $r.field('a'), 'a', 'new 3/3';
 
-# header
-$r.header(h => 'h');
-is $r.header('h'), 'h', 'header 1/2';
-$r.header(h => 'abc');
-is $r.header('h'), 'abc', 'header 2/2';
+# field
+$r.field(h => 'h');
+is $r.field('h'), 'h', 'field 1/2';
+$r.field(h => 'abc');
+is $r.field('h'), 'abc', 'field 2/2';
 
 # status-line
 is $r.status-line, '200 OK', 'status-line 1/1';

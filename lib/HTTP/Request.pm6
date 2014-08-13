@@ -20,16 +20,16 @@ method new(*%args) {
         }
     }
 
-    my $headers = HTTP::Header.new(|%headers);
+    my $header = HTTP::Header.new(|%headers);
     my $file;
 
     if $url {
-        $headers.header(Host => _get_host($url));
+        $header.field(Host => _get_host($url));
         $file = _get_file($url);
     }
 
 
-    self.bless(:$method, :$url, :$headers, :$file);
+    self.bless(:$method, :$url, :$header, :$file);
 }
 
 method methods($method) { $.method = $method.uc }
@@ -38,7 +38,7 @@ method uri($url) {
     $.url = $url;
     
     my $host = _get_host($.url);
-    $.headers.header(Host => $host);
+    $.header.field(Host => $host);
 }
 
 method Str {

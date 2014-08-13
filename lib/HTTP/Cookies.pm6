@@ -41,20 +41,20 @@ my class HTTP::Cookies::Actions {
 }
 
 method extract-cookies(HTTP::Response $response) {
-    self.set-cookie($_) for $response.header('Set-Cookie').map({ "Set-Cookie: $_" });
+    self.set-cookie($_) for $response.field('Set-Cookie').map({ "Set-Cookie: $_" });
     self.save if $.autosave;
 }
 
 method add-cookie-header(HTTP::Request $request) {
     for @.cookies -> $cookie {
         next if $cookie.fields<Domain>.defined
-                && $cookie.fields<Domain> ne $request.header('Host');
+                && $cookie.fields<Domain> ne $request.field('Host');
         # TODO : path restrictions
 
-        if $request.header('Cookie').defined {
-            $request.push-header( Cookie => $cookie.Str );
+        if $request.field('Cookie').defined {
+            $request.push-field( Cookie => $cookie.Str );
         } else {
-            $request.header( Cookie => $cookie.Str );
+            $request.field( Cookie => $cookie.Str );
         }
     }
 }

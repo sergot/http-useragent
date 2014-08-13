@@ -12,9 +12,9 @@ submethod BUILD(:$!code) {
     $!status_line = self.code($!code);
 }
 
-method new($code? = 200, *%headers) {
-    my $headers = HTTP::Header.new(|%headers);
-    self.bless(:$code, :$headers);
+method new($code? = 200, *%fields) {
+    my $header = HTTP::Header.new(|%fields);
+    self.bless(:$code, :$header);
 }
 
 method is-success {
@@ -56,12 +56,12 @@ Module provides functionality to easily manage HTTP responses.
 
 =head2 method new
 
-    method new(Int $code = 200, *%headers)
+    method new(Int $code = 200, *%fields)
 
 A constructor, takes parameters like:
 
 =item code    : code of the response
-=item headers : hash of header fields (field_name => values)
+=item fields : hash of header fields (field_name => values)
 
 =head2 method is-success
 
