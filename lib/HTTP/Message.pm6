@@ -115,12 +115,12 @@ This module provides a bunch of methods to easily manage HTTP message.
 
 =head2 method new
 
-    method new($content?, *%headers)
+    method new($content?, *%fields)
 
 A constructor, takes following parameters:
 
 =item content : content of the message (optional)
-=item headers : fields of the header section
+=item fields : fields of the header section
 
 =head2 method add-content
 

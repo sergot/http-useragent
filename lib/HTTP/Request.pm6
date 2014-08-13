@@ -9,18 +9,18 @@ has $.file is rw;
 my $CRLF = "\r\n";
 
 method new(*%args) {
-    my ($method, $url, %headers);
+    my ($method, $url, %fields);
     
     for %args.kv -> $key, $value {
         if $key.lc ~~ any(<get post head put>) {
             $method = $key.uc;
             $url = %args{$key};
         } else {
-            %headers{$key} = $value;
+            %fields{$key} = $value;
         }
     }
 
-    my $header = HTTP::Header.new(|%headers);
+    my $header = HTTP::Header.new(|%fields);
     my $file;
 
     if $url {
