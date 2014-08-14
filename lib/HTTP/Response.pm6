@@ -52,6 +52,8 @@ HTTP::Response - class encapsulating HTTP response message
 
 Module provides functionality to easily manage HTTP responses.
 
+Response object is returned by the .request() method of L<HTTP::UserAgent>.
+
 =head1 METHODS
 
 =head2 method new
