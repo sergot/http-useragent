@@ -136,26 +136,26 @@ Returns decoded content of the message (using L<Encode> module to decode).
 
 =head2 method field
 
-    multi method field(HTTP::Message:, HTTP::Header:, Str $s) returns HTTP::Header::Field
-    multi method field(HTTP::Message:, HTTP::Header:, *%fields)
+    multi method field(HTTP::Message:, Str $s) returns HTTP::Header::Field
+    multi method field(HTTP::Message:, *%fields)
 
 See L<HTTP::Header>.
 
 =head2 method init-field
 
-    method init-field(HTTP::Message:, HTTP::Header:, *%fields)
+    method init-field(HTTP::Message:, *%fields)
 
 See L<HTTP::Header>.
 
 =head2 method push-field
 
-    method push-field(HTTP::Message:, HTTP::Header:, HTTP::Header::Field $field)
+    method push-field(HTTP::Message:, HTTP::Header::Field $field)
 
 See L<HTTP::Header>.
 
 =head2 method remove-field
 
-    method remove-field(HTTP::Message:, HTTP::Header:, Str $field)
+    method remove-field(HTTP::Message:, Str $field)
 
 See L<HTTP::Header>.
 
