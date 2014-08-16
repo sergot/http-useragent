@@ -12,7 +12,7 @@ submethod BUILD(:$!code) {
     $!status_line = self.code($!code);
 }
 
-method new($code? = 200, *%fields) {
+method new(Int $code? = 200, *%fields) {
     my $header = HTTP::Header.new(|%fields);
     self.bless(:$code, :$header);
 }
@@ -52,7 +52,7 @@ HTTP::Response - class encapsulating HTTP response message
 
 Module provides functionality to easily manage HTTP responses.
 
-Response object is returned by the .request() method of L<HTTP::UserAgent>.
+Response object is returned by the .get() method of L<HTTP::UserAgent>.
 
 =head1 METHODS
 
@@ -62,14 +62,19 @@ Response object is returned by the .request() method of L<HTTP::UserAgent>.
 
 A constructor, takes parameters like:
 
-=item code    : code of the response
+=item code   : code of the response
 =item fields : hash of header fields (field_name => values)
+
+    my $response = HTTP::Response.new(200, :h1<v1>);
 
 =head2 method is-success
 
     method is-success(HTTP::Response:) returns Bool;
 
-Returns True if response is successful, False otherwise.
+Returns True if response is successful (status == 2xx), False otherwise.
+
+    my $response = HTTP::Response.new(200);
+    say 'YAY' if $response.is-success;
 
 =head2 method status-line
 
@@ -77,17 +82,29 @@ Returns True if response is successful, False otherwise.
 
 Returns status line of the response.
 
+    my $response = HTTP::Response.new(200);
+    say $response.status-line;
+
 =head2 method code
 
     method code(HTTP::Response:, Int $code)
 
 Sets code of the response.
 
+    my $response = HTTP::Response.new;
+    $response.code: 200;
+
 =head2 method Str
 
     method Str(HTTP::Response:) returns Str
 
 Returns strigified object.
+
+=head2 method parse
+
+See L<HTTP::Message>.
+
+For more documentation, see L<HTTP::Message>.
 
 =head1 SEE ALSO
 

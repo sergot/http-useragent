@@ -102,17 +102,25 @@ A constructor, takes parameters like:
 =item method => URL, where method can be POST, GET ... etc. 
 =item field => values, header fields
 
+    my $req = HTTP::Request.new(:GET<example.com>, :h1<v1>);
+
 =head2 method set-method
 
     method set-method(Str $method)
 
 Sets a method of the request.
 
+    my $req = HTTP::Request.new;
+    $req.set-method: 'POST';
+
 =head2 method uri
 
     method uri(Str $url)
 
 Sets URL to request.
+
+    my $req = HTTP::Request.new;
+    $req.uri: 'example.com';
 
 =head2 method Str
 
@@ -125,6 +133,9 @@ Returns stringified object.
     method parse(Str $raw_request) returns HTTP::Request
 
 Parses raw HTTP request.
+See L<HTTP::Message>
+
+For more documentation, see L<HTTP::Message>.
 
 =head1 SEE ALSO
 
