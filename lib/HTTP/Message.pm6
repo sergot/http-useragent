@@ -122,17 +122,27 @@ A constructor, takes following parameters:
 =item content : content of the message (optional)
 =item fields : fields of the header section
 
+    my $msg = HTTP::Message.new('content', :field<value>);
+
 =head2 method add-content
 
     method add-content(HTTP::Message:, Str $content)
 
-Adds HTTP message content.
+Adds HTTP message content. It does not remove the existing value,
+it concats to the existing content.
+
+    my $msg = HTTP::Message.new('content', :field<value>);
+    $msg.add-content: 's';
+    say $msg.content; # says 'contents'
 
 =head2 method decoded-content
 
     method decoded-content(HTTP::Message:)
 
 Returns decoded content of the message (using L<Encode> module to decode).
+
+    my $msg = HTTP::Message.new();
+    say $msg.decoded-content;
 
 =head2 method field
 
@@ -163,13 +173,24 @@ See L<HTTP::Header>.
 
     method clear(HTTP::Message:)
 
-Removes the whole message.
+Removes the whole message, both header and content section.
+
+    my $msg = HTTP::Message.new('content', :field<value>);
+    $msg.clear;
+    say ~$msg; # says nothing
 
 =head2 method parse
 
     method parse(HTTP::Message:, Str $raw_message) returns HTTP::Message
 
 Parses the whole HTTP message.
+
+It takes the HTTP message (with \r\n as a line separator)
+and obtain the header and content section, creates a HTTP::Header
+object.
+
+    my $msg = HTTP::Message.new.parse("GET / HTTP/1.1\r\nHost: example\r\ncontent\r\n");
+    say $msg.perl;
 
 =head2 method Str
 

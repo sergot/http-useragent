@@ -132,6 +132,8 @@ This module provides a class with a set of methods making us able to easily hand
 
 A constructor. Takes name => value pairs as arguments.
 
+    my $head = HTTP::Header.new(:h1<v1>, :h2<v2>);
+
 =head2 method header
 
     multi method field(HTTP::Header:, Str $s) returns HTTP::Header::Field
@@ -139,11 +141,22 @@ A constructor. Takes name => value pairs as arguments.
 
 Gets/sets header field.
 
+    my $head = HTTP::Header.new(:h1<v1>, :h2<v2>);
+    say $head.header('h1');
+
+    my $head = HTTP::Header.new(:h1<v1>, :h2<v2>);
+    $head.header(:h3<v3>);
+
 =head2 method init-field
 
     method init-field(HTTP::Header:, *%fields)
 
 Initializes a header field: adds a field only if it does not exist yet.
+
+    my $head = HTTP::Header.new;
+    $head.header(:h1<v1>);
+    $head.init-header(:h1<v2>, :h2<v2>); # it doesn't change the value of 'h1'
+    say ~$head;
 
 =head2 method push-header
 
@@ -151,11 +164,19 @@ Initializes a header field: adds a field only if it does not exist yet.
 
 Pushes a new field. Does not check if exists.
 
+    my $head = HTTP::Header.new;
+    $head.push-header( HTTP::Header::Field.new(:name<n1>, :value<v1>) );
+    say ~$head;
+
 =head2 method remove-header
 
     method remove-field(HTTP::Header:, Str $field)
 
 Removes a field of name $field.
+
+    my $head = HTTP::Header.new;
+    $head.header(:h1<v1>);
+    $head.remove-header('h1');
 
 =head2 method header-field-names
 
@@ -163,11 +184,18 @@ Removes a field of name $field.
 
 Returns a list of names of all fields.
 
+    my $head = HTTP::Header.new(:h1<v1>, :h2<v2>);
+    my @names = $head.header-field-names;
+    say @names; # h1, h2
+
 =head2 method clear
 
     method clear(HTTP::Header:)
 
 Removes all fields.
+
+    my $head = HTTP::Header.new(:h1<v1>, :h2<v2>);
+    $head.clear;
 
 =head2 method Str
 
@@ -180,6 +208,9 @@ Returns readable form of the whole header section.
     method parse(HTTP::Header:, Str $raw)
 
 Parses the whole header section.
+
+    my $head = HTTP::Header.new.parse("h1: v1\r\nh2: v2\r\n");
+    say $head.perl;
 
 =head1 SEE ALSO
 
