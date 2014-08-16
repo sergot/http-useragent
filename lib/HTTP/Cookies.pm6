@@ -139,41 +139,10 @@ A constructor. Takes params like:
 =item file     : where to write cookies
 =item autosave : save automatically after every operation on cookies or not
 
-=head2 method save
-
-    method save(HTTP::Cookies:)
-
-Saves cookies to the file ($.file).
-
-=head2 method load
-
-    method load(HTTP::Cookies:)
-
-Loads cookies from file ($.file).
-
-=head2 method extract-cookies
-
-    method extract-cookies(HTTP::Cookies:, HTTP::Response $response)
-
-Gets cookies ('Set-Cookie: ' lines) from the HTTP Response and adds it to the list of cookies.
-
-=head2 method add-cookie-header
-
-    method add-cookie-header(HTTP::Cookies:, HTTP::Request $request)
-
-Adds cookies fields ('Cookie: ' lines) to the HTTP Request.
-
-=head2 method clear-expired
-
-    method clear-expired(HTTP::Cookies:)
-
-Removes expired cookies.
-
-=head2 method clear
-
-    method clear(HTTP::Cookies:)
-
-Removes all cookies.
+    my $cookies = HTTP::Cookies.new(
+        autosave => 1,
+        :file<./cookies.here>
+    );
 
 =head2 method set-cookie
 
@@ -181,11 +150,79 @@ Removes all cookies.
 
 Adds a cookie (passed as an argument $str of type Str) to the list of cookies.
 
+    my $cookies = HTTP::Cookies.new;
+    $cookies.set-cookie('Set-Cookie: name1=value1; HttpOnly');
+
+=head2 method save
+
+    method save(HTTP::Cookies:)
+
+Saves cookies to the file ($.file).
+
+    my $cookies = HTTP::Cookies.new;
+    $cookies.set-cookie('Set-Cookie: name1=value1; HttpOnly');
+    $cookies.save;
+
+=head2 method load
+
+    method load(HTTP::Cookies:)
+
+Loads cookies from file ($.file).
+
+    my $cookies = HTTP::Cookies.new;
+    $cookies.load;
+
+=head2 method extract-cookies
+
+    method extract-cookies(HTTP::Cookies:, HTTP::Response $response)
+
+Gets cookies ('Set-Cookie: ' lines) from the HTTP Response and adds it to the list of cookies.
+
+    my $cookies = HTTP::Cookies.new;
+    my $response = HTTP::Response.new(Set-Cookie => "name1=value; Secure");
+    $cookies.extract-cookies($response);
+
+=head2 method add-cookie-header
+
+    method add-cookie-header(HTTP::Cookies:, HTTP::Request $request)
+
+Adds cookies fields ('Cookie: ' lines) to the HTTP Request.
+
+    my $cookies = HTTP::Cookies.new;
+    my $request = HTTP::Request.new;
+    $cookies.load;
+    $cookies.add-cookie-header($request);
+
+=head2 method clear-expired
+
+    method clear-expired(HTTP::Cookies:)
+
+Removes expired cookies.
+
+    my $cookies = HTTP::Cookies.new;
+    $cookies.set-cookie('Set-Cookie: name1=value1; Secure');
+    $cookies.set-cookie('Set-Cookie: name2=value2; Expires=Wed, 09 Jun 2021 10:18:14 GMT');
+    $cookies.clear-expired; # contains 'name1' cookie only
+
+=head2 method clear
+
+    method clear(HTTP::Cookies:)
+
+Removes all cookies.
+
+    my $cookies = HTTP::Cookies.new;
+    $cookies.load; # contains something
+    $cookies.clear; # will be empty after this action
+
 =head2 method push-cookie
 
     method push-cookie(HTTP::Cookies:, HTTP::Cookie $c)
 
 Pushes cookies (passed as an argument $c of type HTTP::Cookie) to the list of cookies.
+
+    my $c = HTTP::Cookie.new(:name<a>, :value<b>, :httponly);
+    my $cookies = HTTP::Cookies.new;
+    $cookies.push-cookie: $c;
 
 =head2 method Str
 

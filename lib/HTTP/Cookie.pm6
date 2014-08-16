@@ -47,11 +47,15 @@ A constructor, it takes hash parameters, like:
     httponly: HttpOnly param
     fields:   hash of fields (field => value)
 
+Example:
+
+    my $c = HTTP::Cookie.new(:name<a_cookie>, :value<a_value>, :secure, fields => (a => b));
+
 =head2 method Str
 
     method Str(HTTP::Cookie:)
 
-Returns a cookie (as String) in readable (RFC2109) form.
+Returns a cookie (as a String) in readable (RFC2109) form.
 
 =head1 SEE ALSO
 
