@@ -118,7 +118,7 @@ HTTP::Header - class encapsulating HTTP message header
     my $h = HTTP::Header.new;
     $h.field(Accept => 'text/plain');
     say $h.field('Accept');
-    $h.remove_field('Accept');
+    $h.remove-field('Accept');
 
 =head1 DESCRIPTION
 
