@@ -103,7 +103,7 @@ HTTP::Message - class encapsulating HTTP message
 =head1 SYNOPSIS
 
     use HTTP::Message;
-    my $raw_msg = 'GET / HTTP/1.1\r\nHost: somehost\r\n\r\n';
+    my $raw_msg = "GET / HTTP/1.1\r\nHost: somehost\r\n\r\n";
     my $mess = HTTP::Message.new.parse($raw_msg);
     say $mess;
 
