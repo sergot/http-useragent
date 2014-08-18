@@ -1,6 +1,6 @@
 {
     "name"      : "HTTP::UserAgent",
-    "version"   : "0.0.1",
+    "version"   : "1.0.0",
     "author"   : "github:sergot",
     "description"   : "Web user agent",
     "depends"   : [

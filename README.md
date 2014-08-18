@@ -23,36 +23,7 @@ SYNOPSIS
 
 
 
-TODO
-====
-
-* built-in list of user agents, what will allow us to write only: e.g.
-
-    my $http = HTTP::UserAgent.new(:useragent\<chrome_linux\>);
-
-
-
-INFO (in progress...)
+INFO
 =====================
 
-Constructors
-------------
-
-* new(
-    parse_head,
-    protocols_allowed, \# for now only HTTP
-    max_redirect,
-    timeout
-)
-    creates a HTTP::UserAgent object
-
-* clone()
-    returns a copy of HTTP::UserAgent object
-
-
-
-Request methods
----------------
-
-* get($url)
-    GET request.
+See specific files.
