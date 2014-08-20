@@ -40,4 +40,5 @@ TODO/IDEAS
 - make SSL support more reliable
 - speed up
 - make SSL dependency as optional (idea)
+- add throwing exception on failing SSL
 - ...
