@@ -103,7 +103,9 @@ method get(Str $url is copy) {
             $response.code( $response-line.split(' ')[1].Int );
             $response.header.parse( $header );
 
-            my $content = buf8.new( @a[($msg-body-pos + 2)..*] );
+            my $content = +@a <= $msg-body-pos + 2 ??
+                            $conn.recv(6, :bin) !!
+                            buf8.new( @a[($msg-body-pos + 2)..*] );
 
             # We also need to handle 'Transfer-Encoding: chunked', which means that we request more chunks
             # and assemble the response body.
@@ -113,6 +115,7 @@ method get(Str $url is copy) {
                         # The first line is our desired chunk size.
                         (my $chunk-size, $content) = _split_buf("\r\n", $content, 2);
                         $chunk-size                = :16($chunk-size.decode);
+                        $content = $conn.recv(4, :bin) unless $content;
                         if $chunk-size {
                             # Let the content grow until we have reached the desired size.
                             while $chunk-size > $content.bytes {
