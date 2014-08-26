@@ -34,11 +34,22 @@ TODO/IDEAS
 =============
 
 
-- make OpenSSL and IO::Socket::SSL work on more platforms
-- fix NativeCall's int bug
 - clean up
-- make SSL support more reliable
 - speed up
-- make SSL dependency as optional (idea)
+
+##HTTP::UserAgent
+- make SSL dependency as optional
+- HTTP Auth
+
+##HTTP::Cookies
+- let user set his own cookie jar
+- security fix - use File::Temp to create temporary cookie jar
+
+##OpenSSL
+- fix NativeCall's int bug
+- make it work on more platforms
+
+##IO::Socket::SSL
+- make it work on more platforms
+- make SSL support more reliable
 - add throwing exception on failing SSL
-- ...
