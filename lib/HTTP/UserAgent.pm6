@@ -3,12 +3,13 @@ class HTTP::UserAgent;
 use HTTP::Response;
 use HTTP::Request;
 use HTTP::Cookies;
-
 use HTTP::UserAgent::Common;
 
 use IO::Socket::SSL;
 
 use Encode;
+
+use File::Temp;
 
 class X::HTTP is Exception {
     has $.rc;
@@ -29,7 +30,7 @@ class X::HTTP::Server is X::HTTP {
 has Int $.timeout is rw = 180;
 has $.useragent;
 has $.cookies = HTTP::Cookies.new(
-    file     => '/tmp/cookies.dat',
+    file     => tempfile[0],
     autosave => 1,
 );
 

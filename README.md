@@ -43,7 +43,7 @@ TODO/IDEAS
 - let user set his own cookie jar
 
 ##HTTP::Cookies
-- security fix - use File::Temp to create temporary cookie jar
+- ~~security fix - use File::Temp to create temporary cookie jar~~
 - path restriction
 
 ##OpenSSL
