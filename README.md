@@ -44,6 +44,7 @@ TODO/IDEAS
 ##HTTP::Cookies
 - let user set his own cookie jar
 - security fix - use File::Temp to create temporary cookie jar
+- path restriction
 
 ##OpenSSL
 - fix NativeCall's int bug
