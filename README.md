@@ -40,9 +40,9 @@ TODO/IDEAS
 ##HTTP::UserAgent
 - make SSL dependency as optional
 - HTTP Auth
+- let user set his own cookie jar
 
 ##HTTP::Cookies
-- let user set his own cookie jar
 - security fix - use File::Temp to create temporary cookie jar
 - path restriction
 
