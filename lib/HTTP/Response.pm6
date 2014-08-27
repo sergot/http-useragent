@@ -3,13 +3,13 @@ use HTTP::Status;
 
 class HTTP::Response is HTTP::Message;
 
-has $!status_line;
-has $!code;
+has $.status-line is rw;
+has $.code is rw;
 
 my $CRLF = "\r\n";
 
 submethod BUILD(:$!code) {
-    $!status_line = self.code($!code);
+    $!status-line = self.set-code($!code);
 }
 
 method new(Int $code? = 200, *%fields) {
@@ -22,17 +22,13 @@ method is-success {
     return False;
 }
 
-method status-line {
-    return $!status_line;
-}
-
-method code(Int $code) {
+method set-code(Int $code) {
     $!code = $code;
-    $!status_line = $code ~ " " ~ get_http_status_msg($code);
+    $!status-line = $code ~ " " ~ get_http_status_msg($code);
 }
 
 method Str {
-    my $s = $.protocol ~ " " ~ self.status-line;
+    my $s = $.protocol ~ " " ~ $!status-line;
     $s ~= $CRLF ~ callwith($CRLF);
 }
 
@@ -76,23 +72,14 @@ Returns True if response is successful (status == 2xx), False otherwise.
     my $response = HTTP::Response.new(200);
     say 'YAY' if $response.is-success;
 
-=head2 method status-line
+=head2 method set-code
 
-    method status-line(HTTP::Response:) returns Str;
-
-Returns status line of the response.
-
-    my $response = HTTP::Response.new(200);
-    say $response.status-line;
-
-=head2 method code
-
-    method code(HTTP::Response:, Int $code)
+    method set-code(HTTP::Response:, Int $code)
 
 Sets code of the response.
 
     my $response = HTTP::Response.new;
-    $response.code: 200;
+    $response.set-code: 200;
 
 =head2 method Str
 

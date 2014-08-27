@@ -22,11 +22,11 @@ is $r.status-line, '200 OK', 'status-line 1/1';
 
 # is-success
 ok $r.is-success, 'is-success 1/2';
-$r.code(404);
+$r.set-code(404);
 ok !$r.is-success, 'is-success  2/2';
 
-# code
-is $r.status-line, '404 Not Found', 'code 1/1';
+# set-code
+is $r.status-line, '404 Not Found', 'set-code 1/1';
 
 # parse
 my $res = "HTTP/1.1 200 OK\r\nHost: hoscik\r\n\r\ncontent\r\n";

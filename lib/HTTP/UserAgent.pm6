@@ -101,7 +101,7 @@ method get(Str $url is copy) {
 
             $response                    = HTTP::Response.new;
             my ($response-line, $header) = $first-chunk.decode('ascii').substr(0, $msg-body-pos).split("\r\n", 2);
-            $response.code( $response-line.split(' ')[1].Int );
+            $response.set-code( $response-line.split(' ')[1].Int );
             $response.header.parse( $header );
 
             my $content = +@a <= $msg-body-pos + 2 ??
@@ -203,9 +203,9 @@ sub head(Str $url) is export(:simple) {
 }
 
 sub getprint(Str $url) is export(:simple) {
-    my $response = get($url);
-    print $response;
-    # TODO: return response code
+    my $response = HTTP::UserAgent.new.get($url);
+    print $response.decoded-content;
+    $response.code;
 }
 
 sub getstore(Str $url, Str $file) is export(:simple) {
@@ -288,7 +288,7 @@ Like routine get but writes the content to a file.
 
     sub getprint(Str $url) is export(:simple)
 
-Like routine get but prints the content.
+Like routine get but prints the content and returns the response code.
 
 =head1 SEE ALSO
 
