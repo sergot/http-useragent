@@ -41,9 +41,9 @@ TODO/IDEAS
 - make SSL dependency as optional
 - HTTP Auth
 - let user set his own cookie jar
+- ~~security fix - use File::Temp to create temporary cookie jar~~
 
 ##HTTP::Cookies
-- ~~security fix - use File::Temp to create temporary cookie jar~~
 - path restriction
 
 ##OpenSSL
