@@ -8,7 +8,8 @@
         "DateTime::Parse",
         "IO::Capture::Simple",
         "IO::Socket::SSL",
-        "Encode"
+        "Encode",
+        "File::Temp"
     ],
     "provides" : {
         "HTTP::UserAgent" : "lib/HTTP/UserAgent.pm6",
