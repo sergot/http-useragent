@@ -55,3 +55,4 @@ TODO/IDEAS
 - make it work on more platforms
 - make SSL support more reliable
 - add throwing exception on failing SSL
+- more tests
