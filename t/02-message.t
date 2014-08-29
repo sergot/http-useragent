@@ -27,7 +27,7 @@ is $m.content, 'somecontentsomeline', 'add-content 2/2';
 
 # remove-field
 $m.remove-field('a');
-is $m.field('a'), '', 'remove-field 1/1';
+nok $m.field('a'), 'remove-field 1/1';
 
 # parse
 my $to_parse =    "GET site HTTP/1.0\r\na: b, c\r\na: d\r\n"

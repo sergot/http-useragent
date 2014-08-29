@@ -110,7 +110,8 @@ method get(Str $url is copy) {
 
             # We also need to handle 'Transfer-Encoding: chunked', which means that we request more chunks
             # and assemble the response body.
-            if $response.header.field('Transfer-Encoding') eq 'chunked' {
+            if $response.header.field('Transfer-Encoding') &&
+            $response.header.field('Transfer-Encoding') eq 'chunked' {
                 my sub recv-entire-chunk($content is rw) {
                     if $content {
                         # The first line is our desired chunk size.
