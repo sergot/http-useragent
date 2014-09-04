@@ -1,15 +1,16 @@
 {
     "name"      : "HTTP::UserAgent",
-    "version"   : "1.0.0",
+    "version"   : "1.1.0",
     "author"   : "github:sergot",
     "description"   : "Web user agent",
     "depends"   : [
         "HTTP::Status",
+        "File::Temp",
         "DateTime::Parse",
         "IO::Capture::Simple",
         "IO::Socket::SSL",
         "Encode",
-        "File::Temp"
+        "MIME::Base64"
     ],
     "provides" : {
         "HTTP::UserAgent" : "lib/HTTP/UserAgent.pm6",

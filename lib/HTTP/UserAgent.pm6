@@ -10,6 +10,7 @@ use IO::Socket::SSL;
 use Encode;
 
 use File::Temp;
+use MIME::Base64;
 
 class X::HTTP is Exception {
     has $.rc;
@@ -33,6 +34,8 @@ has $.cookies = HTTP::Cookies.new(
     file     => tempfile[0],
     autosave => 1,
 );
+has $.auth_login;
+has $.auth_password;
 
 # Helper method which implements the same logic as Str.split() but for Bufs.
 multi _split_buf(Str $delimiter, Buf $input, $limit = Inf --> List) {
@@ -60,6 +63,11 @@ submethod BUILD(:$!useragent?) {
     $!useragent = get-ua($!useragent) if $!useragent.defined;
 }
 
+method auth(Str $login, Str $password) {
+    $!auth_login    = $login;
+    $!auth_password = $password;
+}
+
 method get(Str $url is copy) {
     my $port = _get-port($url);
     $url = _clear-url($url);
@@ -74,6 +82,11 @@ method get(Str $url is copy) {
 
         # set the useragent
         $request.header.field(User-Agent => $.useragent) if $.useragent.defined;
+
+        # use HTTP Auth
+        $request.header.field(
+            Authorization => "Basic " ~ MIME::Base64.encode-str("{$!auth_login}:{$!auth_password}")
+        ) if $!auth_login.defined && $!auth_password.defined;
 
         my $conn = $url.substr(4, 1) eq 's'
             ?? IO::Socket::SSL.new(:host(~$request.header.field('Host').values), :port($port // 443), :timeout($.timeout))
@@ -254,6 +267,12 @@ It has TLS/SSL support.
 =head2 method new
 
 Default constructor
+
+=head2 method auth
+
+    method auth(HTTP::UserAgent:, Str $login, Str $password)
+
+Sets username and password needed to HTTP Auth.
 
 =head2 method get
 

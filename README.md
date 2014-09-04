@@ -39,7 +39,7 @@ TODO/IDEAS
 
 ##HTTP::UserAgent
 - make SSL dependency as optional
-- HTTP Auth
+- ~~HTTP Auth~~
 - let user set his own cookie jar
 - ~~make getprint() return the code response~~
 - ~~security fix - use File::Temp to create temporary cookie jar~~
