@@ -5,7 +5,7 @@ use HTTP::Request;
 use HTTP::Cookies;
 use HTTP::UserAgent::Common;
 
-use IO::Socket::SSL;
+try require IO::Socket::SSL;
 
 use Encode;
 
@@ -88,9 +88,14 @@ method get(Str $url is copy) {
             Authorization => "Basic " ~ MIME::Base64.encode-str("{$!auth_login}:{$!auth_password}")
         ) if $!auth_login.defined && $!auth_password.defined;
 
-        my $conn = $url.substr(4, 1) eq 's'
-            ?? IO::Socket::SSL.new(:host(~$request.header.field('Host').values), :port($port // 443), :timeout($.timeout))
-            !! IO::Socket::INET.new(:host(~$request.header.field('Host').values), :port($port // 80), :timeout($.timeout));
+        my $conn;
+        if $url ~~ /^https/ {
+            die "Please install IO::Socket::SSL in order to fetch https sites" if ::('IO::Socket::SSL') ~~ Failure;
+            ::('IO::Socket::SSL').new(:host(~$request.header.field('Host').values), :port($port // 443), :timeout($.timeout))
+        }
+        else {
+            $conn = IO::Socket::INET.new(:host(~$request.header.field('Host').values), :port($port // 80), :timeout($.timeout));
+        }
 
         if $conn.send($request.Str ~ "\r\n") {
             my $first-chunk;

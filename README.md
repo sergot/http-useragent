@@ -47,7 +47,6 @@ TODO/IDEAS
 - speed up
 
 ##HTTP::UserAgent
-- make SSL dependency as optional
 - ~~HTTP Auth~~
 - let user set his own cookie jar
 - ~~make getprint() return the code response~~
