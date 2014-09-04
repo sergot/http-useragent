@@ -43,6 +43,7 @@ TODO/IDEAS
 - let user set his own cookie jar
 - ~~make getprint() return the code response~~
 - ~~security fix - use File::Temp to create temporary cookie jar~~
+- use Promises
 
 ##HTTP::Cookies
 - path restriction
