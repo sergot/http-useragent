@@ -42,7 +42,7 @@ See specific files.
 TODO/IDEAS
 =============
 
-~~strikethrough text~~ means *done*.
+~~strikethrough text~~ means **done**.
 
 - clean up
 - speed up
