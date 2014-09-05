@@ -42,6 +42,7 @@ See specific files.
 TODO/IDEAS
 =============
 
+~~strikethrough text~~ means *done*.
 
 - clean up
 - speed up
@@ -52,6 +53,7 @@ TODO/IDEAS
 - ~~make getprint() return the code response~~
 - ~~security fix - use File::Temp to create temporary cookie jar~~
 - use Promises
+- ~~make SSL dependency as optional~~
 
 ##HTTP::Cookies
 - path restriction
