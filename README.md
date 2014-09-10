@@ -13,7 +13,7 @@ SYNOPSIS
     my $ua = HTTP::UserAgent.new;
     $ua.timeout = 10;
 
-    my $response = $ua.get("URL");
+    try my $response = $ua.get("URL");
 
     if $response.is-success {
         say $response.content;
