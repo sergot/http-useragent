@@ -38,10 +38,10 @@ has $.auth_login;
 has $.auth_password;
 
 # Helper method which implements the same logic as Str.split() but for Bufs.
-multi _split_buf(Str $delimiter, Buf $input, $limit = Inf --> List) {
+multi _split_buf(Str $delimiter, Blob $input, $limit = Inf --> List) {
     _split_buf($delimiter.encode, $input, $limit);
 }
-multi _split_buf(Blob $delimiter, Buf $input, $limit = Inf --> List) {
+multi _split_buf(Blob $delimiter, Blob $input, $limit = Inf --> List) {
     my @result;
     my @a            = $input.list;
     my @b            = $delimiter.list;
@@ -118,7 +118,7 @@ method get(Str $url is copy) {
             $msg-body-pos   += 2 if $msg-body-pos >= 0;
 
             $response                    = HTTP::Response.new;
-            my ($response-line, $header) = $first-chunk.decode('ascii').substr(0, $msg-body-pos).split("\r\n", 2);
+            my ($response-line, $header) = _split_buf("\r\n", $first-chunk.subbuf(0, $msg-body-pos), 2)».decode('ascii');
             $response.set-code( $response-line.split(' ')[1].Int );
             $response.header.parse( $header );
 
