@@ -29,9 +29,9 @@ $r1.field(Accept => 'test2');
 is $r1.field('Accept'), 'test2', 'field 2/2';
 
 # uri
-$r1.uri('test.');
-is $r1.url, 'test.', 'uri 1/2';
-is $r1.field('Host'), 'test.', 'uri 2/2';
+$r1.uri('http://test.com');
+is $r1.url, 'http://test.com', 'uri 1/2';
+is $r1.field('Host'), 'test.com', 'uri 2/2';
 
 # set-method
 $r1.set-method: 'TEST';

@@ -20,7 +20,7 @@ is $ua.useragent, $newua, 'new 3/3';
 is $ua.get('http://ua.offensivecoder.com/').content, "$newua\n", 'useragent 1/1';
 
 # get
-my $response = $ua.get('filip.sergot.pl');
+my $response = $ua.get('filip.sergot.pl/');
 ok $response, 'get 1/3';
 isa_ok $response, HTTP::Response, 'get 2/3';
 ok $response.is-success, 'get 3/3';

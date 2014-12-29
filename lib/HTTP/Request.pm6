@@ -1,5 +1,7 @@
 use HTTP::Message;
 
+use URI;
+
 class HTTP::Request is HTTP::Message;
 
 has $.method is rw;
@@ -24,8 +26,9 @@ method new(*%args) {
     my $file;
 
     if $url {
-        $header.field(Host => _get_host($url));
-        $file = _get_file($url);
+        my $uri = URI.new($url);
+        $header.field(Host => $uri.host);
+        $file = $uri.path;
     }
 
 
@@ -37,7 +40,7 @@ method set-method($method) { $.method = $method.uc }
 method uri($url) {
     $.url = $url;
     
-    my $host = _get_host($.url);
+    my $host = URI.new($.url).host;
     $.header.field(Host => $host);
 }
 
@@ -63,17 +66,6 @@ method parse($raw_request) {
     nextsame;
 
     self;
-}
-
-sub _get_host($url is copy) {
-    $url ~~ s:i/http[s?]\:\/\///;
-    $url ~~ s/\/.*//;
-    $url;
-}
-
-sub _get_file($url is copy) {
-    $url ~~ s:i/http[s?]\:\/\/.*?\//\//;
-    $url;
 }
 
 =begin pod

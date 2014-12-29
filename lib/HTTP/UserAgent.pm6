@@ -8,6 +8,7 @@ use HTTP::UserAgent::Common;
 try require IO::Socket::SSL;
 
 use Encode;
+use URI;
 
 use File::Temp;
 use MIME::Base64;
@@ -69,8 +70,8 @@ method auth(Str $login, Str $password) {
 }
 
 method get(Str $url is copy) {
-    my $port = _get-port($url);
     $url = _clear-url($url);
+    my $port = URI.new($url).port;
 
     my $response;
 
@@ -234,10 +235,6 @@ sub getstore(Str $url, Str $file) is export(:simple) {
 sub _clear-url(Str $url is copy) {
     $url = "http://$url" if $url.substr(0, 5) ne any('http:', 'https');
     $url;
-}
-
-sub _get-port(Str $url) {
-    (~$/[0]).Int if $url ~~ m/':' (\d+) \/?/;
 }
 
 =begin pod
