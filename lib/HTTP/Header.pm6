@@ -98,7 +98,7 @@ method clear() {
 
 # get header as string
 method Str($eol = "\n") {
-    @.fields.map({ "{$_.name}: {self.field($_.name)}$eol" }).join;
+    @.fields.for({ "{$_.name}: {self.field($_.name)}$eol" }).join;
 }
 
 method parse($raw) {
