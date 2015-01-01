@@ -9,7 +9,8 @@
         "DateTime::Parse",
         "IO::Capture::Simple",
         "Encode",
-        "MIME::Base64"
+        "MIME::Base64",
+        "URI"
     ],
     "provides" : {
         "HTTP::UserAgent" : "lib/HTTP/UserAgent.pm6",
