@@ -74,7 +74,8 @@ method get(Str $url is copy) {
     my $port = URI.new($url).port;
 
     my $response;
-
+    my $forward-to-ssl;
+    
     for 1..5 {
         my $request = HTTP::Request.new(GET => $url);
 
@@ -92,7 +93,7 @@ method get(Str $url is copy) {
         my $conn;
         if $url ~~ /^https/ {
             die "Please install IO::Socket::SSL in order to fetch https sites" if ::('IO::Socket::SSL') ~~ Failure;
-            $conn = ::('IO::Socket::SSL').new(:host(~$request.header.field('Host').values), :port($port // 443), :timeout($.timeout))
+            $conn = ::('IO::Socket::SSL').new(:host(~$request.header.field('Host').values), :port($forward-to-ssl ?? 443 !! $port // 443), :timeout($.timeout))
         }
         else {
             $conn = IO::Socket::INET.new(:host(~$request.header.field('Host').values), :port($port // 80), :timeout($.timeout));
@@ -194,7 +195,9 @@ method get(Str $url is copy) {
         $conn.close;
 
         last unless $response.status-line.substr(0, 1) eq '3' && $response.header.field('Location').defined;
-        $url = ~$response.header.field('Location');
+        my $new-url = ~$response.header.field('Location');
+        $forward-to-ssl = 1 if $url !~ /^https/ && $new-url ~~ /^https/;
+        $url = $new-url;
     }
 
     X::HTTP::Response.new(:rc($response.status-line)).throw
