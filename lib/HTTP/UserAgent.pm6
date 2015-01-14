@@ -69,15 +69,13 @@ method auth(Str $login, Str $password) {
     $!auth_password = $password;
 }
 
-method get(Str $url is copy) {
-    $url = _clear-url($url);
-    my $port = URI.new($url).port;
+multi method get($uri is copy where URI|Str) {
+    $uri = URI.new(_clear-url($uri)) if $uri.isa(Str);
 
     my $response;
-    my $forward-to-ssl;
     
-    for 1..5 {
-        my $request = HTTP::Request.new(GET => $url);
+    #for 1..5 {
+        my $request = HTTP::Request.new(GET => $uri);
 
         # add cookies to the request
         $.cookies.add-cookie-header($request) if $.cookies.cookies.elems;
@@ -91,12 +89,12 @@ method get(Str $url is copy) {
         ) if $!auth_login.defined && $!auth_password.defined;
 
         my $conn;
-        if $url ~~ /^https/ {
+        if $uri.scheme eq 'https' {
             die "Please install IO::Socket::SSL in order to fetch https sites" if ::('IO::Socket::SSL') ~~ Failure;
-            $conn = ::('IO::Socket::SSL').new(:host(~$request.header.field('Host').values), :port($forward-to-ssl ?? 443 !! $port // 443), :timeout($.timeout))
+            $conn = ::('IO::Socket::SSL').new(:host(~$request.header.field('Host').values), :port($uri.port // 443), :timeout($.timeout))
         }
         else {
-            $conn = IO::Socket::INET.new(:host(~$request.header.field('Host').values), :port($port // 80), :timeout($.timeout));
+            $conn = IO::Socket::INET.new(:host(~$request.header.field('Host').values), :port($uri.port // 80), :timeout($.timeout));
         }
 
         if $conn.send($request.Str ~ "\r\n") {
@@ -193,18 +191,13 @@ method get(Str $url is copy) {
             }
         }
         $conn.close;
+    #}
 
-        last unless $response.status-line.substr(0, 1) eq '3' && $response.header.field('Location').defined;
-        my $new-url = ~$response.header.field('Location');
-        $forward-to-ssl = 1 if $url !~ /^https/ && $new-url ~~ /^https/;
-        $url = $new-url;
-    }
-
-    X::HTTP::Response.new(:rc($response.status-line)).throw
-        if $response.status-line.substr(0, 1) eq '4';
-
-    X::HTTP::Server.new(:rc($response.status-line)).throw
-        if $response.status-line.substr(0, 1) eq '5';
+    given $response.status-line.substr(0,1) {
+        when 3 { return self.get(~$response.header.field('Location')) } # todo: allow no redirects
+        when 4 { X::HTTP::Response.new(:rc($response.status-line)).throw }
+        when 5 { X::HTTP::Server.new(:rc($response.status-line)).throw }
+    }        
 
     # save cookies
     $.cookies.extract-cookies($response);
@@ -213,9 +206,9 @@ method get(Str $url is copy) {
 }
 
 # :simple
-sub get(Str $url) is export(:simple) {
+sub get($target where URI|Str) is export(:simple) {
     my $ua = HTTP::UserAgent.new;
-    my $response = $ua.get($url);
+    my $response = $ua.get($target);
 
     return $response.decoded-content;
 }

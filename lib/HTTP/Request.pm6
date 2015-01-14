@@ -11,37 +11,30 @@ has $.file is rw;
 my $CRLF = "\r\n";
 
 method new(*%args) {
-    my ($method, $url, %fields);
+    my ($method, $url, $file, %fields, $uri);
     
     for %args.kv -> $key, $value {
         if $key.lc ~~ any(<get post head put>) {
+            $uri = $value.isa(URI) ?? $value !! URI.new($value);
+            $url = $uri.grammar.parse_result.orig;
             $method = $key.uc;
-            $url = %args{$key};
+            $file = $uri.path || '/';
         } else {
             %fields{$key} = $value;
         }
     }
 
     my $header = HTTP::Header.new(|%fields);
-    my $file;
-
-    if $url {
-        my $uri = URI.new($url);
-        $header.field(Host => $uri.host);
-        $file = $uri.path;
-    }
-
-
+    $header.field(Host => $uri.host) if $uri;
     self.bless(:$method, :$url, :$header, :$file);
 }
 
 method set-method($method) { $.method = $method.uc }
 
-method uri($url) {
-    $.url = $url;
-    
-    my $host = URI.new($.url).host;
-    $.header.field(Host => $host);
+method uri($uri is copy where URI|Str) {
+    $uri = URI.new($uri) if $uri.isa(Str);
+    $.url = $uri.grammar.parse_result.orig;
+    $.header.field(Host => $uri.host);
 }
 
 method Str {
@@ -108,6 +101,7 @@ Sets a method of the request.
 =head2 method uri
 
     method uri(Str $url)
+    method uri(URI $uri)
 
 Sets URL to request.
 
