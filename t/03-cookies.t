@@ -6,7 +6,8 @@ use HTTP::Response;
 
 plan 24;
 
-my $file = './cookies.dat';
+BEGIN my $file = './cookies.dat';
+LEAVE try $file.IO.unlink;
 
 my $c = HTTP::Cookies.new(
     file     => $file,
