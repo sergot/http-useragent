@@ -10,10 +10,13 @@ BEGIN {
 
 use Test;
 
-plan 1;
+plan 2;
 
 my $url = 'http://github.com';
-my $ua  = HTTP::UserAgent.new(GET => $url);
+
+my $ua;
+lives_ok { $ua  = HTTP::UserAgent.new(GET => $url) }, 'new(GET => $url) lives';
+
 my $get = ~$ua.get($url);
 
 ok $get ~~ /'</html>'/, 'http -> https redirect get 1/1';
