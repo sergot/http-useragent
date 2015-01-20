@@ -19,6 +19,7 @@ method new(*%args) {
             $url = $uri.grammar.parse_result.orig;
             $method = $key.uc;
             $file = $uri.path || '/';
+            $file ~= "?{$uri.query}" if $uri.query;
         } else {
             %fields{$key} = $value;
         }
