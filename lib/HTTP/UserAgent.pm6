@@ -207,7 +207,7 @@ multi method get($uri is copy where URI|Str) {
                 X::HTTP::Response.new(:rc('Proxy support NYI')).throw;
             }
             when $.max-redirects < @.history
-            && all(@.history.reverse[^$.max-redirects]>>.status-line)  {
+            && all(@.history.reverse[^$.max-redirects]>>.code)  {
                 X::HTTP::Response.new(:rc('Max redirects exceeded')).throw;
             }
             default {
