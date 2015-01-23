@@ -202,10 +202,6 @@ multi method get($uri is copy where URI|Str) {
 
     given $response.code {
         when /^3/ { 
-            # todo: not all 300 codes should do a simple redirect
-            when 305 {
-                X::HTTP::Response.new(:rc('Proxy support NYI')).throw;
-            }
             when $.max-redirects < @.history
             && all(@.history.reverse[^$.max-redirects]>>.code)  {
                 X::HTTP::Response.new(:rc('Max redirects exceeded')).throw;
