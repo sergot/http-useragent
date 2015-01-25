@@ -1,22 +1,23 @@
 use HTTP::Request;
 use Test;
 
-plan 19;
+plan 20;
 
-my $url = 'http://testsite.ext/cat/f.h';
-my $file = '/cat/f.h';
+my $url = 'http://testsite.ext/cat/f.h?q=1&q=2';
+my $file = '/cat/f.h?q=1&q=2';
 my $host = 'testsite.ext';
 
 # new
 my $r1 = HTTP::Request.new(POST => $url, test_field => 'this_is_field');
 
-is $r1.method, 'post'.uc, 'new 1/7'; 
-is $r1.url, $url, 'new 2/7';
-is $r1.file, $file, 'new 3/7';
-is $r1.field('Host'), $host, 'new 4/7';
-is $r1.field('test_field'), 'this_is_field', 'new 5/7';
-isa_ok $r1, HTTP::Request, 'new 6/7';
-isa_ok $r1, HTTP::Message, 'new 7/7';
+is $r1.method, 'post'.uc, 'new 1/8';
+is $r1.url, $url, 'new 2/8';
+is $r1.file, $file, 'new 3/8';
+is $r1.field('Host'), $host, 'new 4/8';
+is $r1.field('test_field'), 'this_is_field', 'new 5/8';
+ok $r1.Str ~~ /^POST\s$file/, 'new 6/8';
+isa_ok $r1, HTTP::Request, 'new 7/8';
+isa_ok $r1, HTTP::Message, 'new 8/8';
 
 # content
 $r1.add-content('n1=v1&a');
