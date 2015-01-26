@@ -184,7 +184,7 @@ multi method get($uri is copy where URI|Str) {
             $response.content = $content;
             my $content-type  = $response.header.field('Content-Type').values[0] // '';
             if $content-type ~~ /^ text / {
-                my $charset = $content-type ~~ / charset '=' $<charset>=[ \S+ ] /
+                my $charset = $content-type ~~ / charset '=' $<charset>=[ <-[\s;]>+ ] /
                             ?? $<charset>.Str.lc
                             !! 'ascii';
                 $response.content = Encode::decode($charset, $response.content);
