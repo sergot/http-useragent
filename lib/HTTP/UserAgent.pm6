@@ -37,6 +37,8 @@ has $.cookies = HTTP::Cookies.new(
 );
 has $.auth_login;
 has $.auth_password;
+has Int $.max-redirects is rw;
+has @.history;
 
 # Helper method which implements the same logic as Str.split() but for Bufs.
 multi _split_buf(Str $delimiter, Blob $input, $limit = Inf --> List) {
@@ -60,7 +62,7 @@ multi _split_buf(Blob $delimiter, Blob $input, $limit = Inf --> List) {
     @result
 }
 
-submethod BUILD(:$!useragent?) {
+submethod BUILD(:$!useragent, :$!max-redirects = 5) {
     $!useragent = get-ua($!useragent) if $!useragent.defined;
 }
 
@@ -70,133 +72,146 @@ method auth(Str $login, Str $password) {
 }
 
 multi method get($uri is copy where URI|Str) {
-    $uri = URI.new(_clear-url($uri)) if $uri.isa(Str);
+    $uri   = URI.new(_clear-url($uri)) if $uri.isa(Str);
 
-    my $response;
-    
-    #for 1..5 {
-        my $request = HTTP::Request.new(GET => $uri);
+    my $request  = HTTP::Request.new(GET => $uri);
+    my HTTP::Response $response;
 
-        # add cookies to the request
-        $.cookies.add-cookie-header($request) if $.cookies.cookies.elems;
+    # add cookies to the request
+    $.cookies.add-cookie-header($request) if $.cookies.cookies.elems;
 
-        # set the useragent
-        $request.header.field(User-Agent => $.useragent) if $.useragent.defined;
+    # set the useragent
+    $request.header.field(User-Agent => $.useragent) if $.useragent.defined;
 
-        # use HTTP Auth
-        $request.header.field(
-            Authorization => "Basic " ~ MIME::Base64.encode-str("{$!auth_login}:{$!auth_password}")
-        ) if $!auth_login.defined && $!auth_password.defined;
+    # use HTTP Auth
+    $request.header.field(
+        Authorization => "Basic " ~ MIME::Base64.encode-str("{$!auth_login}:{$!auth_password}")
+    ) if $!auth_login.defined && $!auth_password.defined;
 
-        my $conn;
-        if $uri.scheme eq 'https' {
-            die "Please install IO::Socket::SSL in order to fetch https sites" if ::('IO::Socket::SSL') ~~ Failure;
-            $conn = ::('IO::Socket::SSL').new(:host(~$request.header.field('Host').values), :port($uri.port // 443), :timeout($.timeout))
+    my $conn;
+    if $uri.scheme eq 'https' {
+        die "Please install IO::Socket::SSL in order to fetch https sites" if ::('IO::Socket::SSL') ~~ Failure;
+        $conn = ::('IO::Socket::SSL').new(:host(~$request.header.field('Host').values), :port($uri.port // 443), :timeout($.timeout))
+    }
+    else {
+        $conn = IO::Socket::INET.new(:host(~$request.header.field('Host').values), :port($uri.port // 80), :timeout($.timeout));
+    }
+
+    if $conn.send($request.Str ~ "\r\n") {
+        my $first-chunk;
+        my $msg-body-pos;
+        my @a;
+        my @b = "\r\n\r\n".ords;
+
+        # Header can be longer than one chunk
+        while my $t = $conn.recv( :bin ) {
+            $first-chunk = Blob[uint8].new($first-chunk.list, $t.list);
+            @a           = $first-chunk.list;
+
+            # Find the header/body separator in the chunk, which means we can parse the header seperately and are
+            # able to figure out the correct encoding of the body.
+            $msg-body-pos = @a.first-index({ @a[(state $i = -1) .. $i++ + @b] ~~ @b });
+            last if $msg-body-pos;
         }
-        else {
-            $conn = IO::Socket::INET.new(:host(~$request.header.field('Host').values), :port($uri.port // 80), :timeout($.timeout));
-        }
 
-        if $conn.send($request.Str ~ "\r\n") {
-            my $first-chunk;
-            my $msg-body-pos;
-            my @a;
-            my @b = "\r\n\r\n".ords;
+        # +2 because we need a trailing CRLF in the header.
+        $msg-body-pos   += 2 if $msg-body-pos >= 0;
 
-            # Header can be longer than one chunk
-            while my $t = $conn.recv( :bin ) {
-                $first-chunk = Blob[uint8].new($first-chunk.list, $t.list);
-                @a           = $first-chunk.list;
+        my ($response-line, $header) = _split_buf("\r\n", $first-chunk.subbuf(0, $msg-body-pos), 2)».decode('ascii');
+        $response .= new( $response-line.split(' ')[1].Int );
+        $response.header.parse( $header );
 
-                # Find the header/body separator in the chunk, which means we can parse the header seperately and are
-                # able to figure out the correct encoding of the body.
-                $msg-body-pos = @a.first-index({ @a[(state $i = -1) .. $i++ + @b] ~~ @b });
-                last if $msg-body-pos;
-            }
+        my $content = +@a <= $msg-body-pos + 2 ??
+                        $conn.recv(6, :bin) !!
+                        buf8.new( @a[($msg-body-pos + 2)..*] );
 
-            # +2 because we need a trailing CRLF in the header.
-            $msg-body-pos   += 2 if $msg-body-pos >= 0;
-
-            $response                    = HTTP::Response.new;
-            my ($response-line, $header) = _split_buf("\r\n", $first-chunk.subbuf(0, $msg-body-pos), 2)».decode('ascii');
-            $response.set-code( $response-line.split(' ')[1].Int );
-            $response.header.parse( $header );
-
-            my $content = +@a <= $msg-body-pos + 2 ??
-                            $conn.recv(6, :bin) !!
-                            buf8.new( @a[($msg-body-pos + 2)..*] );
-
-            # We also need to handle 'Transfer-Encoding: chunked', which means that we request more chunks
-            # and assemble the response body.
-            if $response.header.field('Transfer-Encoding') &&
-            $response.header.field('Transfer-Encoding') eq 'chunked' {
-                my sub recv-entire-chunk($content is rw) {
-                    if $content {
-                        # The first line is our desired chunk size.
-                        (my $chunk-size, $content) = _split_buf("\r\n", $content, 2);
-                        $chunk-size                = :16($chunk-size.decode);
-                        $content = $conn.recv(4, :bin) unless $content;
-                        if $chunk-size {
-                            # Let the content grow until we have reached the desired size.
-                            while $chunk-size > $content.bytes {
-                                $content ~= $conn.recv($chunk-size - $content.bytes, :bin);
-                            }
+        # We also need to handle 'Transfer-Encoding: chunked', which means that we request more chunks
+        # and assemble the response body.
+        if $response.header.field('Transfer-Encoding') &&
+        $response.header.field('Transfer-Encoding') eq 'chunked' {
+            my sub recv-entire-chunk($content is rw) {
+                if $content {
+                    # The first line is our desired chunk size.
+                    (my $chunk-size, $content) = _split_buf("\r\n", $content, 2);
+                    $chunk-size                = :16($chunk-size.decode);
+                    $content = $conn.recv(4, :bin) unless $content;
+                    if $chunk-size {
+                        # Let the content grow until we have reached the desired size.
+                        while $chunk-size > $content.bytes {
+                            $content ~= $conn.recv($chunk-size - $content.bytes, :bin);
                         }
                     }
-                    $content
                 }
-
-                my $chunk = $content;
-                $content  = Buf.new;
-                # We carry on as long as we receive something.
-                while recv-entire-chunk($chunk) {
-                    $content ~= $chunk;
-                    # We only request five bytes here, and check if it is the message terminator, which is
-                    # "\r\n0\r\n". When we would try to read more bytes we would block for a few seconds.
-                    $chunk    = $conn.recv(5, :bin);
-                    if !$chunk || $chunk.list eqv [0x0d, 0x0a, 0x30, 0x0d, 0x0a] {
-                        # Done with this message!
-                        last
-                    }
-                    else {
-                        # Read more of this chunk, which includes the rest of a chunk-size field followed
-                        # by <CRLF> and a single byte of the message content.
-                        $chunk ~= $conn.recv(6, :bin);
-                        $chunk.=subbuf(2)
-                    }
-                }
-            }
-            elsif $response.header.field('Content-Length').values[0] -> $content-length is copy {
-                X::HTTP::Header.new( :rc("Content-Length header value '$content-length' is not numeric") ).throw
-                    unless $content-length = try +$content-length;
-                # Let the content grow until we have reached the desired size.
-                while $content-length > $content.bytes {
-                    $content ~= $conn.recv($content-length - $content.bytes, :bin);
-                }
-            }
-            else {
-                while my $new_content = $conn.recv(:bin) {
-                    $content ~= $new_content;
-                }
+                $content
             }
 
-            # We have now the content as a Buf and need to decode it depending on some header informations.
-            $response.content = $content;
-            my $content-type  = $response.header.field('Content-Type').values[0] // '';
-            if $content-type ~~ /^ text / {
-                my $charset = $content-type ~~ / charset '=' $<charset>=[ <-[\s;]>+ ] /
-                            ?? $<charset>.Str.lc
-                            !! 'ascii';
-                $response.content = Encode::decode($charset, $response.content);
+            my $chunk = $content;
+            $content  = Buf.new;
+            # We carry on as long as we receive something.
+            while recv-entire-chunk($chunk) {
+                $content ~= $chunk;
+                # We only request five bytes here, and check if it is the message terminator, which is
+                # "\r\n0\r\n". When we would try to read more bytes we would block for a few seconds.
+                $chunk    = $conn.recv(5, :bin);
+                if !$chunk || $chunk.list eqv [0x0d, 0x0a, 0x30, 0x0d, 0x0a] {
+                    # Done with this message!
+                    last
+                }
+                else {
+                    # Read more of this chunk, which includes the rest of a chunk-size field followed
+                    # by <CRLF> and a single byte of the message content.
+                    $chunk ~= $conn.recv(6, :bin);
+                    $chunk.=subbuf(2)
+                }
             }
         }
-        $conn.close;
-    #}
+        elsif $response.header.field('Content-Length').values[0] -> $content-length is copy {
+            X::HTTP::Header.new( :rc("Content-Length header value '$content-length' is not numeric") ).throw
+                unless $content-length = try +$content-length;
+            # Let the content grow until we have reached the desired size.
+            while $content-length > $content.bytes {
+                $content ~= $conn.recv($content-length - $content.bytes, :bin);
+            }
+        }
+        else {
+            while my $new_content = $conn.recv(:bin) {
+                $content ~= $new_content;
+            }
+        }
 
-    given $response.status-line.substr(0,1) {
-        when 3 { return self.get(~$response.header.field('Location')) } # todo: allow no redirects
-        when 4 { X::HTTP::Response.new(:rc($response.status-line)).throw }
-        when 5 { X::HTTP::Server.new(:rc($response.status-line)).throw }
+        # We have now the content as a Buf and need to decode it depending on some header informations.
+        my $content-type  = $response.header.field('Content-Type').values[0] // '';
+        if $content-type ~~ /^ text / {
+            my $charset = $content-type ~~ / charset '=' $<charset>=[ \S+ ] /
+                        ?? $<charset>.Str.lc
+                        !! 'ascii';
+            $content = Encode::decode($charset, $content);
+        }
+
+        $response.content = $content;
+    }
+    $conn.close;
+    
+    X::HTTP::Response.new(:rc('No response')).throw unless $response;
+    
+    # Is there a better way to save history without saving content?
+    # Or should content be optionally cached? (useful for serving 304 Not Modified)
+    my $response-copy = $response.clone();
+    $response-copy.content = $response.content.WHAT;
+    @.history.push($response-copy);
+
+    given $response.code {
+        when /^3/ { 
+            when $.max-redirects < @.history
+            && all(@.history.reverse[^$.max-redirects]>>.code)  {
+                X::HTTP::Response.new(:rc('Max redirects exceeded')).throw;
+            }
+            default {
+                return self.get(~$response.header.field('Location'));
+            }
+        } 
+        when /^4/ { X::HTTP::Response.new(:rc($response.status-line)).throw }
+        when /^5/ { X::HTTP::Server.new(:rc($response.status-line)).throw }
     }        
 
     # save cookies
