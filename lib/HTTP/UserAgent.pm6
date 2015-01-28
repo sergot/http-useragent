@@ -117,7 +117,7 @@ multi method get($uri is copy where URI|Str) {
         # +2 because we need a trailing CRLF in the header.
         $msg-body-pos   += 2 if $msg-body-pos >= 0;
 
-        my ($response-line, $header) = _split_buf("\r\n", $first-chunk.subbuf(0, $msg-body-pos), 2)».decode('ascii');
+        my ($response-line, $header) = _split_buf("\r\n", $first-chunk.subbuf(0, $msg-body-pos), 2)>>.decode('ascii');
         $response .= new( $response-line.split(' ')[1].Int );
         $response.header.parse( $header );
 
@@ -179,16 +179,7 @@ multi method get($uri is copy where URI|Str) {
             }
         }
 
-        # We have now the content as a Buf and need to decode it depending on some header informations.
-        my $content-type  = $response.header.field('Content-Type').values[0] // '';
-        if $content-type ~~ /^ text / {
-            my $charset = $content-type ~~ / charset '=' $<charset>=[ \S+ ] /
-                        ?? $<charset>.Str.lc
-                        !! 'ascii';
-            $content = Encode::decode($charset, $content);
-        }
-
-        $response.content = $content;
+        $response.content = $content andthen $response.content = $response.decoded-content;
     }
     $conn.close;
     
@@ -216,7 +207,6 @@ multi method get($uri is copy where URI|Str) {
 
     # save cookies
     $.cookies.extract-cookies($response);
-
     return $response;
 }
 
