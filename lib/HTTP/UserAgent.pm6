@@ -117,7 +117,7 @@ multi method get($uri is copy where URI|Str) {
         # +2 because we need a trailing CRLF in the header.
         $msg-body-pos   += 2 if $msg-body-pos >= 0;
 
-        my ($response-line, $header) = _split_buf("\r\n", $first-chunk.subbuf(0, $msg-body-pos), 2)>>.decode('ascii');
+        my ($response-line, $header) = _split_buf("\r\n", $first-chunk.subbuf(0, $msg-body-pos), 2)».decode('ascii');
         $response .= new( $response-line.split(' ')[1].Int );
         $response.header.parse( $header );
 
