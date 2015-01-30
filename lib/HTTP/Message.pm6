@@ -21,15 +21,24 @@ method add-content($content) {
 }
 
 method decoded-content {
-    return $!content if $!content ~~ Str;
-    my $decoded_content;
+    return $!content if $!content ~~ Str || $!content.bytes == 0;
+
+    # [todo]
+    # If charset is missing from Content-Type, then before defaulting
+    # to anything it should attempt to extract it from $.content like (for HTML):
+    # <meta charset="UTF-8"> <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     my $content-type  = $!header.field('Content-Type').values[0] // '';
     my $charset = $content-type ~~ / charset '=' $<charset>=[ \S+ ] /
                 ?? $<charset>.Str.lc
-                !! 'ascii';
-    $decoded_content = Encode::decode($charset, $!content);
+                !! ( $content-type ~~ /^ text / ?? 'ascii' !! 'utf-8' );
 
-    $decoded_content;
+    my $decoded_content = try {
+        Encode::decode($charset, $!content)
+    } or try { 
+        $!content.unpack("A*") 
+    } or die "Problem decoding content";
+
+    $decoded_content
 }
 
 multi method field(Str $f) {
