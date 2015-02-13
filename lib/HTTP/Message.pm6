@@ -28,7 +28,7 @@ method decoded-content {
     # to anything it should attempt to extract it from $.content like (for HTML):
     # <meta charset="UTF-8"> <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     my $content-type  = $!header.field('Content-Type').values[0] // '';
-    my $charset = $content-type ~~ / charset '=' $<charset>=[ \S+ ] /
+    my $charset = $content-type ~~ / charset '=' $<charset>=[ <-[\s;]>+ ] /
                 ?? $<charset>.Str.lc
                 !! ( $content-type ~~ /^ text / ?? 'ascii' !! 'utf-8' );
 
