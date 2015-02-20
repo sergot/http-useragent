@@ -59,7 +59,7 @@ TODO/IDEAS
 - path restriction
 
 ##OpenSSL
-- fix NativeCall's int bug
+- ~~fix NativeCall's int bug~~
 - make it work on more platforms
 
 ##IO::Socket::SSL
