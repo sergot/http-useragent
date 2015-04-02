@@ -75,6 +75,11 @@ multi method get($uri is copy where URI|Str) {
     $uri   = URI.new(_clear-url($uri)) if $uri.isa(Str);
 
     my $request  = HTTP::Request.new(GET => $uri);
+
+   self.request($request);
+}
+
+multi method request(HTTP::Request $request) {
     my HTTP::Response $response;
 
     # add cookies to the request
@@ -88,13 +93,14 @@ multi method get($uri is copy where URI|Str) {
         Authorization => "Basic " ~ MIME::Base64.encode-str("{$!auth_login}:{$!auth_password}")
     ) if $!auth_login.defined && $!auth_password.defined;
 
+    my $port = $request.uri.port;
     my $conn;
-    if $uri.scheme eq 'https' {
+    if $request.uri.scheme eq 'https' {
         die "Please install IO::Socket::SSL in order to fetch https sites" if ::('IO::Socket::SSL') ~~ Failure;
-        $conn = ::('IO::Socket::SSL').new(:host(~$request.header.field('Host').values), :port($uri.port // 443), :timeout($.timeout))
+        $conn = ::('IO::Socket::SSL').new(:host(~$request.header.field('Host').values), :port($port // 443), :timeout($.timeout))
     }
     else {
-        $conn = IO::Socket::INET.new(:host(~$request.header.field('Host').values), :port($uri.port // 80), :timeout($.timeout));
+        $conn = IO::Socket::INET.new(:host(~$request.header.field('Host').values), :port($port // 80), :timeout($.timeout));
     }
 
     if $conn.send($request.Str ~ "\r\n") {
