@@ -15,7 +15,7 @@ multi method new(*%args) {
     my ($method, $url, $file, %fields, $uri);
     
     for %args.kv -> $key, $value {
-        if $key.lc ~~ any(<get post head put>) {
+        if $key.lc ~~ any(<get post head put delete>) {
             $uri = $value.isa(URI) ?? $value !! URI.new($value);
             $url = $uri.grammar.parse_result.orig;
             $method = $key.uc;
@@ -27,17 +27,25 @@ multi method new(*%args) {
     }
 
     my $header = HTTP::Header.new(|%fields);
-    $header.field(Host => $uri.host) if $uri;
+    $header.field(Host => get-host-value($uri)) if $uri;
     self.bless(:$method, :$url, :$header, :$file, :$uri);
 }
 
+sub get-host-value(URI $uri --> Str) {
+   my $host = $uri.host;
+
+   if ( $uri.port != $uri.default_port ) {
+      $host ~= ':' ~ $uri.port;
+   }
+   $host;
+}
 
 method set-method($method) { $.method = $method.uc }
 
 multi method uri($uri is copy where URI|Str) {
     $!uri = $uri.isa(Str) ?? URI.new($uri) !! $uri ;
-    $.url = $!uri.grammar.parse_result.orig;
-    $.header.field(Host => $!uri.host);
+    $!url = $!uri.grammar.parse_result.orig;
+    $.header.field(Host => get-host-value($!uri));
     $!uri;
 }
 
