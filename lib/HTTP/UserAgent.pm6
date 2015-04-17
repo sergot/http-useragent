@@ -77,8 +77,7 @@ multi method get(URI $uri is copy ) {
 }
 
 multi method get(Str $uri is copy ) {
-    $uri   = URI.new(_clear-url($uri));
-    self.get($uri);
+    self.get(URI.new(_clear-url($uri)));
 }
 
 multi method request(HTTP::Request $request) {
@@ -134,10 +133,9 @@ multi method request(HTTP::Request $request) {
                         $conn.recv(6, :bin) !!
                         buf8.new( @a[($msg-body-pos + 2)..*] );
 
-        # We also need to handle 'Transfer-Encoding: chunked', which means that we request more chunks
-        # and assemble the response body.
-        if $response.header.field('Transfer-Encoding') &&
-        $response.header.field('Transfer-Encoding') eq 'chunked' {
+        # We also need to handle 'Transfer-Encoding: chunked', which means
+        # that we request more chunks and assemble the response body.
+        if $response.is-chunked {
             my sub recv-entire-chunk($content is rw) {
                 if $content {
                     # The first line is our desired chunk size.
