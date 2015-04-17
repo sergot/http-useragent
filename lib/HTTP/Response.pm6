@@ -22,6 +22,11 @@ method is-success {
     return False;
 }
 
+method is-chunked {
+   return self.header.field('Transfer-Encoding') &&
+          self.header.field('Transfer-Encoding') eq 'chunked' ?? True !! False; 
+}
+
 method set-code(Int $code) {
     $!code = $code;
     $!status-line = $code ~ " " ~ get_http_status_msg($code);
