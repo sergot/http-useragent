@@ -199,8 +199,8 @@ multi method request(HTTP::Request $request) {
 
     given $response.code {
         when /^3/ { 
-            when $.max-redirects < @.history
-            && all(@.history.reverse[^$.max-redirects]>>.code)  {
+            when $.max-redirects < +@.history
+            && all(@.history.reverse[0..$.max-redirects]>>.code)  {
                 X::HTTP::Response.new(:rc('Max redirects exceeded')).throw;
             }
             default {
