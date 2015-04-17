@@ -71,12 +71,14 @@ method auth(Str $login, Str $password) {
     $!auth_password = $password;
 }
 
-multi method get($uri is copy where URI|Str) {
-    $uri   = URI.new(_clear-url($uri)) if $uri.isa(Str);
-
+multi method get(URI $uri is copy ) {
     my $request  = HTTP::Request.new(GET => $uri);
+    self.request($request);
+}
 
-   self.request($request);
+multi method get(Str $uri is copy ) {
+    $uri   = URI.new(_clear-url($uri));
+    self.get($uri);
 }
 
 multi method request(HTTP::Request $request) {
@@ -126,6 +128,7 @@ multi method request(HTTP::Request $request) {
         my ($response-line, $header) = _split_buf("\r\n", $first-chunk.subbuf(0, $msg-body-pos), 2)».decode('ascii');
         $response .= new( $response-line.split(' ')[1].Int );
         $response.header.parse( $header );
+
 
         my $content = +@a <= $msg-body-pos + 2 ??
                         $conn.recv(6, :bin) !!
