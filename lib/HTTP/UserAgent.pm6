@@ -71,10 +71,16 @@ method auth(Str $login, Str $password) {
     $!auth_password = $password;
 }
 
-multi method get($uri is copy where URI|Str) {
-    $uri   = URI.new(_clear-url($uri)) if $uri.isa(Str);
-
+multi method get(URI $uri is copy ) {
     my $request  = HTTP::Request.new(GET => $uri);
+    self.request($request);
+}
+
+multi method get(Str $uri is copy ) {
+    self.get(URI.new(_clear-url($uri)));
+}
+
+multi method request(HTTP::Request $request) {
     my HTTP::Response $response;
 
     # add cookies to the request
@@ -88,13 +94,14 @@ multi method get($uri is copy where URI|Str) {
         Authorization => "Basic " ~ MIME::Base64.encode-str("{$!auth_login}:{$!auth_password}")
     ) if $!auth_login.defined && $!auth_password.defined;
 
+    my $port = $request.uri.port;
     my $conn;
-    if $uri.scheme eq 'https' {
+    if $request.uri.scheme eq 'https' {
         die "Please install IO::Socket::SSL in order to fetch https sites" if ::('IO::Socket::SSL') ~~ Failure;
-        $conn = ::('IO::Socket::SSL').new(:host(~$request.header.field('Host').values), :port($uri.port // 443), :timeout($.timeout))
+        $conn = ::('IO::Socket::SSL').new(:host(~$request.header.field('Host').values), :port($port // 443), :timeout($.timeout))
     }
     else {
-        $conn = IO::Socket::INET.new(:host(~$request.header.field('Host').values), :port($uri.port // 80), :timeout($.timeout));
+        $conn = IO::Socket::INET.new(:host(~$request.header.field('Host').values), :port($port // 80), :timeout($.timeout));
     }
 
     if $conn.send($request.Str ~ "\r\n") {
@@ -121,14 +128,14 @@ multi method get($uri is copy where URI|Str) {
         $response .= new( $response-line.split(' ')[1].Int );
         $response.header.parse( $header );
 
+
         my $content = +@a <= $msg-body-pos + 2 ??
                         $conn.recv(6, :bin) !!
                         buf8.new( @a[($msg-body-pos + 2)..*] );
 
-        # We also need to handle 'Transfer-Encoding: chunked', which means that we request more chunks
-        # and assemble the response body.
-        if $response.header.field('Transfer-Encoding') &&
-        $response.header.field('Transfer-Encoding') eq 'chunked' {
+        # We also need to handle 'Transfer-Encoding: chunked', which means
+        # that we request more chunks and assemble the response body.
+        if $response.is-chunked {
             my sub recv-entire-chunk($content is rw) {
                 if $content {
                     # The first line is our desired chunk size.

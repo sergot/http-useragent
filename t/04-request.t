@@ -1,7 +1,7 @@
 use HTTP::Request;
 use Test;
 
-plan 20;
+plan 22;
 
 my $url = 'http://testsite.ext/cat/f.h?q=1&q=2';
 my $file = '/cat/f.h?q=1&q=2';
@@ -31,8 +31,13 @@ is $r1.field('Accept'), 'test2', 'field 2/2';
 
 # uri
 $r1.uri('http://test.com');
-is $r1.url, 'http://test.com', 'uri 1/2';
-is $r1.field('Host'), 'test.com', 'uri 2/2';
+is $r1.url, 'http://test.com', 'uri 1/4';
+is $r1.field('Host'), 'test.com', 'uri 2/4';
+
+# check construction of host header
+$r1.uri('http://test.com:8080');
+is $r1.url, 'http://test.com:8080', 'uri 3/4';
+is $r1.field('Host'), 'test.com:8080', 'uri 4/4';
 
 # set-method
 $r1.set-method: 'TEST';
