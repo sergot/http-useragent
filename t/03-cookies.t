@@ -42,12 +42,79 @@ ok !$c2.secure, 'set-cookie 11/11';
 
 # Str
 my $result = "Set-Cookie: name1=value1; expires=DATE; Path=/; Domain=gugle.com; Secure; HttpOnly\nSet-Cookie: name2=value2; expires=DATE2; Path=/path; Domain=gugle.com";
-is $c.Str, $result, 'Str 1/1';
+
+my token set_cookie {
+   ^^ Set\-Cookie\:\s+
+}
+
+my token name_1 { name1\=value1\;\s+ }
+my token expires_1 { expires\=DATE }
+my token path_1 { Path\=\/ }
+my token domain_1 { Domain\=gugle\.com }
+my token secure_1 { Secure }
+my token http_only_1 { HttpOnly }
+my token fields_1 {
+                     [    <expires_1> 
+                       |  <path_1>
+                       |  <domain_1>
+                       |  <secure_1>
+                       |  <http_only_1>
+                     ] * % '; ' <?{ 1 == all %($/).values }>
+
+}
+
+my token cookie_1 { 
+                     <set_cookie>
+                     <name_1>
+                     <fields_1>
+                     $$
+}
+
+
+my token name_2 { name2\=value2\;\s+ }
+
+my token expires_2 { expires\=DATE2 } 
+my token path_2 { Path\=\/path } 
+my token domain_2 { Domain\=gugle\.com }
+
+my token fields_2 {
+   [  
+         <expires_2>
+      |  <path_2>
+      |  <domain_2>
+   ] * % '; ' <?{ 1 == all %($/).values }>
+}
+
+
+my token cookie_2 { 
+                     <set_cookie>
+                     <name_2> 
+                     <fields_2>
+                     $$
+}
+
+
+my rule cookies { 
+                   <cookie_1>
+                   <cookie_2>
+}
+
+like $c.Str, /^<cookies>$/, "Str 1/1";
+
 
 # save
 my $file_header = "#LWP6-Cookies-0.1\n";
 $c.save;
-is $c.file.IO.slurp, $file_header ~ $result ~ "\n", 'save 1/1';
+
+my token file_header { ^^ '#'LWP6\-Cookies\-0\.1 $$ }
+
+my rule cookie_file {
+   <file_header>
+   <cookies>
+
+}
+
+like $c.file.IO.slurp, /<cookie_file>/, 'save 1/1';
 
 # clear
 $c.clear;
@@ -55,7 +122,8 @@ ok !$c.cookies, 'clear 1/1';
 
 # load
 $c.load;
-is $c.Str, $result, 'load 1/1';
+
+like $c.Str, /^<cookies>$/, "load 1/1";
 
 $c = HTTP::Cookies.new(
     file     => $file,
