@@ -1,6 +1,6 @@
 use v6;
 
-class HTTP::Header::Field;
+unit class HTTP::Header::Field;
 
 has $.name;
 has @.values;

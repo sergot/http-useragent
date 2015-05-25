@@ -2,7 +2,7 @@ use HTTP::Message;
 
 use URI;
 
-class HTTP::Request is HTTP::Message;
+unit class HTTP::Request is HTTP::Message;
 
 has $.method is rw;
 has $.url is rw;

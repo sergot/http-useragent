@@ -1,4 +1,4 @@
-class HTTP::Cookies;
+unit class HTTP::Cookies;
 
 use HTTP::Cookie;
 use HTTP::Response;

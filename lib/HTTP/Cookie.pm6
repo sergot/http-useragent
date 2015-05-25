@@ -1,4 +1,4 @@
-class HTTP::Cookie;
+unit class HTTP::Cookie;
 
 has $.name is rw;
 has $.value is rw;

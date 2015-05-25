@@ -1,4 +1,4 @@
-class HTTP::Header;
+unit class HTTP::Header;
 
 use HTTP::Header::Field;
 
