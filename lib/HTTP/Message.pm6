@@ -1,4 +1,4 @@
-class HTTP::Message;
+unit class HTTP::Message;
 
 use HTTP::Header;
 use Encode;
