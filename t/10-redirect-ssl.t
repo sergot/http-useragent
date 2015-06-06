@@ -19,7 +19,7 @@ my $get = ~$ua.get($url);
 
 ok $get ~~ /'</html>'/, 'http -> https redirect get 1/1';
 
-throws_like {
+throws-like {
     temp $ua.max-redirects = 0;
     $ua.get($url);
 }, X::HTTP::Response, "Max redirects exceeded";
