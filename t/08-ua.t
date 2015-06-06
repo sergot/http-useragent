@@ -22,8 +22,8 @@ is $ua.get('http://ua.offensivecoder.com/').content, "$newua\n", 'useragent 1/1'
 # get
 my $response = $ua.get('filip.sergot.pl/');
 ok $response, 'get 1/3';
-isa_ok $response, HTTP::Response, 'get 2/3';
+isa-ok $response, HTTP::Response, 'get 2/3';
 ok $response.is-success, 'get 3/3';
 
 # non-ascii encodings (github issue #35)
-lives_ok { HTTP::UserAgent.new.get('http://www.baidu.com') }, 'Lived through gb2312 encoding';
+lives-ok { HTTP::UserAgent.new.get('http://www.baidu.com') }, 'Lived through gb2312 encoding';

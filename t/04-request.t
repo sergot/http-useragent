@@ -16,8 +16,8 @@ is $r1.file, $file, 'new 3/8';
 is $r1.field('Host'), $host, 'new 4/8';
 is $r1.field('test_field'), 'this_is_field', 'new 5/8';
 ok $r1.Str ~~ /^POST\s$file/, 'new 6/8';
-isa_ok $r1, HTTP::Request, 'new 7/8';
-isa_ok $r1, HTTP::Message, 'new 8/8';
+isa-ok $r1, HTTP::Request, 'new 7/8';
+isa-ok $r1, HTTP::Message, 'new 8/8';
 
 # content
 $r1.add-content('n1=v1&a');

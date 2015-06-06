@@ -8,7 +8,7 @@ has $.httponly is rw;
 has %.fields;
 
 method Str {
-    my $s = "$.name=$.value; {(%.fields.for( *.fmt("%s=%s") )).join('; ')}";
+    my $s = "$.name=$.value; {(%.fields.flatmap( *.fmt("%s=%s") )).join('; ')}";
     $s ~= "; $.secure" if $.secure;
     $s ~= "; $.httponly" if $.httponly;
     $s;

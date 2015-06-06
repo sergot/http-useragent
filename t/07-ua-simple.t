@@ -16,4 +16,4 @@ getstore $url, 'newfile';
 is slurp('newfile'), $get, 'getstore 1/1';
 unlink 'newfile';
 
-throws_like "use HTTP::UserAgent :simple; get('http://filip.sergot.pl/404here')", X::HTTP::Response, message => "Response error: '404 Not Found'";
+throws-like "use HTTP::UserAgent :simple; get('http://filip.sergot.pl/404here')", X::HTTP::Response, message => "Response error: '404 Not Found'";
