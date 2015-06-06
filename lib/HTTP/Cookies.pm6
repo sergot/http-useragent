@@ -41,7 +41,7 @@ my class HTTP::Cookies::Actions {
 }
 
 method extract-cookies(HTTP::Response $response) {
-    self.set-cookie($_) for $response.field('Set-Cookie').for({ "Set-Cookie: $_" });
+    self.set-cookie($_) for $response.field('Set-Cookie').flatmap({ "Set-Cookie: $_" });
     self.save if $.autosave;
 }
 
@@ -106,7 +106,7 @@ method push-cookie(HTTP::Cookie $c) {
 }
 
 method Str {
-    @.cookies.for({ "Set-Cookie: {$_.Str}" }).join("\n");
+    @.cookies.flatmap({ "Set-Cookie: {$_.Str}" }).join("\n");
 }
 
 =begin pod

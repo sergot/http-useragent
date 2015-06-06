@@ -7,8 +7,8 @@ plan 19;
 # new
 my $m = HTTP::Message.new('somecontent', a => ['a1', 'a2']);
 
-isa_ok $m, HTTP::Message, 'new 1/4';
-isa_ok $m.header, HTTP::Header, 'new 2/4';
+isa-ok $m, HTTP::Message, 'new 1/4';
+isa-ok $m.header, HTTP::Header, 'new 2/4';
 is $m.field('a'), 'a1, a2', 'new 3/4';
 is $m.content, 'somecontent', 'new 4/4';
 

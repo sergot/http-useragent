@@ -12,7 +12,7 @@ use Test;
 
 plan 2;
 
-throws_like 'use HTTP::UserAgent; my $ssl = HTTP::UserAgent.new; $ssl.get("https://filip.sergot.pl/")', X::HTTP::Response, message => "Response error: '403 Forbidden'";
+throws-like 'use HTTP::UserAgent; my $ssl = HTTP::UserAgent.new; $ssl.get("https://filip.sergot.pl/")', X::HTTP::Response, message => "Response error: '403 Forbidden'";
 
 my $url = 'https://github.com/';
 

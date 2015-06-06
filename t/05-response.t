@@ -7,8 +7,8 @@ plan 13;
 # new
 my $r = HTTP::Response.new(200, a => 'a');
 
-isa_ok $r, HTTP::Response, 'new 1/3';
-isa_ok $r, HTTP::Message, 'new 2/3';
+isa-ok $r, HTTP::Response, 'new 1/3';
+isa-ok $r, HTTP::Message, 'new 2/3';
 is $r.field('a'), 'a', 'new 3/3';
 
 # field
