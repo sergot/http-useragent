@@ -17,6 +17,14 @@ class X::HTTP is Exception {
     has $.rc;
 }
 
+class X::HTTP::Internal is Exception {
+    has $.reason;
+
+    method message {
+        "Internal Error: '$.reason'";
+    }
+}
+
 class X::HTTP::Response is X::HTTP {
     method message {
         "Response error: '$.rc'";
@@ -110,8 +118,11 @@ multi method request(HTTP::Request $request) {
         my @a;
         my @b = "\r\n\r\n".ords;
 
+        my Bool $got-response = False;
+
         # Header can be longer than one chunk
         while my $t = $conn.recv( :bin ) {
+            $got-response = True;
             $first-chunk = Blob[uint8].new($first-chunk.list, $t.list);
             @a           = $first-chunk.list;
 
@@ -120,6 +131,11 @@ multi method request(HTTP::Request $request) {
             $msg-body-pos = @a.first-index({ @a[(state $i = -1) .. $i++ + @b] ~~ @b });
             last if $msg-body-pos;
         }
+
+        if not $got-response {
+            X::HTTP::Internal.new(rc => 500, reason => "server returned no data").throw;
+        }
+
 
         # +2 because we need a trailing CRLF in the header.
         $msg-body-pos   += 2 if $msg-body-pos >= 0;
