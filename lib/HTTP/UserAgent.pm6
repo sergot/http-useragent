@@ -29,6 +29,9 @@ class X::HTTP::Server is X::HTTP {
     }
 }
 
+class X::HTTP::Header is X::HTTP::Server {
+}
+
 has Int $.timeout is rw = 180;
 has $.useragent;
 has $.cookies = HTTP::Cookies.new(
@@ -174,7 +177,7 @@ multi method request(HTTP::Request $request) {
         }
         elsif $response.header.field('Content-Length').values[0] -> $content-length is copy {
             X::HTTP::Header.new( :rc("Content-Length header value '$content-length' is not numeric") ).throw
-                unless $content-length = try +$content-length;
+                unless ($content-length = try +$content-length).defined;
             # Let the content grow until we have reached the desired size.
             while $content-length > $content.bytes {
                 $content ~= $conn.recv($content-length - $content.bytes, :bin);
