@@ -3,7 +3,7 @@ use HTTP::UserAgent;
 use HTTP::UserAgent::Common;
 use Test;
 
-plan 8;
+plan 9;
 
 # new
 my $ua = HTTP::UserAgent.new;
@@ -27,3 +27,8 @@ ok $response.is-success, 'get 3/3';
 
 # non-ascii encodings (github issue #35)
 lives-ok { HTTP::UserAgent.new.get('http://www.baidu.com') }, 'Lived through gb2312 encoding';
+
+# chunked encoding.
+
+lives-ok { HTTP::UserAgent.new.get('http://rakudo.org') }, "issue#51 - get rakudo.org (chunked encoding foul-up results in incomplete UTF-8 data)";
+
