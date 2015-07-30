@@ -115,7 +115,7 @@ multi method request(HTTP::Request $request) {
         $conn = IO::Socket::INET.new(:host(~$request.header.field('Host').values), :port($port // 80), :timeout($.timeout));
     }
 
-    if $conn.send($request.Str ~ "\r\n") {
+    if $conn.print($request.Str ~ "\r\n") {
         my $first-chunk;
         my $msg-body-pos;
         my @a;
