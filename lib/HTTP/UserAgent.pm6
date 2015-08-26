@@ -105,14 +105,21 @@ multi method request(HTTP::Request $request) {
         Authorization => "Basic " ~ MIME::Base64.encode-str("{$!auth_login}:{$!auth_password}")
     ) if $!auth_login.defined && $!auth_password.defined;
 
+    my $host = ~$request.header.field('Host').values;
     my $port = $request.uri.port;
+    if  %*ENV<http_proxy> {
+        $request.file = "http://$host" ~ $request.file;
+        ($host, $port) = %*ENV<http_proxy>.split('/').[2].split(':');
+        $port.=Int;
+        $request.header.field(Connection => 'close');
+    }
     my $conn;
     if $request.uri.scheme eq 'https' {
         die "Please install IO::Socket::SSL in order to fetch https sites" if ::('IO::Socket::SSL') ~~ Failure;
-        $conn = ::('IO::Socket::SSL').new(:host(~$request.header.field('Host').values), :port($port // 443), :timeout($.timeout))
+        $conn = ::('IO::Socket::SSL').new(:$host, :port($port // 443), :timeout($.timeout))
     }
     else {
-        $conn = IO::Socket::INET.new(:host(~$request.header.field('Host').values), :port($port // 80), :timeout($.timeout));
+        $conn = IO::Socket::INET.new(:$host, :port($port // 80), :timeout($.timeout));
     }
 
     if $conn.print($request.Str ~ "\r\n") {
