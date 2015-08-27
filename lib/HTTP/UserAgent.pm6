@@ -264,25 +264,25 @@ multi method request(HTTP::Request $request) {
 }
 
 # :simple
-sub get($target where URI|Str) is export(:simple) {
+our sub get($target where URI|Str) is export(:simple) {
     my $ua = HTTP::UserAgent.new;
     my $response = $ua.get($target);
 
     return $response.decoded-content;
 }
 
-sub head(Str $url) is export(:simple) {
+our sub head(Str $url) is export(:simple) {
     my $ua = HTTP::UserAgent.new;
     return $ua.get($url).header.fields<Content-Type Content-Length Last-Modified Expires Server>;
 }
 
-sub getprint(Str $url) is export(:simple) {
+our sub getprint(Str $url) is export(:simple) {
     my $response = HTTP::UserAgent.new.get($url);
     print $response.decoded-content;
     $response.code;
 }
 
-sub getstore(Str $url, Str $file) is export(:simple) {
+our sub getstore(Str $url, Str $file) is export(:simple) {
     $file.IO.spurt: get($url);
 }
 
