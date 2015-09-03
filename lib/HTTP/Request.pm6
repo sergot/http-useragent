@@ -9,6 +9,10 @@ has $.url is rw;
 has $.file is rw;
 has $.uri is rw;
 
+has Str $.host is rw;
+has Int $.port is rw;
+has Str $.scheme is rw;
+
 my $CRLF = "\r\n";
 
 multi method new(*%args) {
@@ -32,12 +36,14 @@ multi method new(*%args) {
 }
 
 sub get-host-value(URI $uri --> Str) {
-   my $host = $uri.host;
+    my Str $host = $uri.host;
 
-   if ( $uri.port != $uri.default_port ) {
-      $host ~= ':' ~ $uri.port;
-   }
-   $host;
+    if $host {
+        if ( $uri.port != $uri.default_port ) {
+            $host ~= ':' ~ $uri.port;
+        }
+    }
+    $host;
 }
 
 method set-method($method) { $.method = $method.uc }
@@ -52,6 +58,37 @@ multi method uri($uri is copy where URI|Str) {
 multi method uri() is rw {
     $!uri;
 }
+
+multi method host() returns Str is rw {
+    if not $!host.defined {
+         $!host = ~self.header.field('Host').values;
+    }
+    $!host;
+}
+
+multi method  port() returns Int is rw {
+    if not $!port.defined {
+        # if there isn't a scheme the no default port
+        if try self.uri.scheme {
+            $!port = self.uri.port;
+        }
+    }
+    $!port;
+}
+
+multi method scheme() returns Str is rw {
+    if not $!scheme.defined {
+        $!scheme = self.uri.scheme;
+
+        CATCH {
+            default {
+                $!scheme = 'http';
+            }
+        }
+    }
+    $!scheme
+}
+
 
 method Str {
     my $s = "$.method $.file $.protocol";
