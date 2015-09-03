@@ -1,10 +1,12 @@
 use HTTP::Message;
 use HTTP::Status;
+use HTTP::Request;
 
 unit class HTTP::Response is HTTP::Message;
 
 has $.status-line is rw;
 has $.code is rw;
+has HTTP::Request $.request is rw;
 
 my $CRLF = "\r\n";
 
@@ -18,8 +20,7 @@ method new(Int $code? = 200, *%fields) {
 }
 
 method is-success {
-    return True if $!code ~~ "200";
-    return False;
+    return so $!code ~~ "200";
 }
 
 method is-chunked {
@@ -30,6 +31,25 @@ method is-chunked {
 method set-code(Int $code) {
     $!code = $code;
     $!status-line = $code ~ " " ~ get_http_status_msg($code);
+}
+
+method next-request() returns HTTP::Request {
+    my HTTP::Request $new-request;
+
+    my $location = ~self.header.field('Location').values;
+
+    if $location.defined {
+        my %args = $!request.method => $location;
+        $new-request = HTTP::Request.new(|%args);
+        if not ~$new-request.header.field('Host').values {
+            my $hh = ~$!request.header.field('Host').values;
+            $new-request.header.field(Host => $hh);
+            $new-request.host = $!request.host;
+            $new-request.port = $!request.port;
+        }
+    }
+
+    $new-request;
 }
 
 method Str {
