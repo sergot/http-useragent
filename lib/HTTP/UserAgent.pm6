@@ -105,8 +105,9 @@ multi method request(HTTP::Request $request) {
         Authorization => "Basic " ~ MIME::Base64.encode-str("{$!auth_login}:{$!auth_password}")
     ) if $!auth_login.defined && $!auth_password.defined;
 
-    my $host = ~$request.header.field('Host').values;
-    my $port = $request.uri.port;
+    my $host = $request.host;
+    my $port = $request.port;
+
     if  %*ENV<http_proxy> {
         $request.file = "http://$host" ~ $request.file;
         ($host, $port) = %*ENV<http_proxy>.split('/').[2].split(':');
@@ -114,7 +115,7 @@ multi method request(HTTP::Request $request) {
         $request.header.field(Connection => 'close');
     }
     my $conn;
-    if $request.uri.scheme eq 'https' {
+    if $request.scheme eq 'https' {
         die "Please install IO::Socket::SSL in order to fetch https sites" if ::('IO::Socket::SSL') ~~ Failure;
         $conn = ::('IO::Socket::SSL').new(:$host, :port($port // 443), :timeout($.timeout))
     }
@@ -153,6 +154,7 @@ multi method request(HTTP::Request $request) {
         my ($response-line, $header) = _split_buf("\r\n", $first-chunk.subbuf(0, $msg-body-pos), 2)».decode('ascii');
         $response .= new( $response-line.split(' ')[1].Int );
         $response.header.parse( $header );
+        $response.request = $request;
 
 
         my $content = +@a <= $msg-body-pos + 2 ??
@@ -251,7 +253,8 @@ multi method request(HTTP::Request $request) {
                 X::HTTP::Response.new(:rc('Max redirects exceeded')).throw;
             }
             default {
-                return self.get(~$response.header.field('Location'));
+                my $new-request = $response.next-request();
+                return self.request($new-request);
             }
         } 
         when /^4/ { X::HTTP::Response.new(:rc($response.status-line)).throw }
