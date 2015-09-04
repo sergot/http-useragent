@@ -30,10 +30,10 @@ method decoded-content {
     my $content-type  = $!header.field('Content-Type').values[0] // '';
     my $charset = $content-type ~~ / charset '=' $<charset>=[ <-[\s;]>+ ] /
                 ?? $<charset>.Str.lc
-                !! ( $content-type ~~ /^ text / ?? 'ascii' !! 'utf-8' );
+                !! ( $content-type ~~ /^ text / ?? 'iso-8859-1' !! 'utf-8' );
 
     my $decoded_content = try {
-        Encode::decode($charset, $!content)
+        Encode::decode($charset, $!content);
     } or try { 
         $!content.unpack("A*") 
     } or die "Problem decoding content";
