@@ -59,7 +59,7 @@ my token fields_1 {
                        |  <domain_1>
                        |  <secure_1>
                        |  <http_only_1>
-                     ] * % '; ' <?{ 1 == all %($/).values }>
+                     ] * % '; '
 
 }
 
@@ -82,7 +82,7 @@ my token fields_2 {
          <expires_2>
       |  <path_2>
       |  <domain_2>
-   ] * % '; ' <?{ 1 == all %($/).values }>
+   ] * % '; '
 }
 
 
