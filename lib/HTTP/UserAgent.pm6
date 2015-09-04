@@ -124,7 +124,7 @@ multi method request(HTTP::Request $request) {
     }
 
     if $conn.print($request.Str ~ "\r\n") {
-        my $first-chunk;
+        my Blob[uint8] $first-chunk = Blob[uint8].new;
         my $msg-body-pos;
         my @a;
         my @b = "\r\n\r\n".ords;
