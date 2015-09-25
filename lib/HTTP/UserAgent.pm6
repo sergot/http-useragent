@@ -107,11 +107,16 @@ multi method request(HTTP::Request $request) {
 
     my $host = $request.host;
     my $port = $request.port;
+    my $http_proxy = %*ENV<http_proxy> || %*ENV<HTTP_PROXY>;
 
-    if  %*ENV<http_proxy> {
+    if $http_proxy {
         $request.file = "http://$host" ~ $request.file;
-        ($host, $port) = %*ENV<http_proxy>.split('/').[2].split(':');
+        my ($proxy_host, $proxy_auth) = $http_proxy.split('/').[2].split('@', 2).reverse;
+        ($host, $port) = $proxy_host.split(':');
         $port.=Int;
+        $request.header.field(
+            Proxy-Authorization => "Basic " ~ MIME::Base64.encode-str($proxy_auth)
+        ) if $proxy_auth;
         $request.header.field(Connection => 'close');
     }
     my $conn;
