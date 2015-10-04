@@ -208,8 +208,15 @@ multi method request(HTTP::Request $request) {
             my $chunk = $content;
             $content  = Buf.new;
             # We carry on as long as we receive something.
-            while recv-entire-chunk($chunk) {
+            repeat {
                 $content ~= $chunk;
+
+                # Check if the first chunk has it all.
+                if $chunk.list.[*-7..*-1] eqv (0x0d, 0x0a, 0x30, 0x0d, 0x0a, 0x0d, 0x0a ) {
+                    # Done with this message!
+                    last
+                }
+
                 # We only request five bytes here, and check if it is the message terminator, which is
                 # "\r\n0\r\n". When we would try to read more bytes we would block for a few seconds.
                 $chunk    = $conn.recv(5, :bin);
@@ -223,7 +230,7 @@ multi method request(HTTP::Request $request) {
                     $chunk ~= $conn.recv(6, :bin);
                     $chunk.=subbuf(2) if $chunk.subbuf(0,2).list eqv [0x0d, 0x0a];
                 }
-            }
+            } while recv-entire-chunk($chunk);
         }
         elsif $response.header.field('Content-Length').values[0] -> $content-length is copy {
             X::HTTP::Header.new( :rc("Content-Length header value '$content-length' is not numeric") ).throw
