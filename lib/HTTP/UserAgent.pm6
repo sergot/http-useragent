@@ -212,7 +212,12 @@ multi method request(HTTP::Request $request) {
                 $content ~= $chunk;
 
                 # Check if the first chunk has it all.
-                if $chunk.list.[*-7..*-1] eqv (0x0d, 0x0a, 0x30, 0x0d, 0x0a, 0x0d, 0x0a ) {
+                my @end_sequence := (0x0d, 0x0a, 0x30, 0x0d, 0x0a, 0x0d, 0x0a);
+                if $chunk.list.[*-7..*-1] eqv @end_sequence {
+                    $content = $content.subbuf(0, $content.elems - 7);
+                    (my $chunk-size, $content)
+                      = _split_buf("\r\n", $content, 2);
+
                     # Done with this message!
                     last
                 }
