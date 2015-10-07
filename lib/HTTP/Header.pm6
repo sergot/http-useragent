@@ -76,7 +76,7 @@ method init-field(*%fields) {
 # add value to existing fields
 method push-field(*%fields) {
     for %fields.kv -> $k, $v {
-        @.fields.first({ .name eq $k }).values.push: $v.list;
+        @.fields.first({ .name eq $k }).values.append: $v.list;
     }
 }
 
