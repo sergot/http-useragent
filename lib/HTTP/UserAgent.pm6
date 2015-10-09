@@ -195,7 +195,13 @@ multi method request(HTTP::Request $request) {
                     $content ~= $chunk.subbuf(0, $chunk-size);
                     $chunk = $chunk.subbuf($chunk-size+2);
                 } else {
-                    $chunk ~= $conn.recv(1024, :bin);
+                    # XXX Reading 1 byte is inefficient code.
+                    #
+                    # But IO::Socket#read/IO::Socket#recv reads from socket until
+                    # fill the requested size.
+                    #
+                    # It cause hang-up on socket reading.
+                    $chunk ~= $conn.recv(1, :bin);
                 }
             };
         }
