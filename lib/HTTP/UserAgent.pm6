@@ -13,6 +13,8 @@ use URI;
 use File::Temp;
 use MIME::Base64;
 
+constant CRLF = Buf.new(13, 10);
+
 class X::HTTP is Exception {
     has $.rc;
 }
@@ -50,6 +52,17 @@ has $.auth_login;
 has $.auth_password;
 has Int $.max-redirects is rw;
 has @.history;
+
+my sub _index_buf(Blob $input, Blob $sub) {
+    my $end-pos = 0;
+    while $end-pos < $input.bytes {
+        if $sub eq $input.subbuf($end-pos, $sub.bytes) {
+            return $end-pos;
+        }
+        $end-pos++;
+    }
+    return -1;
+}
 
 # Helper method which implements the same logic as Str.split() but for Bufs.
 multi _split_buf(Str $delimiter, Blob $input, $limit = Inf --> List) {
@@ -169,73 +182,31 @@ multi method request(HTTP::Request $request) {
         # We also need to handle 'Transfer-Encoding: chunked', which means
         # that we request more chunks and assemble the response body.
         if $response.is-chunked {
-            sub recv-entire-chunk(Buf $content is rw) {
-                if $content {
-                    # The first line is our desired chunk size.
-                    # we didn't get enough
-                    if $content.bytes < 6 {
-                        $content ~= $conn.recv(6, :bin);
-                    }
-                    (my $chunk-size, $content) = _split_buf("\r\n", $content, 2);
-
-                    $chunk-size                = :16($chunk-size.decode);
-
-                    $content = $conn.recv(4, :bin) unless $content;
-                    if $chunk-size {
-                        if $content.bytes > $chunk-size {
-                            my $this-chunk = $content.subbuf(0, $chunk-size);
-                            
-                            if ($chunk-size + 2 ) > $content.bytes {
-                                $content ~= $conn.recv(6, :bin);
-                            }
-                            my $next-chunks = $content.subbuf($chunk-size + 2);
-                            $content = $this-chunk;
-                            if $next-chunks.bytes {
-                                recv-entire-chunk($next-chunks);
-                                $content ~= $next-chunks;
-                            }
-                        }
-                        # Let the content grow until we have reached the desired size.
-                        while $chunk-size > $content.bytes {
-                            my $need-bytes = $chunk-size - $content.bytes;
-                            $content ~= $conn.recv($need-bytes, :bin);
-                        }
-                    }
-                }
-                $content
-            }
-
-            my $chunk = $content;
+            my Buf $chunk = $content.clone;
             $content  = Buf.new;
             # We carry on as long as we receive something.
-            repeat {
-                $content ~= $chunk;
-
-                # Check if the first chunk has it all.
-                my @end_sequence := (0x0d, 0x0a, 0x30, 0x0d, 0x0a, 0x0d, 0x0a);
-                if $chunk.list.[*-7..*-1] eqv @end_sequence {
-                    $content = $content.subbuf(0, $content.elems - 7);
-                    (my $chunk-size, $content)
-                      = _split_buf("\r\n", $content, 2);
-
-                    # Done with this message!
-                    last
+            PARSE_CHUNK: loop {
+                my $end_pos = _index_buf($chunk, CRLF);
+                if $end_pos >= 0 {
+                    my $size = $chunk.subbuf(0, $end_pos).decode;
+                    # remove optional chunk extensions
+                    $size = $size.subst(/';'.*$/, '');
+                    # www.yahoo.com sends additional spaces(maybe invalid)
+                    $size = $size.subst(/' '*$/, '');
+                    $chunk = $chunk.subbuf($end_pos+2);
+                    my $chunk-size = :16($size);
+                    if $chunk-size == 0 {
+                        last PARSE_CHUNK;
+                    }
+                    while $chunk-size+2 > $chunk.bytes {
+                        $chunk ~= $conn.recv($chunk-size+2-$chunk.bytes, :bin);
+                    }
+                    $content ~= $chunk.subbuf(0, $chunk-size);
+                    $chunk = $chunk.subbuf($chunk-size+2);
+                } else {
+                    $chunk ~= $conn.recv(1024, :bin);
                 }
-
-                # We only request five bytes here, and check if it is the message terminator, which is
-                # "\r\n0\r\n". When we would try to read more bytes we would block for a few seconds.
-                $chunk    = $conn.recv(5, :bin);
-                if !$chunk || $chunk.list eqv [0x0d, 0x0a, 0x30, 0x0d, 0x0a] {
-                    # Done with this message!
-                    last
-                }
-                else {
-                    # Read more of this chunk, which includes the rest of a chunk-size field followed
-                    # by <CRLF> and a single byte of the message content.
-                    $chunk ~= $conn.recv(6, :bin);
-                    $chunk.=subbuf(2) if $chunk.subbuf(0,2).list eqv [0x0d, 0x0a];
-                }
-            } while recv-entire-chunk($chunk);
+            };
         }
         elsif $response.header.field('Content-Length').values[0] -> $content-length is copy {
             X::HTTP::Header.new( :rc("Content-Length header value '$content-length' is not numeric") ).throw
