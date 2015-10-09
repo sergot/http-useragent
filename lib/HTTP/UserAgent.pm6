@@ -51,7 +51,7 @@ has $.cookies = HTTP::Cookies.new(
 has $.auth_login;
 has $.auth_password;
 has Int $.max-redirects is rw;
-has @.history;
+has $!redirects;
 
 my sub _index_buf(Blob $input, Blob $sub) {
     my $end-pos = 0;
@@ -104,7 +104,12 @@ multi method get(Str $uri is copy ) {
     self.get(URI.new(_clear-url($uri)));
 }
 
-multi method request(HTTP::Request $request) {
+method request(HTTP::Request $request) {
+    temp $!redirects = 0;
+    self!request($request);
+}
+
+method !request(HTTP::Request $request) {
     my HTTP::Response $response;
 
     # add cookies to the request
@@ -174,7 +179,6 @@ multi method request(HTTP::Request $request) {
         $response.header.parse( $header );
         $response.request = $request;
 
-
         my $content = +@a <= $msg-body-pos + 2 ??
                         $conn.recv(6, :bin) !!
                         buf8.new( @a[($msg-body-pos + 2)..*] );
@@ -228,21 +232,15 @@ multi method request(HTTP::Request $request) {
     
     X::HTTP::Response.new(:rc('No response')).throw unless $response;
     
-    # Is there a better way to save history without saving content?
-    # Or should content be optionally cached? (useful for serving 304 Not Modified)
-    my $response-copy = $response.clone();
-    $response-copy.content = $response.content.WHAT;
-    @.history.push($response-copy);
-
     given $response.code {
         when /^3/ { 
-            when $.max-redirects < +@.history
-            && all(@.history.reverse[0..$.max-redirects]>>.code)  {
+            when $.max-redirects <= $!redirects {
                 X::HTTP::Response.new(:rc('Max redirects exceeded')).throw;
             }
             default {
                 my $new-request = $response.next-request();
-                return self.request($new-request);
+                $!redirects++;
+                return self!request($new-request);
             }
         } 
         when /^4/ { X::HTTP::Response.new(:rc($response.status-line)).throw }
