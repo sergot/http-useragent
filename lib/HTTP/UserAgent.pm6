@@ -14,6 +14,7 @@ use File::Temp;
 use MIME::Base64;
 
 constant CRLF = Buf.new(13, 10);
+constant CRLFCRLF = Buf.new(13, 10, 13, 10);
 
 class X::HTTP is Exception {
     has $.rc;
@@ -144,40 +145,30 @@ multi method request(HTTP::Request $request) {
     if $conn.print($request.Str ~ "\r\n") {
         my Blob[uint8] $first-chunk = Blob[uint8].new;
         my $msg-body-pos;
-        my @a;
-        my @b = "\r\n\r\n".ords;
-
-        my Bool $got-response = False;
 
         # Header can be longer than one chunk
         while my $t = $conn.recv( :bin ) {
-            $got-response = True;
-            $first-chunk = Blob[uint8].new($first-chunk.list, $t.list);
-            @a           = $first-chunk.list;
+            $first-chunk ~= $t;
 
             # Find the header/body separator in the chunk, which means we can parse the header seperately and are
             # able to figure out the correct encoding of the body.
-            $msg-body-pos = @a.first-index({ @a[(state $i = -1) .. $i++ + @b] ~~ @b });
-            last if $msg-body-pos;
+            $msg-body-pos = _index_buf($first-chunk, CRLFCRLF);
+            last if $msg-body-pos >= 0;
         }
 
-        if not $got-response {
+        if $msg-body-pos < 0 {
             X::HTTP::Internal.new(rc => 500, reason => "server returned no data").throw;
         }
-
 
         # +2 because we need a trailing CRLF in the header.
         $msg-body-pos   += 2 if $msg-body-pos >= 0;
 
-        my ($response-line, $header) = _split_buf("\r\n", $first-chunk.subbuf(0, $msg-body-pos), 2)».decode('ascii');
+        my ($response-line, $header) = _split_buf(CRLF, $first-chunk.subbuf(0, $msg-body-pos), 2)».decode('ascii');
         $response .= new( $response-line.split(' ')[1].Int );
         $response.header.parse( $header );
         $response.request = $request;
 
-
-        my $content = +@a <= $msg-body-pos + 2 ??
-                        $conn.recv(6, :bin) !!
-                        buf8.new( @a[($msg-body-pos + 2)..*] );
+        my $content = $first-chunk.subbuf($msg-body-pos+2);
 
         # We also need to handle 'Transfer-Encoding: chunked', which means
         # that we request more chunks and assemble the response body.
