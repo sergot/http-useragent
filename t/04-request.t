@@ -1,7 +1,7 @@
 use HTTP::Request;
 use Test;
 
-plan 22;
+plan 24;
 
 my $url = 'http://testsite.ext/cat/f.h?q=1&q=2';
 my $file = '/cat/f.h?q=1&q=2';
@@ -30,9 +30,12 @@ $r1.field(Accept => 'test2');
 is $r1.field('Accept'), 'test2', 'field 2/2';
 
 # uri
-$r1.uri('http://test.com');
-is $r1.url, 'http://test.com', 'uri 1/4';
+$file = '/cat/b.a?r=1&r=2';
+$r1.uri('http://test.com' ~ $file);
+is $r1.url, 'http://test.com' ~ $file, 'uri 1/4';
 is $r1.field('Host'), 'test.com', 'uri 2/4';
+is $r1.file, $file, 'uri 3/4';
+ok $r1.Str ~~ /^POST\s$file/, 'uri 4/4';
 
 # check construction of host header
 $r1.uri('http://test.com:8080');
