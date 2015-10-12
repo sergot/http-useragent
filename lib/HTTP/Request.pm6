@@ -17,14 +17,13 @@ my $CRLF = "\r\n";
 
 multi method new(*%args) {
     my ($method, $url, $file, %fields, $uri);
-    
+
     for %args.kv -> $key, $value {
         if $key.lc ~~ any(<get post head put delete>) {
             $uri = $value.isa(URI) ?? $value !! URI.new($value);
             $url = $uri.grammar.parse_result.orig;
             $method = $key.uc;
-            $file = $uri.path || '/';
-            $file ~= "?{$uri.query}" if $uri.query;
+            $file = $uri.path_query || '/';
         } else {
             %fields{$key} = $value;
         }
@@ -51,6 +50,7 @@ method set-method($method) { $.method = $method.uc }
 multi method uri($uri is copy where URI|Str) {
     $!uri = $uri.isa(Str) ?? URI.new($uri) !! $uri ;
     $!url = $!uri.grammar.parse_result.orig;
+    $!file = $!uri.path_query || '/';
     $.header.field(Host => get-host-value($!uri));
     $!uri;
 }
@@ -66,7 +66,7 @@ multi method host() returns Str is rw {
     $!host;
 }
 
-multi method  port() returns Int is rw {
+multi method port() returns Int is rw {
     if not $!port.defined {
         # if there isn't a scheme the no default port
         if try self.uri.scheme {
@@ -137,7 +137,7 @@ Module provides functionality to easily manage HTTP requests.
 
 A constructor, takes parameters like:
 
-=item method => URL, where method can be POST, GET ... etc. 
+=item method => URL, where method can be POST, GET ... etc.
 =item field => values, header fields
 
     my $req = HTTP::Request.new(:GET<example.com>, :h1<v1>);
