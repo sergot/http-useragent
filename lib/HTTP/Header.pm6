@@ -52,7 +52,7 @@ multi method field(*%fields) {
     for %fields.kv -> $k, $v {
         my $f = HTTP::Header::Field.new(:name($k), :values($v.list));
         if @.fields.first({ .name.lc eq $k.lc }) {
-            @.fields[@.fields.first-index({ .name eq $k })] = $f;
+            @.fields[@.fields.first-index({ .name.lc eq $k.lc })] = $f;
         } else {
             @.fields.push: $f;
         }
