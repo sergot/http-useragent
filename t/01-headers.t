@@ -2,7 +2,7 @@ use Test;
 
 use HTTP::Header;
 
-plan 13;
+plan 14;
 
 # new
 my $h = HTTP::Header.new(a => "A", b => "B");
@@ -10,13 +10,16 @@ my $h = HTTP::Header.new(a => "A", b => "B");
 is ~$h.field('b'), 'B', 'new';
 
 # field
-is ~$h.field('a'), 'A', 'field 1/3';
+is ~$h.field('a'), 'A', 'field 1/4';
 
 $h.field(a => ['a', 'a1']);
-is ~$h.field('a'), 'a, a1', 'field 2/3';
+is ~$h.field('a'), 'a, a1', 'field 2/4';
 
 $h.field(a => 'a');
-is ~$h.field('a'), 'a', 'field 3/3';
+is ~$h.field('a'), 'a', 'field 3/4';
+
+# case insensitive
+is ~$h.field('A'), 'a', 'field 4/4';
 
 # init-field
 $h.init-field(b => 'b');

@@ -51,7 +51,7 @@ method new(*%fields) {
 multi method field(*%fields) {
     for %fields.kv -> $k, $v {
         my $f = HTTP::Header::Field.new(:name($k), :values($v.list));
-        if @.fields.first({ .name eq $k }) {
+        if @.fields.first({ .name.lc eq $k.lc }) {
             @.fields[@.fields.first-index({ .name eq $k })] = $f;
         } else {
             @.fields.push: $f;
@@ -61,13 +61,13 @@ multi method field(*%fields) {
 
 # get fields
 multi method field($field) {
-    return @.fields.first({ .name eq $field });
+    return @.fields.first({ .name.lc eq $field.lc });
 }
 
 # initialize fields
 method init-field(*%fields) {
     for %fields.kv -> $k, $v {
-        if not @.fields.grep({ .name eq $k }) {
+        if not @.fields.grep({ .name.lc eq $k.lc }) {
             @.fields.push: HTTP::Header::Field.new(:name($k), :values($v.list));
         }
     }
@@ -76,13 +76,13 @@ method init-field(*%fields) {
 # add value to existing fields
 method push-field(*%fields) {
     for %fields.kv -> $k, $v {
-        @.fields.first({ .name eq $k }).values.append: $v.list;
+        @.fields.first({ .name.lc eq $k.lc }).values.append: $v.list;
     }
 }
 
 # remove a field
 method remove-field(Str $field) {
-    my $index = @.fields.first-index({ .name eq $field });
+    my $index = @.fields.first-index({ .name.lc eq $field.lc });
     @.fields.splice($index, 1);
 }
 
