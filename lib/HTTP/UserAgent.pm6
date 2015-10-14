@@ -54,6 +54,22 @@ has $.auth_password;
 has Int $.max-redirects is rw;
 has @.history;
 
+my sub search-header-end(Blob $input) {
+    my $i = 0;
+    my $input-bytes = $input.bytes;
+    while $i+2 < $input-bytes {
+        # CRLF
+        if $i+4 < $input-bytes && $input[$i] == 0x0d && $input[$i+1]==0x0a && $input[$i+2]==0x0d && $input[$i+3]==0x0a {
+            return $i+4;
+        }
+        if $input[$i] == 0x0a && $input[$i+1]==0x0a {
+            return $i+2;
+        }
+        $i++;
+    }
+    return Nil;
+}
+
 my sub _index_buf(Blob $input, Blob $sub) {
     my $end-pos = 0;
     while $end-pos < $input.bytes {
@@ -63,28 +79,6 @@ my sub _index_buf(Blob $input, Blob $sub) {
         $end-pos++;
     }
     return -1;
-}
-
-# Helper method which implements the same logic as Str.split() but for Bufs.
-multi _split_buf(Str $delimiter, Blob $input, $limit = Inf --> List) {
-    _split_buf($delimiter.encode, $input, $limit);
-}
-multi _split_buf(Blob $delimiter, Blob $input, $limit = Inf --> List) {
-    my @result;
-    my @a            = $input.list;
-    my @b            = $delimiter.list;
-    my $old_delim_pos = 0;
-    
-    while $old_delim_pos >= 0 && +@result + 1 < $limit {
-        my $new_delim_pos = @a.first-index({ @a[(state $i = -1) .. $i++ + @b] ~~ @b }) // last;
-        last if $new_delim_pos < 0;
-        @result.push: $input.subbuf($old_delim_pos, $new_delim_pos);
-        $old_delim_pos = $new_delim_pos + $delimiter.bytes;
-    }
-    if $old_delim_pos < +@a {
-        @result.push: $input.subbuf($old_delim_pos);
-    }
-    @result
 }
 
 submethod BUILD(:$!useragent, :$!max-redirects = 5) {
@@ -152,23 +146,23 @@ multi method request(HTTP::Request $request) {
 
             # Find the header/body separator in the chunk, which means we can parse the header seperately and are
             # able to figure out the correct encoding of the body.
-            $msg-body-pos = _index_buf($first-chunk, CRLFCRLF);
-            last if $msg-body-pos >= 0;
+            $msg-body-pos = search-header-end($first-chunk);
+            last if $msg-body-pos.defined;
         }
 
-        if $msg-body-pos < 0 {
+        if !$msg-body-pos.defined {
             X::HTTP::Internal.new(rc => 500, reason => "server returned no data").throw;
         }
 
-        # +2 because we need a trailing CRLF in the header.
-        $msg-body-pos   += 2 if $msg-body-pos >= 0;
-
-        my ($response-line, $header) = _split_buf(CRLF, $first-chunk.subbuf(0, $msg-body-pos), 2)».decode('ascii');
+        my ($response-line, $header) = $first-chunk.subbuf(0, $msg-body-pos)
+            .decode('ascii')
+            .split(/\x0d?\x0a/, 2);
         $response .= new( $response-line.split(' ')[1].Int );
-        $response.header.parse( $header );
+        $response.header.parse( $header.subst(/"\x0d"? "\x0a" $/, '') );
         $response.request = $request;
 
-        my $content = $first-chunk.subbuf($msg-body-pos+2);
+        # 4: "\r\n\r\n".elems
+        my $content = $first-chunk.subbuf($msg-body-pos);
 
         # We also need to handle 'Transfer-Encoding: chunked', which means
         # that we request more chunks and assemble the response body.
