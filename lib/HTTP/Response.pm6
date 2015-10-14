@@ -49,7 +49,6 @@ method next-request() returns HTTP::Request {
 
         my %args = $method => $location;
         $new-request = HTTP::Request.new(|%args);
-        $new-request.header.fields = self.request.header.fields.clone;
         if not ~$new-request.header.field('Host').values {
             my $hh = ~$!request.header.field('Host').values;
             $new-request.header.field(Host => $hh);
