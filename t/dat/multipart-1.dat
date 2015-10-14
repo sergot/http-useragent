@@ -1,0 +1,17 @@
+POST / HTTP/1.1
+Host: 127.0.0.1
+content-type: multipart/form-data; boundary=XxYyZ
+content-length: 190
+
+--XxYyZ
+Content-Disposition: form-data; name="x"; filename="foo.txt"
+content-type: application/octet-stream
+
+bar
+
+--XxYyZ
+Content-Disposition: form-data; name="foo"
+
+b&r
+--XxYyZ--
+
