@@ -39,10 +39,17 @@ method next-request() returns HTTP::Request {
     my $location = ~self.header.field('Location').values;
 
     if $location.defined {
-        my %args = $!request.method => $location;
+        # Special case for the HTTP status code 303 (redirection):
+        # The response to the request can be found under another URI using
+        # a seperate GET method. This relates to POST, PUT and DELETE methods.
+        my $method = $!request.method;
+        $method = "GET"
+          if self.code == 303 &&
+             $!request.method eq any('POST', 'PUT', 'DELETE');
+
+        my %args = $method => $location;
         $new-request = HTTP::Request.new(|%args);
         $new-request.header.fields = self.request.header.fields.clone;
-        $new-request.content = self.request.content.clone;
         if not ~$new-request.header.field('Host').values {
             my $hh = ~$!request.header.field('Host').values;
             $new-request.header.field(Host => $hh);
