@@ -57,11 +57,12 @@ has @.history;
 my sub search-header-end(Blob $input) {
     my $i = 0;
     my $input-bytes = $input.bytes;
-    while $i+2 < $input-bytes {
+    while $i+2 <= $input-bytes {
         # CRLF
-        if $i+4 < $input-bytes && $input[$i] == 0x0d && $input[$i+1]==0x0a && $input[$i+2]==0x0d && $input[$i+3]==0x0a {
+        if $i+4 <= $input-bytes && $input[$i] == 0x0d && $input[$i+1]==0x0a && $input[$i+2]==0x0d && $input[$i+3]==0x0a {
             return $i+4;
         }
+        # LF
         if $input[$i] == 0x0a && $input[$i+1]==0x0a {
             return $i+2;
         }
@@ -151,6 +152,7 @@ multi method request(HTTP::Request $request) {
         }
 
         if !$msg-body-pos.defined {
+            $first-chunk.perl.say;
             X::HTTP::Internal.new(rc => 500, reason => "server returned no data").throw;
         }
 
