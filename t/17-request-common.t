@@ -5,6 +5,20 @@ use HTTP::Request::Common;
 
 subtest {
     subtest {
+        my $req = POST(
+            'http://127.0.0.1/',
+            {
+                foo => "b&r",
+                x   => ['t/dat/foo.txt'],
+            },
+            content-type => 'multipart/form-data; boundary=XxYyZ'
+        );
+        is $req.Str, slurp("t/dat/multipart-1.dat");
+    }, 'uri';
+}, 'POST(multi-part)';
+
+subtest {
+    subtest {
         my $req = POST(URI.new('http://127.0.0.1/'), {
             foo => "b&r\x1F42B",
         });
