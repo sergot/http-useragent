@@ -14,7 +14,6 @@ use File::Temp;
 use MIME::Base64;
 
 constant CRLF = Buf.new(13, 10);
-constant CRLFCRLF = Buf.new(13, 10, 13, 10);
 
 class X::HTTP is Exception {
     has $.rc;
