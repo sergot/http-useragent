@@ -152,7 +152,6 @@ multi method request(HTTP::Request $request) {
         }
 
         if !$msg-body-pos.defined {
-            $first-chunk.perl.say;
             X::HTTP::Internal.new(rc => 500, reason => "server returned no data").throw;
         }
 
