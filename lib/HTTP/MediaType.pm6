@@ -12,33 +12,36 @@ my grammar MediaTypeGrammar {
     token TOP { <media-type> }
 
     # https://tools.ietf.org/html/rfc7231#section-3.1.1.1
-    token media-type { <type> "/" <subtype> [ <OWS> ";" <OWS> <parameter> ]* }
-    token type { <_token> }
-    token subtype { <_token> }
+    token media-type { <type> "/" <subtype> [ <.OWS> ";" <.OWS> <parameter> ]* }
+    token type { <._token> }
+    token subtype { <._token> }
 
     token parameter { <parameter-key> "=" <parameter-value> }
-    token parameter-key { <_token> }
-    token parameter-value { <_token> | <quoted-string> }
+    token parameter-key { <._token> }
+    token parameter-value { <._token> || <.quoted-string> }
 
     # https://tools.ietf.org/html/rfc7230#section-3.2.3
     # optional white space
-    token OWS { [ <SP> | <HTAB> ]* }
+    token OWS { [ <.SP> || <.HTAB> ]* }
 
     # https://tools.ietf.org/html/rfc7230#section-3.2.6
-    token _token { <tchar>+ }
-    token tchar { [ "!" | "#" | '$' | "%" | "&" | "'" | "*"
-                    | "+" | "-" | "." | "^" | "_" | "`" | "|" | "~"
-                                    | <DIGIT> | <ALPHA> ] }
-    token quoted-string { <DQUOTE> *( <qdtext> | <quoted-pair> ) <DQUOTE> }
-    token qdtext        { <HTAB> | <SP> | "\x21" | <[\x23 .. \x5B]> | <[\x5D .. \x7E]> | <obs-text> }
+    token _token { <.tchar>+ }
+    token tchar {
+        || < ! # $ % & ' * + - . ^ _ ` | ~ >
+        || <.DIGIT>
+        || <.ALPHA>
+    }
+    token quoted-string { <.DQUOTE> [<.qdtext> || <.quoted-pair>]* <.DQUOTE> }
+    token qdtext { <.HTAB> || <.SP> || "\x21" || <[\x23 .. \x5B]> || <[\x5D .. \x7E]> || <.obs-text> }
     token obs-text { <[\x80..\xff]> }
-    token quoted-pair { '\\' [ <HTAB> | <SP> | <VCHAR> | <obs-text> ] }
+    token quoted-pair { '\\' [ <.HTAB> || <.SP> || <.VCHAR> || <.obs-text> ] }
 
     # https://tools.ietf.org/html/rfc5234#appendix-B.1
     token DIGIT { <[ 0..9 ]> }
     token ALPHA { <[ A..Z a..z ]> }
     token SP { "\x20" }
     token HTAB { "\x09" }
+    token DQUOTE { "\x22" }
     # visible (printing) characters
     token  VCHAR { <[\x21..\x7E]> }
 }
