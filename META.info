@@ -20,8 +20,10 @@
         "HTTP::Header" : "lib/HTTP/Header.pm6",
         "HTTP::Header::Field" : "lib/HTTP/Header/Field.pm6",
         "HTTP::Message" : "lib/HTTP/Message.pm6",
-        "HTTP::Request" : "lib/HTTP/Response.pm6",
-        "HTTP::Response" : "lib/HTTP/Request.pm6"
+        "HTTP::Request" : "lib/HTTP/Request.pm6",
+        "HTTP::Request::Common" : "lib/HTTP/Request/Common.pm6",
+        "HTTP::Response" : "lib/HTTP/Response.pm6",
+        "HTTP::MediaType" : "lib/HTTP/MediaType.pm6"
     },
     "source-url"    : "git://github.com/sergot/http-useragent.git"
 }
