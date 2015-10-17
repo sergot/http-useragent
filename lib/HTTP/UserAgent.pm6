@@ -201,7 +201,7 @@ multi method request(HTTP::Request $request) {
             };
         }
         elsif $response.header.field('Content-Length').values[0] -> $content-length is copy {
-            X::HTTP::Header.new( :rc("Content-Length header value '$content-length' is not numeric") ).throw
+            X::HTTP::Header.new( :rc("Content-Length header value '$content-length' is not numeric"), :response($response) ).throw
                 unless ($content-length = try +$content-length).defined;
             # Let the content grow until we have reached the desired size.
             while $content-length > $content.bytes {
@@ -230,15 +230,15 @@ multi method request(HTTP::Request $request) {
         when /^3/ { 
             when $.max-redirects < +@.history
             && all(@.history.reverse[0..$.max-redirects]>>.code)  {
-                X::HTTP::Response.new(:rc('Max redirects exceeded')).throw;
+                X::HTTP::Response.new(:rc('Max redirects exceeded'), :response($response)).throw;
             }
             default {
                 my $new-request = $response.next-request();
                 return self.request($new-request);
             }
         } 
-        when /^4/ { X::HTTP::Response.new(:rc($response.status-line)).throw }
-        when /^5/ { X::HTTP::Server.new(:rc($response.status-line)).throw }
+        when /^4/ { X::HTTP::Response.new(:rc($response.status-line), :response($response)).throw }
+        when /^5/ { X::HTTP::Server.new(:rc($response.status-line), :response($response)).throw }
     }        
 
     # save cookies
