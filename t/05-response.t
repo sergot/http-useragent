@@ -2,7 +2,7 @@ use Test;
 
 use HTTP::Response;
 
-plan 13;
+plan 14;
 
 # new
 my $r = HTTP::Response.new(200, a => 'a');
@@ -22,8 +22,11 @@ is $r.status-line, '200 OK', 'status-line 1/1';
 
 # is-success
 ok $r.is-success, 'is-success 1/2';
+## 200-300 status is-success
+$r.set-code(204);
+ok $r.is-success, 'is-success 2/2';
 $r.set-code(404);
-ok !$r.is-success, 'is-success  2/2';
+ok !$r.is-success, 'is-success  2/3';
 
 # set-code
 is $r.status-line, '404 Not Found', 'set-code 1/1';

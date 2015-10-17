@@ -20,12 +20,12 @@ method new(Int $code? = 200, *%fields) {
 }
 
 method is-success {
-    return so $!code ~~ "200";
+    return so is-success($!code);
 }
 
 method is-chunked {
    return self.header.field('Transfer-Encoding') &&
-          self.header.field('Transfer-Encoding') eq 'chunked' ?? True !! False; 
+          self.header.field('Transfer-Encoding') eq 'chunked' ?? True !! False;
 }
 
 method set-code(Int $code) {
