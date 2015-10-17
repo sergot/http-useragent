@@ -17,6 +17,7 @@ constant CRLF = Buf.new(13, 10);
 
 class X::HTTP is Exception {
     has $.rc;
+    has HTTP::Response $.response;
 }
 
 class X::HTTP::Internal is Exception {
