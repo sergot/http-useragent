@@ -165,56 +165,58 @@ multi method request(HTTP::Request $request) {
         # 4: "\r\n\r\n".elems
         my $content = $first-chunk.subbuf($msg-body-pos);
 
-        # We also need to handle 'Transfer-Encoding: chunked', which means
-        # that we request more chunks and assemble the response body.
-        if $response.is-chunked {
-            my Buf $chunk = $content.clone;
-            $content  = Buf.new;
-            # We carry on as long as we receive something.
-            PARSE_CHUNK: loop {
-                my $end_pos = _index_buf($chunk, CRLF);
-                if $end_pos >= 0 {
-                    my $size = $chunk.subbuf(0, $end_pos).decode;
-                    # remove optional chunk extensions
-                    $size = $size.subst(/';'.*$/, '');
-                    # www.yahoo.com sends additional spaces(maybe invalid)
-                    $size = $size.subst(/' '*$/, '');
-                    $chunk = $chunk.subbuf($end_pos+2);
-                    my $chunk-size = :16($size);
-                    if $chunk-size == 0 {
-                        last PARSE_CHUNK;
+        if $response.has-content {
+            # We also need to handle 'Transfer-Encoding: chunked', which means
+            # that we request more chunks and assemble the response body.
+            if $response.is-chunked {
+                my Buf $chunk = $content.clone;
+                $content  = Buf.new;
+                # We carry on as long as we receive something.
+                PARSE_CHUNK: loop {
+                    my $end_pos = _index_buf($chunk, CRLF);
+                    if $end_pos >= 0 {
+                        my $size = $chunk.subbuf(0, $end_pos).decode;
+                        # remove optional chunk extensions
+                        $size = $size.subst(/';'.*$/, '');
+                        # www.yahoo.com sends additional spaces(maybe invalid)
+                        $size = $size.subst(/' '*$/, '');
+                        $chunk = $chunk.subbuf($end_pos+2);
+                        my $chunk-size = :16($size);
+                        if $chunk-size == 0 {
+                            last PARSE_CHUNK;
+                        }
+                        while $chunk-size+2 > $chunk.bytes {
+                            $chunk ~= $conn.recv($chunk-size+2-$chunk.bytes, :bin);
+                        }
+                        $content ~= $chunk.subbuf(0, $chunk-size);
+                        $chunk = $chunk.subbuf($chunk-size+2);
+                    } else {
+                        # XXX Reading 1 byte is inefficient code.
+                        #
+                        # But IO::Socket#read/IO::Socket#recv reads from socket until
+                        # fill the requested size.
+                        #
+                        # It cause hang-up on socket reading.
+                        $chunk ~= $conn.recv(1, :bin);
                     }
-                    while $chunk-size+2 > $chunk.bytes {
-                        $chunk ~= $conn.recv($chunk-size+2-$chunk.bytes, :bin);
-                    }
-                    $content ~= $chunk.subbuf(0, $chunk-size);
-                    $chunk = $chunk.subbuf($chunk-size+2);
-                } else {
-                    # XXX Reading 1 byte is inefficient code.
-                    #
-                    # But IO::Socket#read/IO::Socket#recv reads from socket until
-                    # fill the requested size.
-                    #
-                    # It cause hang-up on socket reading.
-                    $chunk ~= $conn.recv(1, :bin);
+                };
+            }
+            elsif $response.header.field('Content-Length').values[0] -> $content-length is copy {
+                X::HTTP::Header.new( :rc("Content-Length header value '$content-length' is not numeric"), :response($response) ).throw
+                    unless ($content-length = try +$content-length).defined;
+                # Let the content grow until we have reached the desired size.
+                while $content-length > $content.bytes {
+                    $content ~= $conn.recv($content-length - $content.bytes, :bin);
                 }
-            };
-        }
-        elsif $response.header.field('Content-Length').values[0] -> $content-length is copy {
-            X::HTTP::Header.new( :rc("Content-Length header value '$content-length' is not numeric"), :response($response) ).throw
-                unless ($content-length = try +$content-length).defined;
-            # Let the content grow until we have reached the desired size.
-            while $content-length > $content.bytes {
-                $content ~= $conn.recv($content-length - $content.bytes, :bin);
             }
-        }
-        else {
-            while my $new_content = $conn.recv(:bin) {
-                $content ~= $new_content;
+            else {
+                while my $new_content = $conn.recv(:bin) {
+                    $content ~= $new_content;
+                }
             }
-        }
 
-        $response.content = $content andthen $response.content = $response.decoded-content;
+            $response.content = $content andthen $response.content = $response.decoded-content;
+        }
     }
     $conn.close;
     
