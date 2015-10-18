@@ -53,6 +53,7 @@ has $.auth_login;
 has $.auth_password;
 has Int $.max-redirects is rw;
 has @.history;
+has Bool $.no-exceptions;
 
 my sub search-header-end(Blob $input) {
     my $i = 0;
@@ -82,7 +83,7 @@ my sub _index_buf(Blob $input, Blob $sub) {
     return -1;
 }
 
-submethod BUILD(:$!useragent, :$!max-redirects = 5) {
+submethod BUILD(:$!useragent, Bool :$!no-exceptions, :$!max-redirects = 5) {
     $!useragent = get-ua($!useragent) if $!useragent.defined;
 }
 
