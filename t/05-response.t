@@ -2,7 +2,7 @@ use Test;
 
 use HTTP::Response;
 
-plan 14;
+plan 16;
 
 # new
 my $r = HTTP::Response.new(200, a => 'a');
@@ -38,3 +38,10 @@ is $r.Str, $res, 'parse - Str 1/4';
 is $r.content, 'content', 'parse - content 2/4';
 is $r.status-line, '200 OK', 'parse - status-line 3/4';
 is $r.protocol, 'HTTP/1.1', 'parse - protocol 4/4';
+
+# has-content
+
+$r = HTTP::Response.new(204);
+ok !$r.has-content, "has-content 1/2";
+$r.set-code(200);
+ok $r.has-content, "has-content 2/2";

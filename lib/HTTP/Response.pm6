@@ -23,6 +23,11 @@ method is-success {
     return so is-success($!code);
 }
 
+# please extend as necessary
+method has-content returns Bool {
+    $!code == 204 ?? False !! True;
+}
+
 method is-chunked {
    return self.header.field('Transfer-Encoding') &&
           self.header.field('Transfer-Encoding') eq 'chunked' ?? True !! False;
