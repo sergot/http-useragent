@@ -240,8 +240,14 @@ multi method request(HTTP::Request $request) {
                 return self.request($new-request);
             }
         } 
-        when /^4/ { X::HTTP::Response.new(:rc($response.status-line), :response($response)).throw }
-        when /^5/ { X::HTTP::Server.new(:rc($response.status-line), :response($response)).throw }
+        if !$!no-exceptions {
+            when /^4/ { 
+                X::HTTP::Response.new(:rc($response.status-line), :response($response)).throw 
+            }
+            when /^5/ { 
+                X::HTTP::Server.new(:rc($response.status-line), :response($response)).throw 
+            }
+        }
     }        
 
     # save cookies
