@@ -314,7 +314,32 @@ It has TLS/SSL support.
 
 =head2 method new
 
-Default constructor
+    method new(HTTP::UserAgent:U: :$!useragent, Bool :$!no-exceptions, :$!max-redirects = 5) returns HTTP::UserAgent
+
+Default constructor.
+
+There are three optional named arguments:
+
+=item useragent 
+
+A string that specifies what will be provided in the C<User-Agent> header in
+the request.  A number of standard user agents are described in
+L<HTTP::UserAgent::Common>, but a string that is not specified there will be
+used verbatim.
+
+=item no-exceptions 
+
+By default the C<request> method will throw an exception if the response
+from the server indicates that the request was unsuccesfull.  If this is
+specified then an exception will not be thrown and the L<HTTP::Response>
+will be returned, in this case you should be careful to check C<is-success>
+or the C<code> on the response.
+
+=item max-redirects
+
+This is the maximum number of redirects allowed for a single request, if
+this is exceeded then an exception will be thrown (this is not covered by
+C<no-exceptions> above and will always be throw,) the default value is 5.
 
 =head2 method auth
 
@@ -324,9 +349,23 @@ Sets username and password needed to HTTP Auth.
 
 =head2 method get
 
-    method get(HTTP::UserAgent:, Str $url is copy) returns HTTP::Response
+    multi method get(HTTP::UserAgent:, Str $url is copy) returns HTTP::Response
+    multi method get(HTTP::UserAgent: URI $uri) returns HTTP::Response
 
-Requests the $url site, returns HTTP::Response on success, otherwise it throws exceptions.
+Requests the $url site, returns HTTP::Response on success, otherwise it
+throws exceptions (except if no-exceptions is set as described above.)
+
+=head2 method request
+
+    method request(HTTP::UserAgent: HTTP::Request $request) returns HTTP::Response
+
+Performs the request described by the supplied L<HTTP::Request>, returns
+a L<HTTP::Response> on success, otherwise throwing an exception (unless
+no-exceptions is set as described in the constructor.)
+
+You can use the helper subroutines defined in L<HTTP::Request::Common> to
+create the L<HTTP::Request> for you or create it yourself if you have more
+complex requirements.
 
 =head2 routine get :simple
 
