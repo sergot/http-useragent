@@ -51,7 +51,7 @@ multi method uri($uri is copy where URI|Str) {
     $!uri = $uri.isa(Str) ?? URI.new($uri) !! $uri ;
     $!url = $!uri.grammar.parse_result.orig;
     $!file = $!uri.path_query || '/';
-    $.header.field(Host => get-host-value($!uri));
+    self.field(Host => get-host-value($!uri));
     $!uri;
 }
 
@@ -61,7 +61,7 @@ multi method uri() is rw {
 
 multi method host() returns Str is rw {
     if not $!host.defined {
-         $!host = ~self.header.field('Host').values;
+         $!host = ~self.field('Host').values;
     }
     $!host;
 }

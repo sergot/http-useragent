@@ -108,10 +108,10 @@ multi method request(HTTP::Request $request) {
     $.cookies.add-cookie-header($request) if $.cookies.cookies.elems;
 
     # set the useragent
-    $request.header.field(User-Agent => $.useragent) if $.useragent.defined;
+    $request.field(User-Agent => $.useragent) if $.useragent.defined;
 
     # use HTTP Auth
-    $request.header.field(
+    $request.field(
         Authorization => "Basic " ~ MIME::Base64.encode-str("{$!auth_login}:{$!auth_password}")
     ) if $!auth_login.defined && $!auth_password.defined;
 
@@ -124,10 +124,10 @@ multi method request(HTTP::Request $request) {
         my ($proxy_host, $proxy_auth) = $http_proxy.split('/').[2].split('@', 2).reverse;
         ($host, $port) = $proxy_host.split(':');
         $port.=Int;
-        $request.header.field(
+        $request.field(
             Proxy-Authorization => "Basic " ~ MIME::Base64.encode-str($proxy_auth)
         ) if $proxy_auth;
-        $request.header.field(Connection => 'close');
+        $request.field(Connection => 'close');
     }
     my $conn;
     if $request.scheme eq 'https' {
@@ -202,7 +202,7 @@ multi method request(HTTP::Request $request) {
                     }
                 };
             }
-            elsif $response.header.field('Content-Length').values[0] -> $content-length is copy {
+            elsif $response.field('Content-Length').values[0] -> $content-length is copy {
                 X::HTTP::Header.new( :rc("Content-Length header value '$content-length' is not numeric"), :response($response) ).throw
                     unless ($content-length = try +$content-length).defined;
                 # Let the content grow until we have reached the desired size.

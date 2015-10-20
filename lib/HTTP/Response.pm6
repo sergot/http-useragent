@@ -29,8 +29,8 @@ method has-content returns Bool {
 }
 
 method is-chunked {
-   return self.header.field('Transfer-Encoding') &&
-          self.header.field('Transfer-Encoding') eq 'chunked' ?? True !! False;
+   return self.field('Transfer-Encoding') &&
+          self.field('Transfer-Encoding') eq 'chunked' ?? True !! False;
 }
 
 method set-code(Int $code) {
@@ -54,9 +54,9 @@ method next-request() returns HTTP::Request {
 
         my %args = $method => $location;
         $new-request = HTTP::Request.new(|%args);
-        if not ~$new-request.header.field('Host').values {
-            my $hh = ~$!request.header.field('Host').values;
-            $new-request.header.field(Host => $hh);
+        if not ~$new-request.field('Host').values {
+            my $hh = ~$!request.field('Host').values;
+            $new-request.field(Host => $hh);
             $new-request.host = $!request.host;
             $new-request.port = $!request.port;
         }
