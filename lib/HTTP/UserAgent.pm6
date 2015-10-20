@@ -53,7 +53,7 @@ has $.auth_login;
 has $.auth_password;
 has Int $.max-redirects is rw;
 has @.history;
-has Bool $.no-exceptions;
+has Bool $.throw-exceptions;
 
 my sub search-header-end(Blob $input) {
     my $i = 0;
@@ -83,7 +83,7 @@ my sub _index_buf(Blob $input, Blob $sub) {
     return -1;
 }
 
-submethod BUILD(:$!useragent, Bool :$!no-exceptions, :$!max-redirects = 5) {
+submethod BUILD(:$!useragent, Bool :$!throw-exceptions, :$!max-redirects = 5) {
     $!useragent = get-ua($!useragent) if $!useragent.defined;
 }
 
@@ -240,7 +240,7 @@ multi method request(HTTP::Request $request) {
                 return self.request($new-request);
             }
         } 
-        if !$!no-exceptions {
+        if $!throw-exceptions {
             when /^4/ { 
                 X::HTTP::Response.new(:rc($response.status-line), :response($response)).throw 
             }
@@ -257,19 +257,19 @@ multi method request(HTTP::Request $request) {
 
 # :simple
 our sub get($target where URI|Str) is export(:simple) {
-    my $ua = HTTP::UserAgent.new;
+    my $ua = HTTP::UserAgent.new(:throw-exceptions);
     my $response = $ua.get($target);
 
     return $response.decoded-content;
 }
 
 our sub head(Str $url) is export(:simple) {
-    my $ua = HTTP::UserAgent.new;
+    my $ua = HTTP::UserAgent.new(:throw-exceptions);
     return $ua.get($url).header.fields<Content-Type Content-Length Last-Modified Expires Server>;
 }
 
 our sub getprint(Str $url) is export(:simple) {
-    my $response = HTTP::UserAgent.new.get($url);
+    my $response = HTTP::UserAgent.new(:throw-exceptions).get($url);
     print $response.decoded-content;
     $response.code;
 }
@@ -314,7 +314,7 @@ It has TLS/SSL support.
 
 =head2 method new
 
-    method new(HTTP::UserAgent:U: :$!useragent, Bool :$!no-exceptions, :$!max-redirects = 5) returns HTTP::UserAgent
+    method new(HTTP::UserAgent:U: :$!useragent, Bool :$!throw-exceptions, :$!max-redirects = 5) returns HTTP::UserAgent
 
 Default constructor.
 
@@ -327,13 +327,14 @@ the request.  A number of standard user agents are described in
 L<HTTP::UserAgent::Common>, but a string that is not specified there will be
 used verbatim.
 
-=item no-exceptions 
+=item throw-exceptions 
 
-By default the C<request> method will throw an exception if the response
-from the server indicates that the request was unsuccesfull.  If this is
-specified then an exception will not be thrown and the L<HTTP::Response>
-will be returned, in this case you should be careful to check C<is-success>
-or the C<code> on the response.
+By default the C<request> method will not throw an exception if the
+response from the server indicates that the request was unsuccesful, in
+this case you should check C<is-success> to determine the status of the
+L<HTTP::Response> returned.  If this is specified then an exception will
+be thrown if the request was not a success, however you can still retrieve
+the response from the C<response> attribute of the exception object.
 
 =item max-redirects
 
@@ -352,16 +353,18 @@ Sets username and password needed to HTTP Auth.
     multi method get(HTTP::UserAgent:, Str $url is copy) returns HTTP::Response
     multi method get(HTTP::UserAgent: URI $uri) returns HTTP::Response
 
-Requests the $url site, returns HTTP::Response on success, otherwise it
-throws exceptions (except if no-exceptions is set as described above.)
+Requests the $url site, returns HTTP::Response, except if throw-exceptions
+is set as described above whereby an exception will be thrown if the
+response indicates that the request wasn't successfull.
 
 =head2 method request
 
     method request(HTTP::UserAgent: HTTP::Request $request) returns HTTP::Response
 
 Performs the request described by the supplied L<HTTP::Request>, returns
-a L<HTTP::Response> on success, otherwise throwing an exception (unless
-no-exceptions is set as described in the constructor.)
+a L<HTTP::Response>, except if throw-exceptions is set as described above
+whereby an exception will be thrown if the response indicates that the
+request wasn't successfull.
 
 You can use the helper subroutines defined in L<HTTP::Request::Common> to
 create the L<HTTP::Request> for you or create it yourself if you have more
