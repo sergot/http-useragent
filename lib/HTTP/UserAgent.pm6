@@ -45,7 +45,7 @@ class X::HTTP::Header is X::HTTP::Server {
 
 has Int $.timeout is rw = 180;
 has $.useragent;
-has $.cookies = HTTP::Cookies.new(
+has HTTP::Cookies $.cookies = HTTP::Cookies.new(
     file     => tempfile[0],
     autosave => 1,
 );
@@ -105,7 +105,7 @@ multi method request(HTTP::Request $request) {
     my HTTP::Response $response;
 
     # add cookies to the request
-    $.cookies.add-cookie-header($request) if $.cookies.cookies.elems;
+    $request.add-cookies($.cookies);
 
     # set the useragent
     $request.field(User-Agent => $.useragent) if $.useragent.defined;

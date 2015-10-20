@@ -89,6 +89,12 @@ multi method scheme() returns Str is rw {
     $!scheme
 }
 
+method add-cookies($cookies) {
+    if $cookies.cookies.elems {
+        $cookies.add-cookie-header(self);
+    }
+}
+
 
 method Str {
     my $s = "$.method $.file $.protocol";
@@ -160,6 +166,13 @@ Sets URL to request.
 
     my $req = HTTP::Request.new;
     $req.uri: 'example.com';
+
+=head2 method add-cookies
+
+    method add-cookies(HTTP::Cookies $cookies)
+
+This will cause the appropriate cookie headers to be added from the
+supplied HTTP::Cookies object.
 
 =head2 method Str
 
