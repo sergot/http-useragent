@@ -265,7 +265,7 @@ our sub get($target where URI|Str) is export(:simple) {
 
 our sub head(Str $url) is export(:simple) {
     my $ua = HTTP::UserAgent.new(:throw-exceptions);
-    return $ua.get($url).header.fields<Content-Type Content-Length Last-Modified Expires Server>;
+    return $ua.get($url).header.hash<Content-Type Content-Length Last-Modified Expires Server>;
 }
 
 our sub getprint(Str $url) is export(:simple) {

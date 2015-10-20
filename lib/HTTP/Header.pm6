@@ -91,6 +91,11 @@ method header-field-names() {
     @.fields>>.name;
 }
 
+# return the headers as name -> value hash
+method hash() returns Hash {
+    % = @.fields.map({ $_.name => $_.values });
+}
+
 # remove all fields
 method clear() {
     @.fields = ();

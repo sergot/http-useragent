@@ -2,7 +2,7 @@ use Test;
 
 use HTTP::Header;
 
-plan 14;
+plan 16;
 
 # new
 my $h = HTTP::Header.new(a => "A", b => "B");
@@ -45,3 +45,8 @@ ok not $h.field('a'), 'remove-field 1/1';
 # clear
 $h.clear;
 ok not $h.field('b'), 'clear 1/1';
+
+$h = HTTP::Header.new(One => "one", Two => "two");
+
+is $h.hash<One>, "one", "Got one (hash 1/2)";
+is $h.hash<Two>, "two", "Got two (hash 2/2)";
