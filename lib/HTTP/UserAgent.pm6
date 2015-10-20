@@ -129,14 +129,8 @@ multi method request(HTTP::Request $request) {
         ) if $proxy_auth;
         $request.field(Connection => 'close');
     }
-    my $conn;
-    if $request.scheme eq 'https' {
-        die "Please install IO::Socket::SSL in order to fetch https sites" if ::('IO::Socket::SSL') ~~ Failure;
-        $conn = ::('IO::Socket::SSL').new(:$host, :port($port // 443), :timeout($.timeout))
-    }
-    else {
-        $conn = IO::Socket::INET.new(:$host, :port($port // 80), :timeout($.timeout));
-    }
+    my $conn = self.get-connection($request, $host, $port);
+
 
     if $conn.print($request.Str ~ "\r\n") {
         my Blob[uint8] $first-chunk = Blob[uint8].new;
@@ -255,6 +249,17 @@ multi method request(HTTP::Request $request) {
     return $response;
 }
 
+method get-connection(HTTP::Request $request, Str $host, Int $port?) {
+    my $conn;
+    if $request.scheme eq 'https' {
+        die "Please install IO::Socket::SSL in order to fetch https sites" if ::('IO::Socket::SSL') ~~ Failure;
+        $conn = ::('IO::Socket::SSL').new(:$host, :port($port // 443), :timeout($.timeout))
+    }
+    else {
+        $conn = IO::Socket::INET.new(:$host, :port($port // 80), :timeout($.timeout));
+    }
+    $conn;
+}
 # :simple
 our sub get($target where URI|Str) is export(:simple) {
     my $ua = HTTP::UserAgent.new(:throw-exceptions);
