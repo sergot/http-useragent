@@ -110,27 +110,10 @@ multi method request(HTTP::Request $request) {
     # set the useragent
     $request.field(User-Agent => $.useragent) if $.useragent.defined;
 
-    # use HTTP Auth
-    $request.field(
-        Authorization => "Basic " ~ MIME::Base64.encode-str("{$!auth_login}:{$!auth_password}")
-    ) if $!auth_login.defined && $!auth_password.defined;
+    # if auth has been provided add it to thhe request
+    self.setup-auth($request);
 
-    my $host = $request.host;
-    my $port = $request.port;
-    my $http_proxy = %*ENV<http_proxy> || %*ENV<HTTP_PROXY>;
-
-    if $http_proxy {
-        $request.file = "http://$host" ~ $request.file;
-        my ($proxy_host, $proxy_auth) = $http_proxy.split('/').[2].split('@', 2).reverse;
-        ($host, $port) = $proxy_host.split(':');
-        $port.=Int;
-        $request.field(
-            Proxy-Authorization => "Basic " ~ MIME::Base64.encode-str($proxy_auth)
-        ) if $proxy_auth;
-        $request.field(Connection => 'close');
-    }
-    my $conn = self.get-connection($request, $host, $port);
-
+    my $conn = self.get-connection($request);
 
     if $conn.print($request.Str ~ "\r\n") {
         my Blob[uint8] $first-chunk = Blob[uint8].new;
@@ -217,11 +200,7 @@ multi method request(HTTP::Request $request) {
     
     X::HTTP::Response.new(:rc('No response')).throw unless $response;
     
-    # Is there a better way to save history without saving content?
-    # Or should content be optionally cached? (useful for serving 304 Not Modified)
-    my $response-copy = $response.clone();
-    $response-copy.content = $response.content.WHAT;
-    @.history.push($response-copy);
+    self.save-response($response);
 
     given $response.code {
         when /^3/ { 
@@ -249,7 +228,34 @@ multi method request(HTTP::Request $request) {
     return $response;
 }
 
-method get-connection(HTTP::Request $request, Str $host, Int $port?) {
+method save-response(HTTP::Response $response) {
+    # Is there a better way to save history without saving content?
+    # Or should content be optionally cached? 
+    # (useful for serving 304 Not Modified)
+    my $response-copy = $response.clone();
+    $response-copy.content = $response.content.WHAT;
+    @!history.push($response-copy);
+}
+
+multi method get-connection(HTTP::Request $request ) {
+    my $host = $request.host;
+    my $port = $request.port;
+
+
+    if self.get-proxy($request) -> $http_proxy {
+        $request.file = $request.url;
+        my ($proxy_host, $proxy_auth) = $http_proxy.split('/').[2].split('@', 2).reverse;
+        ($host, $port) = $proxy_host.split(':');
+        $port.=Int;
+        if $proxy_auth.defined {
+            $request.field(Proxy-Authorization => basic-auth-token($proxy_auth));
+        }
+        $request.field(Connection => 'close');
+    }
+    self.get-connection($request, $host, $port);
+}
+
+multi method get-connection(HTTP::Request $request, Str $host, Int $port?) {
     my $conn;
     if $request.scheme eq 'https' {
         die "Please install IO::Socket::SSL in order to fetch https sites" if ::('IO::Socket::SSL') ~~ Failure;
@@ -260,6 +266,32 @@ method get-connection(HTTP::Request $request, Str $host, Int $port?) {
     }
     $conn;
 }
+
+# want the request to possibly match scheme, no_proxy etc
+method get-proxy(HTTP::Request $request) {
+    %*ENV<http_proxy> || %*ENV<HTTP_PROXY>;
+}
+
+multi sub basic-auth-token(Str $login, Str $passwd ) returns Str {
+    basic-auth-token("{$login}:{$passwd}");
+
+}
+
+multi sub basic-auth-token(Str $creds where * ~~ /':'/) returns Str {
+    "Basic " ~ MIME::Base64.encode-str($creds);
+}
+
+method setup-auth(HTTP::Request $request) {
+    # use HTTP Auth
+    if self.use-auth($request) {
+        $request.field(Authorization => basic-auth-token($!auth_login,$!auth_password));
+    }
+}
+
+method use-auth(HTTP::Request $request) {
+    $!auth_login.defined && $!auth_password.defined;
+}
+
 # :simple
 our sub get($target where URI|Str) is export(:simple) {
     my $ua = HTTP::UserAgent.new(:throw-exceptions);
