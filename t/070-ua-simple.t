@@ -2,7 +2,7 @@ use Test;
 use HTTP::UserAgent :simple;
 use Test::IO::Capture;
 
-plan 5;
+plan 7;
 
 my $url = 'http://filip.sergot.pl/';
 
@@ -17,3 +17,8 @@ is slurp('newfile'), $get, 'getstore 1/1';
 unlink 'newfile';
 
 throws-like "use HTTP::UserAgent :simple; get('http://filip.sergot.pl/404here')", X::HTTP::Response, message => "Response error: '404 Not Found'";
+
+my $head;
+
+lives-ok { $head = head $url }, "head works";
+is $head.elems, 5, "got the right number of elements";
