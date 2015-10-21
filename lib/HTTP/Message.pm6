@@ -1,7 +1,6 @@
 unit class HTTP::Message;
 
 use HTTP::Header;
-use Encode;
 
 has $.header;
 has $.content is rw;
@@ -33,6 +32,7 @@ method decoded-content {
                 !! ( $content-type ~~ /^ text / ?? 'iso-8859-1' !! 'utf-8' );
 
     my $decoded_content = try {
+        require Encode;
         Encode::decode($charset, $!content);
     } or try { 
         $!content.unpack("A*") 
