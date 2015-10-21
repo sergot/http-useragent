@@ -7,6 +7,7 @@ use HTTP::UserAgent::Common;
 
 try require IO::Socket::SSL;
 
+use Encode;
 use URI;
 
 use File::Temp;
