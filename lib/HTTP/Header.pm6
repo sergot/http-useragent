@@ -52,7 +52,7 @@ multi method field(*%fields) {
     for %fields.kv -> $k, $v {
         my $f = HTTP::Header::Field.new(:name($k), :values($v.list));
         if @.fields.first({ .name.lc eq $k.lc }) {
-            @.fields[@.fields.first-index({ .name.lc eq $k.lc })] = $f;
+            @.fields[@.fields.first({ .name.lc eq $k.lc }, :k)] = $f;
         } else {
             @.fields.push: $f;
         }
@@ -82,7 +82,7 @@ method push-field(*%fields) {
 
 # remove a field
 method remove-field(Str $field) {
-    my $index = @.fields.first-index({ .name.lc eq $field.lc });
+    my $index = @.fields.first({ .name.lc eq $field.lc }, :k);
     @.fields.splice($index, 1);
 }
 

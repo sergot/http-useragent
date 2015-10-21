@@ -75,7 +75,7 @@ multi _split_buf(Blob $delimiter, Blob $input, $limit = Inf --> List) {
     my $old_delim_pos = 0;
     
     while $old_delim_pos >= 0 && +@result + 1 < $limit {
-        my $new_delim_pos = @a.first-index({ @a[(state $i = -1) .. $i++ + @b] ~~ @b }) // last;
+        my $new_delim_pos = @a.first({ @a[(state $i = -1) .. $i++ + @b] ~~ @b }, :k) // last;
         last if $new_delim_pos < 0;
         @result.push: $input.subbuf($old_delim_pos, $new_delim_pos);
         $old_delim_pos = $new_delim_pos + $delimiter.bytes;
