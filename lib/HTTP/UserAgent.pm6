@@ -133,37 +133,7 @@ multi method request(HTTP::Request $request) {
             # We also need to handle 'Transfer-Encoding: chunked', which means
             # that we request more chunks and assemble the response body.
             if $response.is-chunked {
-                my Buf $chunk = $content.clone;
-                $content  = Buf.new;
-                # We carry on as long as we receive something.
-                PARSE_CHUNK: loop {
-                    my $end_pos = _index_buf($chunk, CRLF);
-                    if $end_pos >= 0 {
-                        my $size = $chunk.subbuf(0, $end_pos).decode;
-                        # remove optional chunk extensions
-                        $size = $size.subst(/';'.*$/, '');
-                        # www.yahoo.com sends additional spaces(maybe invalid)
-                        $size = $size.subst(/' '*$/, '');
-                        $chunk = $chunk.subbuf($end_pos+2);
-                        my $chunk-size = :16($size);
-                        if $chunk-size == 0 {
-                            last PARSE_CHUNK;
-                        }
-                        while $chunk-size+2 > $chunk.bytes {
-                            $chunk ~= $conn.recv($chunk-size+2-$chunk.bytes, :bin);
-                        }
-                        $content ~= $chunk.subbuf(0, $chunk-size);
-                        $chunk = $chunk.subbuf($chunk-size+2);
-                    } else {
-                        # XXX Reading 1 byte is inefficient code.
-                        #
-                        # But IO::Socket#read/IO::Socket#recv reads from socket until
-                        # fill the requested size.
-                        #
-                        # It cause hang-up on socket reading.
-                        $chunk ~= $conn.recv(1, :bin);
-                    }
-                };
+                $content = self.get-chunked-content($conn, $content);
             }
             elsif $response.field('Content-Length').values[0] -> $content-length is copy {
                 X::HTTP::Header.new( :rc("Content-Length header value '$content-length' is not numeric"), :response($response) ).throw
@@ -212,6 +182,42 @@ multi method request(HTTP::Request $request) {
     # save cookies
     $.cookies.extract-cookies($response);
     return $response;
+}
+
+method get-chunked-content(Connection $conn, Blob $content is rw ) {
+    my Buf $chunk = $content.clone;
+    $content  = Buf.new;
+    # We carry on as long as we receive something.
+    PARSE_CHUNK: loop {
+        my $end_pos = _index_buf($chunk, CRLF);
+        if $end_pos >= 0 {
+            my $size = $chunk.subbuf(0, $end_pos).decode;
+            # remove optional chunk extensions
+            $size = $size.subst(/';'.*$/, '');
+            # www.yahoo.com sends additional spaces(maybe invalid)
+            $size = $size.subst(/' '*$/, '');
+            $chunk = $chunk.subbuf($end_pos+2);
+            my $chunk-size = :16($size);
+            if $chunk-size == 0 {
+                last PARSE_CHUNK;
+            }
+            while $chunk-size+2 > $chunk.bytes {
+                $chunk ~= $conn.recv($chunk-size+2-$chunk.bytes, :bin);
+            }
+            $content ~= $chunk.subbuf(0, $chunk-size);
+            $chunk = $chunk.subbuf($chunk-size+2);
+        } else {
+            # XXX Reading 1 byte is inefficient code.
+            #
+            # But IO::Socket#read/IO::Socket#recv reads from socket until
+            # fill the requested size.
+            #
+            # It cause hang-up on socket reading.
+            $chunk ~= $conn.recv(1, :bin);
+        }
+    };
+
+    return $content;
 }
 
 method get-response(HTTP::Request $request, Connection $conn) {
