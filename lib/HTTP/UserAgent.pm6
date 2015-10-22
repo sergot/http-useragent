@@ -233,11 +233,8 @@ method get-response(HTTP::Request $request, Connection $conn) {
         X::HTTP::Internal.new(rc => 500, reason => "server returned no data").throw;
     }
 
-    my ($response-line, $header) = $first-chunk.subbuf(0, $msg-body-pos)
-        .decode('ascii')
-        .split(/\x0d?\x0a/, 2);
-    my HTTP::Response $response = HTTP::Response.new( $response-line.split(' ')[1].Int );
-    $response.header.parse( $header.subst(/"\x0d"? "\x0a" $/, '') );
+    my $header-chunk = $first-chunk.subbuf(0, $msg-body-pos);
+    my HTTP::Response $response = HTTP::Response.new($header-chunk);
     $response.request = $request;
 
     # 4: "\r\n\r\n".elems
