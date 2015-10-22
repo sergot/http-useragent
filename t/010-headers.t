@@ -2,7 +2,7 @@ use Test;
 
 use HTTP::Header;
 
-plan 16;
+plan 18;
 
 # new
 my $h = HTTP::Header.new(a => "A", b => "B");
@@ -50,3 +50,8 @@ $h = HTTP::Header.new(One => "one", Two => "two");
 
 is $h.hash<One>, "one", "Got one (hash 1/2)";
 is $h.hash<Two>, "two", "Got two (hash 2/2)";
+
+$h = HTTP::Header.new();
+
+lives-ok { $h.parse('ETag: "1201-51b0ce7ad3900"') }, "parse";
+is ~$h.field('ETag'), "1201-51b0ce7ad3900", "got the value we expected";
