@@ -119,7 +119,7 @@ multi method request(HTTP::Request $request) {
     # set the useragent
     $request.field(User-Agent => $.useragent) if $.useragent.defined;
 
-    # if auth has been provided add it to thhe request
+    # if auth has been provided add it to the request
     self.setup-auth($request);
 
     my Connection $conn = self.get-connection($request);
@@ -138,15 +138,10 @@ multi method request(HTTP::Request $request) {
             elsif $response.field('Content-Length').values[0] -> $content-length is copy {
                 X::HTTP::Header.new( :rc("Content-Length header value '$content-length' is not numeric"), :response($response) ).throw
                     unless ($content-length = try +$content-length).defined;
-                # Let the content grow until we have reached the desired size.
-                while $content-length > $content.bytes {
-                    $content ~= $conn.recv($content-length - $content.bytes, :bin);
-                }
+                $content = self.get-content($conn, $content, $content-length);
             }
             else {
-                while my $new_content = $conn.recv(:bin) {
-                    $content ~= $new_content;
-                }
+                $content = self.get-content($conn, $content);
             }
 
             $response.content = $content andthen $response.content = $response.decoded-content;
@@ -184,7 +179,24 @@ multi method request(HTTP::Request $request) {
     return $response;
 }
 
-method get-chunked-content(Connection $conn, Blob $content is rw ) {
+# When we have a content-length
+multi method get-content(Connection $conn, Blob $content is rw, $content-length) returns Blob {
+    # Let the content grow until we have reached the desired size.
+    while $content-length > $content.bytes {
+        $content ~= $conn.recv($content-length - $content.bytes, :bin);
+    }
+    $content;
+}
+
+# fallback when not chunked and no content length
+multi method get-content(Connection $conn, Blob $content is rw ) returns Blob {
+    while my $new_content = $conn.recv(:bin) {
+        $content ~= $new_content;
+    }
+    $content;
+}
+
+method get-chunked-content(Connection $conn, Blob $content is rw ) returns Blob {
     my Buf $chunk = $content.clone;
     $content  = Buf.new;
     # We carry on as long as we receive something.
