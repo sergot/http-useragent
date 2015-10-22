@@ -215,6 +215,7 @@ method get-response(HTTP::Request $request, Connection $conn) returns HTTP::Resp
     my Blob[uint8] $first-chunk = Blob[uint8].new;
     my $msg-body-pos;
 
+
     # Header can be longer than one chunk
     while my $t = $conn.recv( :bin ) {
         $first-chunk ~= $t;
@@ -238,14 +239,19 @@ method get-response(HTTP::Request $request, Connection $conn) returns HTTP::Resp
     my $content = $first-chunk.subbuf($msg-body-pos);
 
     if $response.has-content {
+        # Turn the inner exceptions to ours
+        # This may really want to be outside
+        CATCH {
+            when HTTP::Response::X::ContentLength {
+                X::HTTP::Header.new( :rc($_.message), :response($response) ).throw
+            }
+        }
         # We also need to handle 'Transfer-Encoding: chunked', which means
         # that we request more chunks and assemble the response body.
         if $response.is-chunked {
             $content = self.get-chunked-content($conn, $content);
         }
-        elsif $response.field('Content-Length').values[0] -> $content-length is copy {
-            X::HTTP::Header.new( :rc("Content-Length header value '$content-length' is not numeric"), :response($response) ).throw
-                unless ($content-length = try +$content-length).defined;
+        elsif $response.content-length -> $content-length is copy {
             $content = self.get-content($conn, $content, $content-length);
         }
         else {

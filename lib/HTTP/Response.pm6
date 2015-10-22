@@ -10,6 +10,13 @@ has HTTP::Request $.request is rw;
 
 my $CRLF = "\r\n";
 
+class HTTP::Response::X is Exception {
+    has $.message;
+}
+
+class HTTP::Response::X::ContentLength is HTTP::Response::X {
+}
+
 submethod BUILD(:$!code) {
     $!status-line = self.set-code($!code);
 }
@@ -26,6 +33,21 @@ multi method new(Blob $header-chunk) {
 multi method new(Int $code? = 200, *%fields) {
     my $header = HTTP::Header.new(|%fields);
     self.bless(:$code, :$header);
+}
+
+method content-length() returns Int {
+    my $content-length = self.field('Content-Length').values[0];
+
+    if $content-length.defined {
+        my $c = $content-length;
+        if not ($content-length = try +$content-length).defined {
+            HTTP::Response::X::ContentLength.new(message => "Content-Length header value '$c' is not numeric").throw;
+        }
+    }
+    else {
+        $content-length = Int
+    }
+    $content-length;
 }
 
 method is-success {

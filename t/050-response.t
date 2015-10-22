@@ -1,8 +1,12 @@
+#!perl6
+
+use v6;
+
 use Test;
 
 use HTTP::Response;
 
-plan 19;
+plan 25;
 
 # new
 my $r = HTTP::Response.new(200, a => 'a');
@@ -52,3 +56,10 @@ lives-ok { $r = HTTP::Response.new($buf) }, "create Response from a Buf";
 is $r.code, 403, "got the code we expected";
 todo("need to fix HTTP::Header.parse", 1);
 is $r.field('ETag').values[0], "1201-51b0ce7ad3900", "got a header we expected";
+
+lives-ok { $r = HTTP::Response.new(200, Content-Length => "hsh") }, "create a response with a Content-Length";
+throws-like { $r.content-length }, HTTP::Response::X::ContentLength;
+lives-ok { $r = HTTP::Response.new(200, Content-Length => "888") }, "create a response with a Content-Length";
+lives-ok { $r.content-length }, "content-length lives";
+is $r.content-length, 888, "got the right value";
+isa-ok $r.content-length, Int, "and it is an Int";
