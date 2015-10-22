@@ -109,9 +109,8 @@ multi method get(Str $uri is copy ) {
     self.get(URI.new(_clear-url($uri)));
 }
 
-multi method request(HTTP::Request $request) {
+method request(HTTP::Request $request) returns HTTP::Response {
     my HTTP::Response $response;
-    my Blob $content;
 
     # add cookies to the request
     $request.add-cookies($.cookies);
@@ -125,27 +124,7 @@ multi method request(HTTP::Request $request) {
     my Connection $conn = self.get-connection($request);
 
     if $conn.send-request($request) {
-
-         ( $response, $content ) = self.get-response($request, $conn);
-
-
-        if $response.has-content {
-            # We also need to handle 'Transfer-Encoding: chunked', which means
-            # that we request more chunks and assemble the response body.
-            if $response.is-chunked {
-                $content = self.get-chunked-content($conn, $content);
-            }
-            elsif $response.field('Content-Length').values[0] -> $content-length is copy {
-                X::HTTP::Header.new( :rc("Content-Length header value '$content-length' is not numeric"), :response($response) ).throw
-                    unless ($content-length = try +$content-length).defined;
-                $content = self.get-content($conn, $content, $content-length);
-            }
-            else {
-                $content = self.get-content($conn, $content);
-            }
-
-            $response.content = $content andthen $response.content = $response.decoded-content;
-        }
+         $response = self.get-response($request, $conn);
     }
     $conn.close;
     
@@ -232,7 +211,7 @@ method get-chunked-content(Connection $conn, Blob $content is rw ) returns Blob 
     return $content;
 }
 
-method get-response(HTTP::Request $request, Connection $conn) {
+method get-response(HTTP::Request $request, Connection $conn) returns HTTP::Response {
     my Blob[uint8] $first-chunk = Blob[uint8].new;
     my $msg-body-pos;
 
@@ -258,7 +237,24 @@ method get-response(HTTP::Request $request, Connection $conn) {
     # 4: "\r\n\r\n".elems
     my $content = $first-chunk.subbuf($msg-body-pos);
 
-    return $response, $content;
+    if $response.has-content {
+        # We also need to handle 'Transfer-Encoding: chunked', which means
+        # that we request more chunks and assemble the response body.
+        if $response.is-chunked {
+            $content = self.get-chunked-content($conn, $content);
+        }
+        elsif $response.field('Content-Length').values[0] -> $content-length is copy {
+            X::HTTP::Header.new( :rc("Content-Length header value '$content-length' is not numeric"), :response($response) ).throw
+                unless ($content-length = try +$content-length).defined;
+            $content = self.get-content($conn, $content, $content-length);
+        }
+        else {
+            $content = self.get-content($conn, $content);
+        }
+
+        $response.content = $content andthen $response.content = $response.decoded-content;
+    }
+    return $response;
 }
 
 method save-response(HTTP::Response $response) {
