@@ -111,6 +111,7 @@ multi method get(Str $uri is copy ) {
 
 multi method request(HTTP::Request $request) {
     my HTTP::Response $response;
+    my Blob $content;
 
     # add cookies to the request
     $request.add-cookies($.cookies);
@@ -124,33 +125,9 @@ multi method request(HTTP::Request $request) {
     my Connection $conn = self.get-connection($request);
 
     if $conn.send-request($request) {
-        my Blob[uint8] $first-chunk = Blob[uint8].new;
-        my $msg-body-pos;
 
-        # Header can be longer than one chunk
-        while my $t = $conn.recv( :bin ) {
-            $first-chunk ~= $t;
+         ( $response, $content ) = self.get-response($request, $conn);
 
-            # Find the header/body separator in the chunk, which means
-            # we can parse the header seperately and are  able to figure
-            # out the correct encoding of the body.
-            $msg-body-pos = search-header-end($first-chunk);
-            last if $msg-body-pos.defined;
-        }
-
-        if !$msg-body-pos.defined {
-            X::HTTP::Internal.new(rc => 500, reason => "server returned no data").throw;
-        }
-
-        my ($response-line, $header) = $first-chunk.subbuf(0, $msg-body-pos)
-            .decode('ascii')
-            .split(/\x0d?\x0a/, 2);
-        $response .= new( $response-line.split(' ')[1].Int );
-        $response.header.parse( $header.subst(/"\x0d"? "\x0a" $/, '') );
-        $response.request = $request;
-
-        # 4: "\r\n\r\n".elems
-        my $content = $first-chunk.subbuf($msg-body-pos);
 
         if $response.has-content {
             # We also need to handle 'Transfer-Encoding: chunked', which means
@@ -235,6 +212,38 @@ multi method request(HTTP::Request $request) {
     # save cookies
     $.cookies.extract-cookies($response);
     return $response;
+}
+
+method get-response(HTTP::Request $request, Connection $conn) {
+    my Blob[uint8] $first-chunk = Blob[uint8].new;
+    my $msg-body-pos;
+
+    # Header can be longer than one chunk
+    while my $t = $conn.recv( :bin ) {
+        $first-chunk ~= $t;
+
+        # Find the header/body separator in the chunk, which means
+        # we can parse the header seperately and are  able to figure
+        # out the correct encoding of the body.
+        $msg-body-pos = search-header-end($first-chunk);
+        last if $msg-body-pos.defined;
+    }
+
+    if !$msg-body-pos.defined {
+        X::HTTP::Internal.new(rc => 500, reason => "server returned no data").throw;
+    }
+
+    my ($response-line, $header) = $first-chunk.subbuf(0, $msg-body-pos)
+        .decode('ascii')
+        .split(/\x0d?\x0a/, 2);
+    my HTTP::Response $response = HTTP::Response.new( $response-line.split(' ')[1].Int );
+    $response.header.parse( $header.subst(/"\x0d"? "\x0a" $/, '') );
+    $response.request = $request;
+
+    # 4: "\r\n\r\n".elems
+    my $content = $first-chunk.subbuf($msg-body-pos);
+
+    return $response, $content;
 }
 
 method save-response(HTTP::Response $response) {
