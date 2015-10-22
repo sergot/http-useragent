@@ -43,6 +43,14 @@ class X::HTTP::Server is X::HTTP {
 class X::HTTP::Header is X::HTTP::Server {
 }
 
+# placeholder role to make signatures nicer
+# and enable greater abstraction
+role Connection {
+    method send-request(HTTP::Request $request ) {
+        self.print($request.Str ~ "\r\n");
+    }
+}
+
 has Int $.timeout is rw = 180;
 has $.useragent;
 has HTTP::Cookies $.cookies = HTTP::Cookies.new(
@@ -113,9 +121,9 @@ multi method request(HTTP::Request $request) {
     # if auth has been provided add it to thhe request
     self.setup-auth($request);
 
-    my $conn = self.get-connection($request);
+    my Connection $conn = self.get-connection($request);
 
-    if $conn.print($request.Str ~ "\r\n") {
+    if $conn.send-request($request) {
         my Blob[uint8] $first-chunk = Blob[uint8].new;
         my $msg-body-pos;
 
@@ -123,8 +131,9 @@ multi method request(HTTP::Request $request) {
         while my $t = $conn.recv( :bin ) {
             $first-chunk ~= $t;
 
-            # Find the header/body separator in the chunk, which means we can parse the header seperately and are
-            # able to figure out the correct encoding of the body.
+            # Find the header/body separator in the chunk, which means
+            # we can parse the header seperately and are  able to figure
+            # out the correct encoding of the body.
             $msg-body-pos = search-header-end($first-chunk);
             last if $msg-body-pos.defined;
         }
@@ -237,7 +246,8 @@ method save-response(HTTP::Response $response) {
     @!history.push($response-copy);
 }
 
-multi method get-connection(HTTP::Request $request ) {
+
+multi method get-connection(HTTP::Request $request ) returns Connection {
     my $host = $request.host;
     my $port = $request.port;
 
@@ -255,7 +265,7 @@ multi method get-connection(HTTP::Request $request ) {
     self.get-connection($request, $host, $port);
 }
 
-multi method get-connection(HTTP::Request $request, Str $host, Int $port?) {
+multi method get-connection(HTTP::Request $request, Str $host, Int $port?) returns Connection {
     my $conn;
     if $request.scheme eq 'https' {
         die "Please install IO::Socket::SSL in order to fetch https sites" if ::('IO::Socket::SSL') ~~ Failure;
@@ -264,6 +274,7 @@ multi method get-connection(HTTP::Request $request, Str $host, Int $port?) {
     else {
         $conn = IO::Socket::INET.new(:$host, :port($port // 80), :timeout($.timeout));
     }
+    $conn does Connection;
     $conn;
 }
 
