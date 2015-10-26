@@ -88,5 +88,16 @@ subtest {
     }, 'header';
 }, 'HEAD';
 
+subtest {
+    subtest {
+        my $req = PATCH 'http://127.0.0.1/',
+            X-Foo => 'Bar',
+            content => 'Yeah!';
+        is $req.method, 'PATCH';
+        is $req.header.field('X-Foo'), 'Bar';
+        is $req.content, 'Yeah!';
+    }, 'header';
+}, 'PATCH';
+
 done-testing;
 
