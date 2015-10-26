@@ -195,6 +195,18 @@ multi sub PUT(Str $uri, :$content, *%headers) is export {
     PUT(URI.new($uri), :$content, |%headers)
 }
 
+multi sub PATCH(URI $uri, :$content, *%headers) is export {
+    my $request  = HTTP::Request.new(PATCH => $uri);
+    $request.header.field(|%headers);
+    $request.add-content: $content;
+    return $request;
+}
+
+multi sub PATCH(Str $uri, :$content, *%headers) is export {
+    PATCH(URI.new($uri), :$content, |%headers)
+}
+
+
 =begin pod
 
 =head1 NAME
