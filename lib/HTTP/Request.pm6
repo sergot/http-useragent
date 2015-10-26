@@ -19,7 +19,7 @@ multi method new(*%args) {
     my ($method, $url, $file, %fields, $uri);
 
     for %args.kv -> $key, $value {
-        if $key.lc ~~ any(<get post head put delete>) {
+        if $key.lc ~~ any(<get post head put delete patch>) {
             $uri = $value.isa(URI) ?? $value !! URI.new($value);
             $url = $uri.grammar.parse_result.orig;
             $method = $key.uc;
