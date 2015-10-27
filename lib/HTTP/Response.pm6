@@ -77,7 +77,7 @@ method next-request() returns HTTP::Request {
     if $location.defined {
         # Special case for the HTTP status code 303 (redirection):
         # The response to the request can be found under another URI using
-        # a seperate GET method. This relates to POST, PUT, DELETE and PATCH methods.
+        # a separate GET method. This relates to POST, PUT, DELETE and PATCH methods.
         my $method = $!request.method;
         $method = "GET"
           if self.code == 303 &&
