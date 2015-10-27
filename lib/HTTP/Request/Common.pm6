@@ -252,6 +252,14 @@ Like GET() but the method in the request is "DELETE".
 
 Like GET() but the method in the request is "PUT".
 
+=head2 C<PATCH $url>
+
+=head2 C<PATCH $url, Header => Value,...>
+
+=head2 C<PATCH $url, Header => Value,..., content => $content>
+
+Like GET() but the method in the request is "PATCH".
+
 =head2 C<POST $url>
 
 =head2 C<POST $url, Header => Value,...>
