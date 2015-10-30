@@ -47,6 +47,7 @@ class X::HTTP::Header is X::HTTP::Server {
 # and enable greater abstraction
 role Connection {
     method send-request(HTTP::Request $request ) {
+        $request.field(Connection => 'close') unless $request.field('Connection');
         self.print($request.Str ~ "\r\n");
     }
 }
