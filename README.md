@@ -1,32 +1,46 @@
-HTTP::UserAgent [![Build Status](https://travis-ci.org/sergot/http-useragent.svg?branch=master)](https://travis-ci.org/sergot/http-useragent)
-=============
+# HTTP::UserAgent [![Build Status](https://travis-ci.org/sergot/http-useragent.svg?branch=master)](https://travis-ci.org/sergot/http-useragent)
 
 Web user agent class for Perl 6.
 
 
 
-SYNOPSIS
-========
+## Usage
 
-    use HTTP::UserAgent;
+```Perl6
+use HTTP::UserAgent;
 
-    my $ua = HTTP::UserAgent.new;
-    $ua.timeout = 10;
+my $ua = HTTP::UserAgent.new;
+$ua.timeout = 10;
 
-    my $response = $ua.get("URL");
+my $response = $ua.get("URL");
 
-    if $response.is-success {
-        say $response.content;
-    } else {
-        die $response.status-line;
-    }
+if $response.is-success {
+    say $response.content;
+} else {
+    die $response.status-line;
+}
+```
 
+## Installation
 
+To install it using Panda (a module management tool bundled with Rakudo Star):
 
-INFO/DOC
-=====================
+```
+$ panda update
+$ panda install File::Which
+```
 
-See specific files.
+## Testing
+
+To run tests:
+
+```
+$ prove -e "perl6 -Ilib"
+```
+
+## Documentation
+
+Please see the documentation links listed below:
 
 - [HTTP::Cookies](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Cookies.pm6#L112)
     - [HTTP::Cookie](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Cookie.pm6#L17)
@@ -39,15 +53,14 @@ See specific files.
     - [HTTP::UserAgent::Common](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/UserAgent/Common.pm6#L20)
 
 
-TODO/IDEAS
-=============
+## To-do List and Future Ideas
 
 ~~strikethrough text~~ means **done**.
 
 - clean up
 - speed up
 
-##HTTP::UserAgent
+### HTTP::UserAgent
 - ~~HTTP Auth~~
 - let user set his own cookie jar
 - ~~make getprint() return the code response~~
@@ -55,14 +68,14 @@ TODO/IDEAS
 - use Promises
 - ~~make SSL dependency as optional~~
 
-##HTTP::Cookies
+### HTTP::Cookies
 - path restriction
 
-##OpenSSL
+### OpenSSL
 - ~~fix NativeCall's int bug~~
 - make it work on more platforms
 
-##IO::Socket::SSL
+### IO::Socket::SSL
 - make it work on more platforms
 - make SSL support more reliable
 - add throwing exception on failing SSL
