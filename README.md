@@ -53,7 +53,7 @@ Please see the documentation links listed below:
     - [HTTP::UserAgent::Common](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/UserAgent/Common.pm6#L20)
 
 
-## Project TODO list and Ideas
+## To-do List and Future Ideas
 
 ~~strikethrough text~~ means **done**.
 
