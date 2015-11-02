@@ -38,9 +38,9 @@ To run tests:
 $ prove -e "perl6 -Ilib"
 ```
 
-## INFO/DOC
+## Documentation
 
-See specific files.
+Please see the documentation links listed below:
 
 - [HTTP::Cookies](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Cookies.pm6#L112)
     - [HTTP::Cookie](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Cookie.pm6#L17)
@@ -53,7 +53,7 @@ See specific files.
     - [HTTP::UserAgent::Common](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/UserAgent/Common.pm6#L20)
 
 
-## TODO/IDEAS
+## Project TODO list and Ideas
 
 ~~strikethrough text~~ means **done**.
 
