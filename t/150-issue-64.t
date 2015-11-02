@@ -6,6 +6,14 @@ use Test;
 
 use HTTP::UserAgent;
 
+plan 3;
+
+unless %*ENV<NETWORK_TESTING> {
+  diag "NETWORK_TESTING was not set";
+  skip-rest("NETWORK_TESTING was not set");
+  exit;
+}
+
 my $purl = 'http://purl.org/dc/elements/1.1/';
 
 my $ua = HTTP::UserAgent.new;
