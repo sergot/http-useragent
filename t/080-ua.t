@@ -17,8 +17,8 @@ $ua = HTTP::UserAgent.new(:useragent('chrome_linux'));
 is $ua.useragent, $newua, 'new 3/3';
 
 unless %*ENV<NETWORK_TESTING> {
-  diag "NETWORK_TESTING was not set";
-  skip-rest("NETWORK_TESTING was not set");
+  diag "Skipped some live tests since NETWORK_TESTING was not set";
+  skip-rest("Tests require network access");
   exit;
 }
 
