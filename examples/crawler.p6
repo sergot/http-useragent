@@ -1,6 +1,5 @@
 #!/usr/bin/env perl6
 use v6;
-
 use HTTP::UserAgent;
 
 sub MAIN(Str $start_url) {
