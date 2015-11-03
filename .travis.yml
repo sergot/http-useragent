@@ -3,7 +3,7 @@ perl6:
   - latest
 install:
   - rakudobrew build-panda
-  - panda --notests installdeps .
+  - panda installdeps .
   - panda --notests install IO::Socket::SSL
 script:
   - perl6 -MPanda::Builder -e 'Panda::Builder.build($*CWD)'
