@@ -56,7 +56,7 @@ method is-success {
 
 # please extend as necessary
 method has-content returns Bool {
-    $!code == 204 ?? False !! True;
+    (204, 304).grep({ $!code eq $_ }) ?? False !! True;
 }
 
 method is-chunked {
