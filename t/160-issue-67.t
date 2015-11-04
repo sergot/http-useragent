@@ -19,6 +19,6 @@ my $resp = HTTP::UserAgent.new.get(
 IO::Socket::INET.^find_method('recv').unwrap($wrapped);
 
 is(@recv_log.elems, 1, 'recv calls');
-like($resp.content, rx/^document.*'\')'\n$/, 'resp' );
+like($resp.content, rx/^^document.*'\')'$$/, 'resp' );
 
 done-testing;

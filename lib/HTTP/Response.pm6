@@ -23,10 +23,10 @@ submethod BUILD(:$!code) {
 
 # This candidate makes it easier to test weird responses
 multi method new(Blob $header-chunk) {
-    my ( $rl, $header ) = $header-chunk.decode('ascii').split(/\x0d?\x0a/, 2);
+    my ( $rl, $header ) = $header-chunk.decode('ascii').split(/\r?\n/, 2);
     my $code = $rl.split(' ')[1].Int;
     my $response = self.new($code);
-    $response.header.parse( $header.subst(/"\x0d"? "\x0a" $/, '') );
+    $response.header.parse( $header.subst(/"\r"?"\n"$$/, '') );
     return $response;
 }
 

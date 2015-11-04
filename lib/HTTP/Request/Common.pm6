@@ -49,7 +49,7 @@ multi sub POST(URI $uri, Array :$content, *%headers) is export {
             (my $generated-content, $boundary) = form-data($content, $boundary, $request);
             $mt.param('boundary', $boundary);
             $ct = $mt.Str;
-            my $encoded-content = $generated-content;
+            my Str $encoded-content = $generated-content;
             $request.content = $encoded-content;
             $request.header.field(content-length => $encoded-content.encode('ascii').bytes.Str);
         }
