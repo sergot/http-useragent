@@ -7,7 +7,7 @@ has @.fields;
 
 our grammar HTTP::Header::Grammar {
     token TOP {
-        [ <message-header> "\r"? "\n" ]*
+        [ <message-header> \r?\n ]*
     }
 
     token message-header {
