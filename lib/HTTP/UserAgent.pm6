@@ -134,7 +134,7 @@ method request(HTTP::Request $request) returns HTTP::Response {
     self.save-response($response);
 
     given $response.code {
-        when /^3/ { 
+        when /^30<[0123]>/ { 
             when $.max-redirects < +@.history
             && all(@.history.reverse[0..$.max-redirects]>>.code)  {
                 X::HTTP::Response.new(:rc('Max redirects exceeded'), :response($response)).throw;
@@ -228,18 +228,28 @@ method get-response(HTTP::Request $request, Connection $conn) returns HTTP::Resp
         last if $msg-body-pos.defined;
     }
 
-    if !$msg-body-pos.defined {
-        X::HTTP::Internal.new(rc => 500, reason => "server returned no data").throw;
+
+    # If the header would indicate that there won't
+    # be any content there may not be a \r\n\r\n at
+    # the end of the header.
+    my $header-chunk = do if $msg-body-pos.defined {
+        $first-chunk.subbuf(0, $msg-body-pos);
+    } 
+    else {
+        # Assume we have the whole header because if the server
+        # didn't send it we're stuffed anyway
+        $first-chunk;
     }
 
-    my $header-chunk = $first-chunk.subbuf(0, $msg-body-pos);
     my HTTP::Response $response = HTTP::Response.new($header-chunk);
     $response.request = $request;
 
-    # 4: "\r\n\r\n".elems
-    my $content = $first-chunk.subbuf($msg-body-pos);
-
     if $response.has-content {
+        if !$msg-body-pos.defined {
+            X::HTTP::Internal.new(rc => 500, reason => "server returned no data").throw;
+        }
+
+        my $content = $first-chunk.subbuf($msg-body-pos);
         # Turn the inner exceptions to ours
         # This may really want to be outside
         CATCH {
