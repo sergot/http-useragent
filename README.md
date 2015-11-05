@@ -27,7 +27,7 @@ To install it using Panda (a module management tool bundled with Rakudo Star):
 
 ```
 $ panda update
-$ panda install File::Which
+$ panda install HTTP::UserAgent
 ```
 
 ## Testing
