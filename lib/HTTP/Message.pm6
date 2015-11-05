@@ -38,6 +38,8 @@ method decoded-content {
         $!content.unpack("A*") 
     } or die "Problem decoding content";
 
+    $decoded_content = $!content.decode('iso-8859-1') if !$decoded_content.defined and $!content.defined;
+
     $decoded_content
 }
 
