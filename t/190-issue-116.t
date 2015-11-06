@@ -3,6 +3,13 @@ use v6;
 use HTTP::UserAgent;
 use Test;
 
+BEGIN {
+    if ::('IO::Socket::SSL') ~~ Failure {
+        print("1..0 # Skip: IO::Socket::SSL not available\n");
+        exit 0;
+    }
+}
+
 my $ua = HTTP::UserAgent.new;
 my $request = HTTP::Request.new(GET => 'https://api.github.com/repos/jonathanstowe/http-useragent/git/commits/d1120986c0d9945bc35f5a137cc4a52f6f14340e');
 $request.header.field(User-Agent => 'test');
