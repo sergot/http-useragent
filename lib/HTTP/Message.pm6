@@ -34,11 +34,9 @@ method decoded-content {
 
     my $decoded_content = try {
         Encode::decode($charset, $!content);
-    } or try { 
+    } || try { 
         $!content.unpack("A*") 
-    } or die "Problem decoding content";
-
-    $decoded_content = $!content.decode('iso-8859-1') if !$decoded_content.defined and $!content.defined;
+    } || die "Problem decoding content";
 
     $decoded_content
 }
