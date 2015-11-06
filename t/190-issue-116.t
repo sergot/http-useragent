@@ -18,6 +18,12 @@ $request.header.field(If-Modified-Since => 'Wed, 04 Nov 2015 19:09:35 GMT');
 my HTTP::Response $res;
 
 lives-ok { $res = $ua.request($request) }, "request that results in 304 lives";
+todo("for some reason it is 403 on travis",1);
+is $res.code , 304, "and it is actually a 304";
+
+# Add another where it always going to 304
+$request = HTTP::Request.new(GET => 'http://httpstat.us/304');
+lives-ok { $res = $ua.request($request) }, "another request that always results in 304 lives";
 is $res.code , 304, "and it is actually a 304";
 
 done-testing;
