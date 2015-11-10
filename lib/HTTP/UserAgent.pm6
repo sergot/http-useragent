@@ -54,7 +54,7 @@ role Connection {
 
 has Int $.timeout is rw = 180;
 has $.useragent;
-has HTTP::Cookies $.cookies = HTTP::Cookies.new(
+has HTTP::Cookies $.cookies is rw = HTTP::Cookies.new(
     file     => tempfile[0],
     autosave => 1,
 );
