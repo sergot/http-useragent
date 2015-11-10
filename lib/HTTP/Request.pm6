@@ -115,6 +115,8 @@ method parse($raw_request) {
 
     $.url ~= $.file;
 
+    self.uri = URI.new($.url) ;
+
     nextsame;
 
     self;
