@@ -3,7 +3,7 @@ unit class HTTP::Message;
 use HTTP::Header;
 use Encode;
 
-has $.header;
+has HTTP::Header $.header = HTTP::Header.new;
 has $.content is rw;
 
 has $.protocol is rw = 'HTTP/1.1';

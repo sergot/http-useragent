@@ -1,7 +1,7 @@
 use HTTP::Request;
 use Test;
 
-plan 24;
+plan 27;
 
 my $url = 'http://testsite.ext/cat/f.h?q=1&q=2';
 my $file = '/cat/f.h?q=1&q=2';
@@ -43,8 +43,9 @@ is $r1.url, 'http://test.com:8080', 'uri 3/4';
 is $r1.field('Host'), 'test.com:8080', 'uri 4/4';
 
 # set-method
-$r1.set-method: 'TEST';
-is $r1.method, 'TEST', 'set-method 1/1';
+throws-like { $r1.set-method: 'TEST' }, /'expected HTTP::Request::RequestMethod but got Str'/, "rejects wrong method";
+lives-ok { $r1.set-method: 'PUT' }, "set method";
+is $r1.method, 'PUT', 'set-method 1/1';
 
 # parse
 my $req = "GET /index HTTP/1.1\r\nHost: somesite\r\nAccept: test\r\n\r\nname=value&a=b\r\n";
@@ -56,3 +57,11 @@ is $r1.url, 'http://somesite/index', 'parse 3/6';
 is $r1.field('Accept'), 'test', 'parse 4/6';
 is $r1.content, 'name=value&a=b', 'parse 5/6';
 is $r1.Str, $req, 'parse 6/6';
+
+subtest {
+   my $r;
+   lives-ok { $r = HTTP::Request.new('GET', URI.new('http://foo.com/bar'), HTTP::Header.new(Foo => 'bar') ) }, "mew with positionals";
+   is $r.method, 'GET', "right method";
+   is $r.file, '/bar', "right file";
+   is $r.field('Host'), 'foo.com', 'got right host';
+}, "positional construcutor";

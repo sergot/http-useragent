@@ -4,7 +4,9 @@ use URI;
 
 unit class HTTP::Request is HTTP::Message;
 
-has $.method is rw;
+subset RequestMethod of Str where any(<GET POST HEAD PUT DELETE PATCH>);
+
+has RequestMethod $.method is rw;
 has $.url is rw;
 has $.file is rw;
 has $.uri is rw;
@@ -16,23 +18,45 @@ has Str $.scheme is rw;
 my $CRLF = "\r\n";
 
 multi method new(*%args) {
-    my ($method, $url, $file, %fields, $uri);
 
-    for %args.kv -> $key, $value {
-        if $key.lc ~~ any(<get post head put delete patch>) {
-            $uri = $value.isa(URI) ?? $value !! URI.new($value);
-            $url = $uri.grammar.parse_result.orig;
-            $method = $key.uc;
-            $file = $uri.path_query || '/';
-        } else {
-            %fields{$key} = $value;
+    if %args.keys.elems >= 1 {
+        my ($method, $url, $file, %fields, $uri);
+        for %args.kv -> $key, $value {
+            if $key.lc ~~ any(<get post head put delete patch>) {
+                $uri = $value.isa(URI) ?? $value !! URI.new($value);
+                $method = $key.uc;
+            } else {
+                %fields{$key} = $value;
+            }
         }
+
+        my $header = HTTP::Header.new(|%fields);
+    
+        $method //= 'GET';
+
+        self.new($method, $uri, $header);
+    }
+    else {
+        self.bless;
+    }
+}
+
+multi method new(*@a where *.elems == 0 ) {
+    self.bless;
+}
+
+multi method new(RequestMethod $method, URI $uri, HTTP::Header $header) {
+    my $url = $uri.grammar.parse_result.orig;
+    my $file = $uri.path_query || '/';
+
+    if not $header.field('Host').defined {
+        $header.field(Host => get-host-value($uri));
     }
 
-    my $header = HTTP::Header.new(|%fields);
-    $header.field(Host => get-host-value($uri)) if $uri;
     self.bless(:$method, :$url, :$header, :$file, :$uri);
 }
+
+
 
 sub get-host-value(URI $uri --> Str) {
     my Str $host = $uri.host;
