@@ -1,6 +1,8 @@
 use HTTP::Message;
-
 use URI;
+use URI::Escape;
+use HTTP::MediaType;
+use MIME::Base64;
 
 unit class HTTP::Request is HTTP::Message;
 
@@ -16,6 +18,8 @@ has Int $.port is rw;
 has Str $.scheme is rw;
 
 my $CRLF = "\r\n";
+
+constant $HRC_DEBUG = %*ENV<HRC_DEBUG>.Bool;
 
 multi method new(*%args) {
 
@@ -117,6 +121,139 @@ method add-cookies($cookies) {
     if $cookies.cookies.elems {
         $cookies.add-cookie-header(self);
     }
+}
+
+multi method add-form-data(%data, :$multipart) {
+    self.add-form-data(%data.Array, :$multipart);
+}
+
+multi method add-form-data(Array $data, :$multipart) {
+    my $ct = do {
+        my $f = self.header.field('content-type');
+        if $f {
+            $f.values[0];
+        } else {
+            if $multipart {
+                'multipart/form-data';
+            }
+            else {
+                'application/x-www-form-urlencoded';
+            }
+        }
+    };
+
+    given $ct {
+        when 'application/x-www-form-urlencoded' {
+            my @parts;
+            for @$data {
+                @parts.push: uri-escape(.key) ~ "=" ~ uri-escape(.value);
+            }
+            self.content = @parts.join("&").encode;
+            self.header.field(content-length => self.content.bytes.Str);
+        }
+        when m:i,^ "multipart/form-data" \s* ( ";" | $ ), {
+            say 'generating form-data' if $HRC_DEBUG;
+
+            my $mt = HTTP::MediaType.parse($ct);
+            my Str $boundary = $mt.param('boundary') // self.make-boundary(10);
+            (my $generated-content, $boundary) = self.form-data($data, $boundary);
+            $mt.param('boundary', $boundary);
+            $ct = $mt.Str;
+            my Str $encoded-content = $generated-content;
+            self.content = $encoded-content;
+            self.header.field(content-length => $encoded-content.encode('ascii').bytes.Str);
+        }
+    }
+    self.header.field(content-type => $ct);
+}
+
+
+method form-data(Array $content, Str $boundary) {
+    my @parts;
+    for @$content {
+        my ($k, $v) = $_.key, $_.value;
+        given $v {
+            when Str {
+                $k ~~ s:g/(<[\\ \"]>)/\\$1/;  # escape quotes and backslashes
+                @parts.push: qq!Content-Disposition: form-data; name="$k"$CRLF$CRLF$v!;
+            }
+            when Array {
+                my ($file, $usename, @headers) = @$v;
+                unless defined $usename {
+                    $usename = $file;
+                    $usename ~~ s!.* "/"!! if defined($usename);
+                }
+                $k ~~ s:g/(<[\\ \"]>)/\\$1/;
+                my $disp = qq!form-data; name="$k"!;
+                if (defined($usename) and $usename.elems > 0) {
+                    $usename ~~ s:g/(<[\\ \"]>)/\\$1/;
+                    $disp ~= qq!; filename="$usename"!;
+                }
+                my $content;
+                my $headers = HTTP::Header.new(|@headers);
+                if ($file) {
+                    # TODO: dynamic file upload support
+                    $content = $file.IO.slurp;
+                    unless $headers.field('content-type') {
+                        # TODO: LWP::MediaTypes
+                        $headers.field(content-type => 'application/octet-stream');
+                    }
+                }
+                if $headers.field('content-disposition') {
+                    $disp = $headers.field('content-disposition');
+                    $headers.remove-field('content-disposition');
+                }
+                if $headers.field('content') {
+                    $content = $headers.field('content');
+                    $headers.remove-field('content');
+                }
+                my $head = ["Content-Disposition: $disp",
+                            $headers.Str($CRLF),
+                            ""].join($CRLF);
+                given $content {
+                    when Str {
+                        @parts.push: $head ~ $content;
+                    }
+                    default {
+                        die "NYI"
+                    }
+                }
+            }
+            default {
+                die "unsupported type: {$v.WHAT.gist}({$content.perl})";
+            }
+        }
+    }
+
+    say $content if $HRC_DEBUG;
+    say @parts if $HRC_DEBUG;
+    return "", "none" unless @parts;
+
+    my $contents;
+    # TODO: dynamic upload support
+    my $bno = 10;
+    CHECK_BOUNDARY: {
+        for @parts {
+            if $_.index($boundary).defined {
+                # must have a better boundary
+                $boundary = self.make-boundary(++$bno);
+                redo CHECK_BOUNDARY;
+            }
+        }
+    }
+    my $generated-content = "--$boundary$CRLF"
+                ~ @parts.join("$CRLF--$boundary$CRLF")
+                ~ "$CRLF--$boundary--$CRLF";
+
+    return $generated-content, $boundary;
+}
+
+
+method make-boundary(int $size=10) {
+    my $str = (1..$size*3).map({(^256).pick.chr}).join('');
+    my $b = MIME::Base64.new.encode_base64($str, :oneline);
+    $b ~~ s:g/\W/X/;  # ensure alnum only
+    $b;
 }
 
 
