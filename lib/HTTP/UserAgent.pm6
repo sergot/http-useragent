@@ -101,13 +101,13 @@ method auth(Str $login, Str $password) {
     $!auth_password = $password;
 }
 
-multi method get(URI $uri is copy ) {
-    my $request  = HTTP::Request.new(GET => $uri);
+multi method get(URI $uri is copy, *%header ) {
+    my $request  = HTTP::Request.new(GET => $uri, |%header);
     self.request($request);
 }
 
-multi method get(Str $uri is copy ) {
-    self.get(URI.new(_clear-url($uri)));
+multi method get(Str $uri is copy, *%header ) {
+    self.get(URI.new(_clear-url($uri)), |%header);
 }
 
 method request(HTTP::Request $request) returns HTTP::Response {
@@ -435,12 +435,14 @@ Sets username and password needed to HTTP Auth.
 
 =head2 method get
 
-    multi method get(HTTP::UserAgent:, Str $url is copy) returns HTTP::Response
-    multi method get(HTTP::UserAgent: URI $uri) returns HTTP::Response
+    multi method get(HTTP::UserAgent:, Str $url is copy, *%headers) returns HTTP::Response
+    multi method get(HTTP::UserAgent: URI $uri, *%headers) returns HTTP::Response
 
 Requests the $url site, returns HTTP::Response, except if throw-exceptions
 is set as described above whereby an exception will be thrown if the
 response indicates that the request wasn't successfull.
+
+Any additional named arguments will be applied as headers in the request.
 
 =head2 method request
 
