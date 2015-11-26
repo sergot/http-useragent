@@ -123,6 +123,10 @@ method add-cookies($cookies) {
     }
 }
 
+multi method add-form-data(:$multipart, *%data) {
+    self.add-form-data(%data.Array, :$multipart);
+}
+
 multi method add-form-data(%data, :$multipart) {
     self.add-form-data(%data.Array, :$multipart);
 }
@@ -345,13 +349,15 @@ supplied HTTP::Cookies object.
 =head2 method add-form-data
 
         multi method add-form-data(%data, :$multipart)
+        multi method add-form-data(:$multipart, *%data);
         multi method add-form-data(Array $data, :$multipart)
 
-Adds the form data, supplied either as a Hash or an Array of Pair, to the 
-POST request (it doesn't make sense on most other request types.) The default
-is to use 'application/x-www-form-urlencoded' and 'multipart/form-data' can
-be used by providing the ':multipart' adverb.  Alternatively a previously
-applied "content-type" header of either 'application/x-www-form-urlencoded'
+Adds the form data, supplied either as a Hash, an Array of Pair,
+or in a named parameter style, to the POST request (it doesn't
+make sense on most other request types.) The default is to use
+'application/x-www-form-urlencoded' and 'multipart/form-data' can be used
+by providing the ':multipart' adverb.  Alternatively a previously applied
+"content-type" header of either 'application/x-www-form-urlencoded'
 or 'multipart/form-data' will be respected and in the latter case any
 applied boundary marker will be retained.
 

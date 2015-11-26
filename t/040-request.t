@@ -74,7 +74,15 @@ subtest {
         is $req.header.field('content-type'), 'application/x-www-form-urlencoded';
         is $req.header.field('content-length'), '21';
         is $req.content.decode, 'foo=b%26r%F0%9F%90%AB';
-    }, 'add-form-data with Hash';
+    }, 'add-form-data with positional Hash';
+    subtest {
+        my $req = HTTP::Request.new(POST => URI.new('http://127.0.0.1/'));
+        lives-ok { $req.add-form-data( foo => "b&r\x1F42B", ) }, "add-form-data";
+        is $req.method, 'POST';
+        is $req.header.field('content-type'), 'application/x-www-form-urlencoded';
+        is $req.header.field('content-length'), '21';
+        is $req.content.decode, 'foo=b%26r%F0%9F%90%AB';
+    }, 'add-form-data with slurpy hash';
     subtest {
         my $req = HTTP::Request.new(POST => 'http://127.0.0.1/', X-Foo => 'Bar');
         lives-ok { $req.add-form-data([foo => "b&r\x1F42B",]) }, "add-form-data with array of pairs";
@@ -95,5 +103,10 @@ subtest {
         lives-ok { $req.add-form-data({ foo => "b&r", x   => ['t/dat/foo.txt'], }, :multipart) }, "add-form-data";
         like $req.header.field('content-type').Str, /"multipart\/form-data"/, "and got multipart data";
     }, 'multipart explicit';
+    subtest {
+        my $req = HTTP::Request.new(POST => 'http://127.0.0.1/');
+        lives-ok { $req.add-form-data( foo => "b&r", x   => ['t/dat/foo.txt'], :multipart) }, "add-form-data";
+        like $req.header.field('content-type').Str, /"multipart\/form-data"/, "and got multipart data";
+    }, 'multipart explicit with slurpy hash (check no gobble adverb)';
 }, 'add-form-data';
 # vim: expandtab shiftwidth=4 ft=perl6
