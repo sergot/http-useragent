@@ -302,14 +302,19 @@ Module provides functionality to easily manage HTTP requests.
 
 =head2 method new
 
-    method new(*%args)
+    multi method new(*%args)
+    multi method new(Str $method, URI $uri, HTTP::Header $header);
 
-A constructor, takes parameters like:
+A constructor, the first form takes parameters like:
 
 =item method => URL, where method can be POST, GET ... etc.
 =item field => values, header fields
 
     my $req = HTTP::Request.new(:GET<example.com>, :h1<v1>);
+
+The second form takes the key arguments as simple positional parameters and
+is designed for use in places where for example the request method may be
+calculated and the headers pre-populated.
 
 =head2 method set-method
 
@@ -337,6 +342,27 @@ Sets URL to request.
 This will cause the appropriate cookie headers to be added from the
 supplied HTTP::Cookies object.
 
+=head2 method add-form-data
+
+        multi method add-form-data(%data, :$multipart)
+        multi method add-form-data(Array $data, :$multipart)
+
+Adds the form data, supplied either as a Hash or an Array of Pair, to the 
+POST request (it doesn't make sense on most other request types.) The default
+is to use 'application/x-www-form-urlencoded' and 'multipart/form-data' can
+be used by providing the ':multipart' adverb.  Alternatively a previously
+applied "content-type" header of either 'application/x-www-form-urlencoded'
+or 'multipart/form-data' will be respected and in the latter case any
+applied boundary marker will be retained.
+
+As a special case for multipart data if the value for some key in the data
+is an Array of at least one item then it is taken to be a description of a
+file to be "uploaded" where the first item is the path to the file to be
+inserted, the second (optional) an alternative name to be used in the
+content disposition header and the third an optional Array of Pair that
+will provide addtional header lines for the part.
+
+    
 =head2 method Str
 
     method Str returns Str;
