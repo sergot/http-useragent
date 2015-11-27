@@ -12,6 +12,9 @@
         "MIME::Base64",
         "URI"
     ],
+	 "test-depends" : [
+        "JSON::Fast"
+    ],
     "provides" : {
         "HTTP::UserAgent" : "lib/HTTP/UserAgent.pm6",
         "HTTP::UserAgent::Common" : "lib/HTTP/UserAgent/Common.pm6",
