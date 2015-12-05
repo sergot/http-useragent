@@ -132,7 +132,7 @@ method request(HTTP::Request $request) returns HTTP::Response {
 
     # if auth has been provided add it to the request
     self.setup-auth($request);
-    say "===>Send\n" ~ $request.Str if $.debug;
+    say "===>Send\n" ~ $request.Str(:debug) if $.debug;
     my Connection $conn = self.get-connection($request);
 
     if $conn.send-request($request) {
@@ -143,7 +143,7 @@ method request(HTTP::Request $request) returns HTTP::Response {
     X::HTTP::Response.new(:rc('No response')).throw unless $response;
     
     self.save-response($response);
-    say "<===Reicv\n" ~ $response.Str if $.debug;
+    say "<===Reicv\n" ~ $response.Str(:debug) if $.debug;
 
     given $response.code {
         when /^30<[0123]>/ { 

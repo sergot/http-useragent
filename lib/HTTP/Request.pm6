@@ -261,9 +261,9 @@ method make-boundary(int $size=10) {
 }
 
 
-method Str {
+method Str (:$debug) {
     my $s = "$.method $.file $.protocol";
-    $s ~= $CRLF ~ callwith($CRLF);
+    $s ~= $CRLF ~ callwith($CRLF, :debug($debug));
 }
 
 method parse($raw_request) {
