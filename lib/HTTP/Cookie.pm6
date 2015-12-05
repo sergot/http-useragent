@@ -4,6 +4,10 @@ has $.name is rw;
 has $.value is rw;
 has $.secure is rw;
 has $.httponly is rw;
+has $.path is rw;
+has $.domain is rw;
+has $.version is rw;
+has $.expires is rw;
 
 has %.fields;
 
@@ -11,6 +15,10 @@ method Str {
     my $s = "$.name=$.value; {(%.fields.flatmap( *.fmt("%s=%s") )).join('; ')}";
     $s ~= "; $.secure" if $.secure;
     $s ~= "; $.httponly" if $.httponly;
+    $s ~= "; domain=$.domain" if $.domain;
+    $s ~= "; version=$.version" if $.version;
+    $s ~= "; path=$.path" if $.path;
+    $s ~= "; expires=$.expires" if $.expires;
     $s;
 }
 
