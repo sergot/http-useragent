@@ -143,7 +143,7 @@ method request(HTTP::Request $request) returns HTTP::Response {
     X::HTTP::Response.new(:rc('No response')).throw unless $response;
     
     self.save-response($response);
-    say "<===Reicv\n" ~ $response.Str(:debug) if $.debug;
+    say "<===Recv\n" ~ $response.Str(:debug) if $.debug;
 
     given $response.code {
         when /^30<[0123]>/ { 
