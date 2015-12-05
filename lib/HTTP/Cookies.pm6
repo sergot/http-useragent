@@ -89,9 +89,9 @@ method load {
 
 method clear-expired {
     @.cookies .= grep({
-        !.fields<Expires>.defined ||
+        ! .expires.defined || .expires !~~ /\d\d/ ||
         # we need more precision
-        DateTime::Parse.new( .fields<Expires> ).Date > Date.today
+        DateTime::Parse.new( .expires ).Date > Date.today
     });
     self.save if $.autosave;
 }

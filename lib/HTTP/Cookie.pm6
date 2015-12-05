@@ -12,13 +12,14 @@ has $.expires is rw;
 has %.fields;
 
 method Str {
-    my $s = "$.name=$.value; {(%.fields.flatmap( *.fmt("%s=%s") )).join('; ')}";
+    my $s = "$.name=$.value";
+    $s ~= "; Domain=$.domain" if $.domain;
+    $s ~= "; Version=$.version" if $.version;
+    $s ~= "; Path=$.path" if $.path;
+    $s ~= "; Expires=$.expires" if $.expires;
+    $s ~= ';' ~ (%.fields.flatmap( *.fmt("%s=%s") )).join('; ') if %.fields.elems > 1;
     $s ~= "; $.secure" if $.secure;
     $s ~= "; $.httponly" if $.httponly;
-    $s ~= "; domain=$.domain" if $.domain;
-    $s ~= "; version=$.version" if $.version;
-    $s ~= "; path=$.path" if $.path;
-    $s ~= "; expires=$.expires" if $.expires;
     $s;
 }
 
