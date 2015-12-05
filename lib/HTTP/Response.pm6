@@ -98,7 +98,7 @@ method next-request() returns HTTP::Request {
 
 method Str {
     my $s = $.protocol ~ " " ~ $!status-line;
-    $s ~= $CRLF ~ callwith($CRLF);
+    $s ~= $CRLF ~ callwith($CRLF, :debug);
 }
 
 =begin pod

@@ -63,6 +63,7 @@ has $.auth_password;
 has Int $.max-redirects is rw;
 has @.history;
 has Bool $.throw-exceptions;
+has Bool $.debug;
 
 my sub search-header-end(Blob $input) {
     my $i = 0;
@@ -92,7 +93,7 @@ my sub _index_buf(Blob $input, Blob $sub) {
     return -1;
 }
 
-submethod BUILD(:$!useragent, Bool :$!throw-exceptions, :$!max-redirects = 5) {
+submethod BUILD(:$!useragent, Bool :$!throw-exceptions, :$!max-redirects = 5, Bool :$!debug) {
     $!useragent = get-ua($!useragent) if $!useragent.defined;
 }
 
@@ -131,7 +132,7 @@ method request(HTTP::Request $request) returns HTTP::Response {
 
     # if auth has been provided add it to the request
     self.setup-auth($request);
-
+    say "===>Send\n" ~ $request.Str if $.debug;
     my Connection $conn = self.get-connection($request);
 
     if $conn.send-request($request) {
@@ -142,6 +143,7 @@ method request(HTTP::Request $request) returns HTTP::Response {
     X::HTTP::Response.new(:rc('No response')).throw unless $response;
     
     self.save-response($response);
+    say "<===Reicv\n" ~ $response.Str if $.debug;
 
     given $response.code {
         when /^30<[0123]>/ { 
