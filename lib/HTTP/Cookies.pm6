@@ -18,10 +18,10 @@ my grammar HTTP::Cookies::Grammar {
         <name> '=' <value> ';'? \s* [<arg> \s*]* <secure>? ';'? \s* <httponly>? ';'?
     }
     token name     { \w+ }
-    token value    { <[\w \s , / : .]>+ }
+    token value    { <-[;]>+ }
     token arg      { <name> '=' <value> ';'? }
     token secure   { Secure }
-    token httponly { HttpOnly }
+    token httponly { :i HttpOnly }
 }
 
 my class HTTP::Cookies::Actions {
@@ -33,9 +33,13 @@ my class HTTP::Cookies::Actions {
         $h.httponly = $<httponly>.defined ?? ~$<httponly> !! False;
 
         for $<arg>.list -> $a {
-            $h.fields.push: $a<name> => ~$a<value>;
+            if <version expires path domain>.grep($a<name>.lc) {
+              $h."{$a<name>.lc}"() = ~$a<value>;
+            } else {
+              say $a<name>~"="~$a<value>;
+              $h.fields.push: $a<name> => ~$a<value>;
+            }
         }
-
         $*OBJ.push-cookie($h);
     }
 }
@@ -47,14 +51,20 @@ method extract-cookies(HTTP::Response $response) {
 
 method add-cookie-header(HTTP::Request $request) {
     for @.cookies -> $cookie {
-        next if $cookie.fields<Domain>.defined
-                && $cookie.fields<Domain> ne $request.field('Host');
-        # TODO : path restrictions
-
-        if $request.field('Cookie').defined {
-            $request.push-field( Cookie => $cookie.Str );
+        # TODO this check sucks, eq is not the right (should probably use uri)
+        #next if $cookie.domain.defined
+        #        && $cookie.domain ne $request.field('Host');
+        # TODO : path/domain restrictions
+        my $cookiestr = "{$cookie.name}={$cookie.value}; {($cookie.fields.flatmap( *.fmt("%s=%s") )).join('; ')}";
+        if $cookie.version.defined and $cookie.version >= 1 {
+            $cookiestr ~= ',$Version='~ $cookie.version;
         } else {
-            $request.field( Cookie => $cookie.Str );
+            $request.field(Cookie2 => '$Version="1"');
+        }
+        if $request.field('Cookie').defined {
+            $request.field( Cookie => $request.field("Cookie") ~ $cookiestr );
+        } else {
+            $request.field( Cookie => $cookiestr );
         }
     }
 }
@@ -79,9 +89,9 @@ method load {
 
 method clear-expired {
     @.cookies .= grep({
-        !.fields<Expires>.defined ||
+        ! .expires.defined || .expires !~~ /\d\d/ ||
         # we need more precision
-        DateTime::Parse.new( .fields<Expires> ).Date > Date.today
+        DateTime::Parse.new( .expires ).Date > Date.today
     });
     self.save if $.autosave;
 }

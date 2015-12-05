@@ -96,9 +96,13 @@ method parse($raw_message) {
     self;
 }
 
-method Str($eol = "\n") {
+method Str($eol = "\n", :$debug) {
     my $s = $.header.Str($eol);
-    $s ~= $eol ~ $.content ~ $eol if $.content;
+    $s ~= $eol ~ $.content ~ $eol if $.content and !$debug;
+    if $.content and $debug {
+      $s ~= $eol ~ "=Content contains: "~$.content.chars~" chars - Displaying only the 100 first";
+      $s ~= $eol ~ $.content.substr(0, 100) ~ $eol;
+    }
 
     return $s;
 }
