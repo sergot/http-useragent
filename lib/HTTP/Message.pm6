@@ -97,11 +97,13 @@ method parse($raw_message) {
 }
 
 method Str($eol = "\n", :$debug) {
+    my constant $max_size = 300;
     my $s = $.header.Str($eol);
     $s ~= $eol ~ $.content ~ $eol if $.content and !$debug;
     if $.content and $debug {
-      $s ~= $eol ~ "=Content contains: "~$.content.chars~" chars - Displaying only the 100 first";
-      $s ~= $eol ~ $.content.substr(0, 100) ~ $eol;
+      $s ~= $eol ~ "=Content size: "~$.content.Str.chars~" chars";
+      $s ~= "- Displaying only $max_size" if $.content.Str.chars > $max_size;
+      $s ~= $eol ~ $.content.Str.substr(0, $max_size) ~ $eol;
     }
 
     return $s;
