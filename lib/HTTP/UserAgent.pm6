@@ -63,7 +63,8 @@ has $.auth_password;
 has Int $.max-redirects is rw;
 has @.history;
 has Bool $.throw-exceptions;
-has Bool $.debug;
+has $.debug;
+has IO::Handle $.debug-handle;
 
 my sub search-header-end(Blob $input) {
     my $i = 0;
@@ -93,8 +94,22 @@ my sub _index_buf(Blob $input, Blob $sub) {
     return -1;
 }
 
-submethod BUILD(:$!useragent, Bool :$!throw-exceptions, :$!max-redirects = 5, Bool :$!debug) {
+submethod BUILD(:$!useragent, Bool :$!throw-exceptions, :$!max-redirects = 5, :$!debug) {
     $!useragent = get-ua($!useragent) if $!useragent.defined;
+    if $!debug.defined {
+        if $!debug ~~ Bool and $!debug == True {
+            $!debug-handle = $*OUT;
+        }
+        if $!debug ~~ Str {
+            say $!debug;
+            $!debug-handle = open($!debug, :w);
+            $!debug = True;
+        }
+        if $!debug ~~ IO::Handle {
+            $!debug-handle = $!debug;
+            $!debug = True;
+        }
+    }
 }
 
 method auth(Str $login, Str $password) {
@@ -132,7 +147,7 @@ method request(HTTP::Request $request) returns HTTP::Response {
 
     # if auth has been provided add it to the request
     self.setup-auth($request);
-    say "===>Send\n" ~ $request.Str(:debug) if $.debug;
+    $.debug-handle.say("==>>Send\n" ~ $request.Str(:debug)) if $.debug;
     my Connection $conn = self.get-connection($request);
 
     if $conn.send-request($request) {
@@ -143,7 +158,7 @@ method request(HTTP::Request $request) returns HTTP::Response {
     X::HTTP::Response.new(:rc('No response')).throw unless $response;
     
     self.save-response($response);
-    say "<===Recv\n" ~ $response.Str(:debug) if $.debug;
+    $.debug-handle.say("<<==Recv\n" ~ $response.Str(:debug)) if $.debug;
 
     given $response.code {
         when /^30<[0123]>/ { 
@@ -411,11 +426,11 @@ It has TLS/SSL support.
 
 =head2 method new
 
-    method new(HTTP::UserAgent:U: :$!useragent, Bool :$!throw-exceptions, :$!max-redirects = 5) returns HTTP::UserAgent
+    method new(HTTP::UserAgent:U: :$!useragent, Bool :$!throw-exceptions, :$!max-redirects = 5, :$!debug) returns HTTP::UserAgent
 
 Default constructor.
 
-There are three optional named arguments:
+There are four optional named arguments:
 
 =item useragent 
 
@@ -438,6 +453,12 @@ the response from the C<response> attribute of the exception object.
 This is the maximum number of redirects allowed for a single request, if
 this is exceeded then an exception will be thrown (this is not covered by
 C<no-exceptions> above and will always be throw,) the default value is 5.
+
+=item debug
+
+It can etheir be a Bool like simply C<:debug> or you can pass it a IO::Handle
+or a file name. Eg C<:debug($*ERR)> will ouput on stderr C<:debug("mylog.txt")>
+will ouput on the file.
 
 =head2 method auth
 
