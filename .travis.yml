@@ -6,6 +6,5 @@ install:
   - panda installdeps .
   - panda --notests install IO::Socket::SSL
 script:
-  - perl6 -MPanda::Builder -e 'Panda::Builder.build($*CWD)'
-  - PERL6LIB=$PWD/blib/lib prove -e perl6 -r t/
+  - prove -e 'perl6 -Ilib' t/
 sudo: false
