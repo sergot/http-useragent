@@ -6,5 +6,5 @@ install:
   - panda installdeps .
   - panda --notests install IO::Socket::SSL
 script:
-  - prove -e 'perl6 -Ilib' t/
+  - prove -v -e 'perl6 -Ilib' t/
 sudo: false
