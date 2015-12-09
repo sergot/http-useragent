@@ -1,8 +1,8 @@
 use Test;
 
 use HTTP::Cookies;
-use HTTP::Request;
-use HTTP::Response;
+need HTTP::Request;
+need HTTP::Response;
 
 plan 29;
 
