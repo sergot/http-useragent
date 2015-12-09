@@ -168,6 +168,7 @@ $c.add-cookie-header($req);
 #is $req.field('Cookie').values.elems, 1, 'add-cookie-header 3/3';
 
 # extract-cookkies
+diag HTTP::Response.^mro>>.perl;
 my $resp = HTTP::Response.new(200);
 $resp.field(Set-Cookie => 'k=v');
 $c.extract-cookies($resp);
