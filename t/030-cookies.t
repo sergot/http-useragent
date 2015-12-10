@@ -2,8 +2,8 @@ use Test;
 
 use HTTP::Cookies;
 # strangely these aren't required for the test to work
-#require HTTP::Request;
-#require HTTP::Response;
+require HTTP::Request;
+require HTTP::Response;
 
 plan 29;
 
@@ -168,11 +168,13 @@ $c.add-cookie-header($req);
 #is $req.field('Cookie').values.elems, 1, 'add-cookie-header 3/3';
 
 # extract-cookkies
+subtest {
 diag HTTP::Response.^mro>>.perl;
 my $resp = HTTP::Response.new(200);
 $resp.field(Set-Cookie => 'k=v');
 $c.extract-cookies($resp);
 is $c.cookies.elems, 5, 'extract-cookies 1/1';
+}, "extract-cookies 1/1";
 
 # clear-expired
 $c.set-cookie('Set-Cookie: n1=v1; Expires=Sun, 06 Nov 1994 08:49:37 GMT');
