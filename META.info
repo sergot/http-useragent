@@ -7,13 +7,13 @@
         "HTTP::Status",
         "File::Temp",
         "DateTime::Parse",
-        "IO::Capture::Simple",
         "Encode",
         "MIME::Base64",
         "URI"
     ],
-	 "test-depends" : [
-        "JSON::Fast"
+    "test-depends" : [
+        "JSON::Fast",
+        "IO::Capture::Simple"
     ],
     "provides" : {
         "HTTP::UserAgent" : "lib/HTTP/UserAgent.pm6",
