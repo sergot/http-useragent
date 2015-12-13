@@ -12,7 +12,6 @@
         "URI"
     ],
     "test-depends" : [
-        "JSON::Fast",
         "IO::Capture::Simple"
     ],
     "provides" : {

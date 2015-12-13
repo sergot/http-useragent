@@ -39,7 +39,7 @@ lives-ok { HTTP::UserAgent.new.get('http://www.baidu.com') }, 'Lived through gb2
 lives-ok { HTTP::UserAgent.new.get('http://rakudo.org') }, "issue#51 - get rakudo.org (chunked encoding foul-up results in incomplete UTF-8 data)";
 
 subtest {
-    use JSON::Fast;
+    my Bool $have-json = ::("&from-json") ~~ Callable;
     my $uri = 'http://httpbin.org/post';
     my %data = (foo => 'bar', baz => 'quux');
     subtest {
@@ -47,22 +47,34 @@ subtest {
         my $res;
         lives-ok { $res = $ua.post(URI.new($uri), %data, X-Foo => "foodle") }, "make post";
         my $ret-data;
-        lives-ok { $ret-data = from-json($res.decoded-content) }, "get JSON body";
 
-        is $ret-data<headers><X-Foo>, 'foodle', "has got our header";
-        is $ret-data<headers><Content-Type>, "application/x-www-form-urlencoded", "and got the content type we expected";
-        is-deeply $ret-data<form>, %data, "and we sent the right params";
+        if $have-json {
+            lives-ok { $ret-data = from-json($res.decoded-content) }, "get JSON body";
+
+            is $ret-data<headers><X-Foo>, 'foodle', "has got our header";
+            is $ret-data<headers><Content-Type>, "application/x-www-form-urlencoded", "and got the content type we expected";
+            is-deeply $ret-data<form>, %data, "and we sent the right params";
+        }
+        else {
+            skip("no json parser", 4);
+        }
     }, "with URI object";
     subtest {
         my $ua = HTTP::UserAgent.new;
         my $res;
         lives-ok { $res = $ua.post($uri, %data, X-Foo => "foodle") }, "make post";
         my $ret-data;
-        lives-ok { $ret-data = from-json($res.decoded-content) }, "get JSON body";
+        if $have-json {
+            lives-ok { $ret-data = from-json($res.decoded-content) }, "get JSON body";
 
-        is $ret-data<headers><X-Foo>, 'foodle', "has got our header";
-        is $ret-data<headers><Content-Type>, "application/x-www-form-urlencoded", "and got the content type we expected";
-        is-deeply $ret-data<form>, %data, "and we sent the right params";
+            is $ret-data<headers><X-Foo>, 'foodle', "has got our header";
+            is $ret-data<headers><Content-Type>, "application/x-www-form-urlencoded", "and got the content type we expected";
+            is-deeply $ret-data<form>, %data, "and we sent the right params";
+        }
+        else {
+            skip("no json parser", 4);
+
+        }
     }, "with URI string";
 }, "post";
 # vim: expandtab shiftwidth=4 ft=perl6
