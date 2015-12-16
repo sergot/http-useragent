@@ -1,3 +1,5 @@
+no precompilation;
+
 use HTTP::Message;
 use URI;
 use URI::Escape;

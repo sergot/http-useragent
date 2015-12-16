@@ -2,8 +2,8 @@ use Test;
 
 use HTTP::Cookies;
 # strangely these aren't required for the test to work
-require HTTP::Request;
-require HTTP::Response;
+#require HTTP::Request;
+#require HTTP::Response;
 
 plan 29;
 

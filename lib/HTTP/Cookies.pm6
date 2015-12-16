@@ -1,9 +1,11 @@
-unit class HTTP::Cookies;
 
 use HTTP::Cookie;
 use HTTP::Response;
 use HTTP::Request;
 use DateTime::Parse;
+
+unit class HTTP::Cookies;
+
 
 has @.cookies;
 has $.file;

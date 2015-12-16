@@ -1,3 +1,5 @@
+no precompilation;
+
 unit class HTTP::Message;
 
 use HTTP::Header;
