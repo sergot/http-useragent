@@ -2,7 +2,6 @@
 
 use v6;
 
-use lib 'lib';
 
 use Test;
 use HTTP::UserAgent;
@@ -16,9 +15,13 @@ is $ua.auth_password, 'TEST', "password got set okay";
 
 my $res;
 
-lives-ok { $res = $ua.get('http://oha.it/t/auth/') }, "get site that requires auth";
-
-is $res.code, 200, "and it's a 200";
+if %*ENV<NETWORK_TESTING>:exists {
+   lives-ok { $res = $ua.get('http://oha.it/t/auth/') }, "get site that requires auth";
+   is $res.code, 200, "and it's a 200";
+}
+else {
+   skip("NETWORK_TESTING is not set", 2);
+}
 
 
 
