@@ -1,5 +1,3 @@
-no precompilation;
-
 use HTTP::Message;
 use HTTP::Status;
 use HTTP::Request;
