@@ -69,7 +69,9 @@ multi sub DELETE(Str $uri, *%headers) is export {
 multi sub PUT(URI $uri, :$content, *%headers) is export {
     my $request  = HTTP::Request.new(PUT => $uri);
     $request.header.field(|%headers);
-    $request.add-content: $content;
+    if $content {
+        $request.add-content: $content;
+    }
     return $request;
 }
 
