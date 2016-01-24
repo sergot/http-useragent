@@ -28,6 +28,16 @@ multi sub POST(URI $uri, Array :$content, *%headers) is export {
     return $request;
 }
 
+multi sub POST(URI $uri, Str :$content, *%headers) is export {
+    my $request  = HTTP::Request.new(POST => $uri);
+    $request.header.field(|%headers);
+
+    if $content.defined {
+        $request.add-content: $content;
+    }
+    $request;
+}
+
 multi sub POST(URI $uri, Hash :$content, *%headers) is export {
     POST($uri, content => $content.Array, |%headers);
 }

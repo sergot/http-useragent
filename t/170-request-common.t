@@ -41,6 +41,14 @@ subtest {
         is $req.header.field('X-Foo'), 'Bar';
         is $req.content.decode, 'foo=b%26r%F0%9F%90%AB';
     }, 'content by array';
+    subtest {
+       my $req = POST('http://127.0.0.1/', 
+                 content => "bumble", 
+                 Content-Type => "text/plain");
+       is $req.content.encode, "bumble";
+       is $req.header.field('content-length'), 6;
+       is $req.header.field('Content-Type'), "text/plain";
+    }
 }, 'POST';
 
 subtest {

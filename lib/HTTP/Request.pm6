@@ -123,6 +123,12 @@ method add-cookies($cookies) {
     }
 }
 
+multi method add-content(Str $content) {
+    self.content ~= $content;
+    self.header.field(content-length => self.content.encode.bytes.Str);
+
+}
+
 multi method add-form-data(:$multipart, *%data) {
     self.add-form-data(%data.Array, :$multipart);
 }
