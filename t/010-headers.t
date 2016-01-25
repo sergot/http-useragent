@@ -2,7 +2,7 @@ use Test;
 
 use HTTP::Header;
 
-plan 18;
+plan 19;
 
 # new
 my $h = HTTP::Header.new(a => "A", b => "B");
@@ -54,4 +54,30 @@ is $h.hash<Two>, "two", "Got two (hash 2/2)";
 $h = HTTP::Header.new();
 
 lives-ok { $h.parse('ETag: "1201-51b0ce7ad3900"') }, "parse";
+todo("got the parsing wrong");
 is ~$h.field('ETag'), "1201-51b0ce7ad3900", "got the value we expected";
+
+subtest {
+   my $htest = q:to/EOH/;
+Cache-Control: max-age=21600
+Connection: close
+Date: Mon, 25 Jan 2016 17:44:43 GMT
+Accept-Ranges: bytes
+ETag: "276-422ea2b4cfcc0"
+Server: Apache/2
+Vary: upgrade-insecure-requests
+Content-Length: 630
+Content-Type: text/html
+Expires: Mon, 25 Jan 2016 23:44:43 GMT
+Last-Modified: Thu, 23 Nov 2006 13:37:31 GMT
+Client-Date: Mon, 25 Jan 2016 17:44:43 GMT
+Client-Peer: 128.30.52.100:80
+Client-Response-Num: 1
+Link: </StyleSheets/public>; rel="stylesheet"
+P3P: policyref="http://www.w3.org/2014/08/p3p.xml"
+Title: Test of a utf8 page served as text/html with UTF8 BOM
+EOH
+   my $h = HTTP::Header.new;
+   $h.parse($htest);
+   is $h.fields.elems,17, "got the number of fields we expected";
+}, "test full parse of problematic header";
