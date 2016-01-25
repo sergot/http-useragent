@@ -1,6 +1,7 @@
 unit class HTTP::Message;
 
 use HTTP::Header;
+use HTTP::MediaType;
 use Encode;
 
 has HTTP::Header $.header = HTTP::Header.new;
@@ -28,6 +29,34 @@ class X::Decoding is Exception {
     }
 }
 
+method content-type() returns Str {
+    $!header.field('Content-Type').values[0] // '';
+}
+
+has HTTP::MediaType $!media-type;
+
+method media-type() returns HTTP::MediaType {
+    if not $!media-type.defined { 
+        if self.content-type() -> $ct {
+            $!media-type = HTTP::MediaType.parse($ct);
+        }
+    }
+    $!media-type;
+}
+
+# Don't want to put the heuristic in the HTTP::MediaType
+# Also moving this here makes it much more easy to test
+
+method charset() returns Str {
+    if self.media-type -> $mt {
+        $mt.charset || ( $mt.major-type eq 'text' ?? $mt.sub-type eq 'html' ?? 'utf-8' !! 'iso-8859-1' !! 'utf-8');
+    }
+    else {
+        # At this point we're probably screwed anyway
+        'iso-8859-1'
+    }
+}
+
 method decoded-content {
     return $!content if $!content ~~ Str || $!content.bytes == 0;
 
@@ -35,13 +64,12 @@ method decoded-content {
     # If charset is missing from Content-Type, then before defaulting
     # to anything it should attempt to extract it from $.content like (for HTML):
     # <meta charset="UTF-8"> <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    my $content-type  = $!header.field('Content-Type').values[0] // '';
-    my $charset = $content-type ~~ / charset '=' $<charset>=[ <-[\s;]>+ ] /
-                ?? $<charset>.Str.lc
-                !! ( $content-type ~~ /^ text / ?? 'iso-8859-1' !! 'utf-8' );
+    my $charset = self.charset;
 
     my $decoded_content = try {
         Encode::decode($charset, $!content);
+    } || try {
+        $!content.decode('iso-8859-1');
     } || try { 
         $!content.unpack("A*") 
     } || X::Decoding.new(content => $!content, response => self).throw;
