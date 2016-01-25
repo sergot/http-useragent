@@ -20,6 +20,14 @@ method add-content($content) {
     $.content ~= $content;
 }
 
+class X::Decoding is Exception {
+    has HTTP::Message $.response;
+    has Blob $.content;
+    method message() {
+        "Problem decoding content";
+    }
+}
+
 method decoded-content {
     return $!content if $!content ~~ Str || $!content.bytes == 0;
 
@@ -36,7 +44,7 @@ method decoded-content {
         Encode::decode($charset, $!content);
     } || try { 
         $!content.unpack("A*") 
-    } || die "Problem decoding content";
+    } || X::Decoding.new(content => $!content, response => self).throw;
 
     $decoded_content
 }
