@@ -15,10 +15,10 @@ our grammar HTTP::Header::Grammar {
     }
 
     token field-value {
-        [ <!before \h> <quot> $<field-content>=[ <-['"\r\n]>+ ]  || \h+ ]* 
+        [ <!before \h>  $<field-content>=[ <-[\r\n]>+ ]  || \h+ ]* 
     }
     token quot {
-        <['"]>?
+        <['"]>
     }
 }
 
