@@ -23,7 +23,7 @@ unless %*ENV<NETWORK_TESTING> {
 }
 
 # user agent
-is $ua.get('http://ua.offensivecoder.com/').content, "$newua\n", 'useragent 1/1';
+like $ua.get('http://httpbin.org/user-agent').content, /$newua/, 'useragent 1/1';
 
 # get
 my $response = $ua.get('filip.sergot.pl/');
