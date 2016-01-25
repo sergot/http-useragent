@@ -2,7 +2,7 @@ use Test;
 
 use HTTP::Message;
 
-plan 19;
+plan 21;
 
 # new
 my $m = HTTP::Message.new('somecontent', a => ['a1', 'a2']);
@@ -75,5 +75,15 @@ $to_parse = "HTTP/1.1 200 OK\r\n"
           ~ "# Explanation of the syntax:\n";
 $m2.parse($to_parse);
 
-is ~$m2.field('ETag'), '"16d3e2-20416-4fab4ccb03580"', 'parse complex 1/2';
-is ~$m2.field('Transfer-Encoding'), 'chunked', 'parse complex 2/2';
+is ~$m2.field('ETag'), '"16d3e2-20416-4fab4ccb03580"', 'parse complex 1/3';
+is ~$m2.field('Transfer-Encoding'), 'chunked', 'parse complex 2/3';
+is ~$m2.field('Content-Type'), 'text/plain; charset=UTF-8', 'parse complex 3/3';
+
+subtest {
+   is HTTP::Message.new.charset, 'iso-8859-1', "dumb default charset";
+   is HTTP::Message.new(Content-Type => 'text/plain').charset, 'iso-8859-1', 'default text charset';
+   is HTTP::Message.new(Content-Type => 'application/xml').charset, 'utf-8', 'default "non-text" charset';
+   is HTTP::Message.new(Content-Type => 'text/html; charset=utf-8').charset, 'utf-8', "explicity charset";
+}, "charset";
+
+done-testing;
