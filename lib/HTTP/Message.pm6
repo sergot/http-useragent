@@ -57,9 +57,37 @@ method charset() returns Str {
     }
 }
 
+method content-encoding() {
+    $!header.field('Content-Encoding');
+}
+
+class X::Deflate is Exception {
+    has Str $.message;
+}
+
+method inflate-content() returns Blob {
+    if self.content-encoding -> $v is copy {
+        # This is a guess
+        $v = 'zlib' if $v eq 'compress' ;
+        $v = 'zlib' if $v eq 'deflate';
+        try require Compress::Zlib;
+        if ::('Compress::Zlib::Stream') ~~ Failure {
+            X::Deflate.new(message => "Please install 'Compress::Zlib' to uncompress '$v' encoded content").throw;
+        }
+        else {
+            my $z = ::('Compress::Zlib::Stream').new( |{ $v => True });
+            $z.inflate($!content);
+        }
+    }
+    else {
+        $!content;
+    }
+}
+
 method decoded-content {
     return $!content if $!content ~~ Str || $!content.bytes == 0;
 
+    my $content = self.inflate-content;
     # [todo]
     # If charset is missing from Content-Type, then before defaulting
     # to anything it should attempt to extract it from $.content like (for HTML):
@@ -67,12 +95,12 @@ method decoded-content {
     my $charset = self.charset;
 
     my $decoded_content = try {
-        Encode::decode($charset, $!content);
+        Encode::decode($charset, $content);
     } || try {
-        $!content.decode('iso-8859-1');
+        $content.decode('iso-8859-1');
     } || try { 
-        $!content.unpack("A*") 
-    } || X::Decoding.new(content => $!content, response => self).throw;
+        $content.unpack("A*") 
+    } || X::Decoding.new(content => $content, response => self).throw;
 
     $decoded_content
 }
