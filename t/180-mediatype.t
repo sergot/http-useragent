@@ -6,33 +6,37 @@ is-deeply(
     HTTP::MediaType.parse('text/html; charset=ISO-8859-1'),
     HTTP::MediaType.new(
         type       => 'text/html',
+        sub-type   => 'html',
+        major-type => 'text',
         parameters => [
             charset => 'ISO-8859-1',
         ],
     )
-);
+, "got media-type with charset");
 is-deeply(
     HTTP::MediaType.parse('text/html'),
     HTTP::MediaType.new(
         type       => 'text/html',
+        sub-type   => 'html',
+        major-type => 'text',
         parameters => [],
     )
-);
+, "got media-type without charset");
 is HTTP::MediaType.new(
     type       => 'text/html',
     parameters => [],
-).Str, "text/html";
+).Str, "text/html", "got correct string representation without charset";
 is HTTP::MediaType.new(
     type       => 'text/html',
     parameters => [charset => 'iso-8859-1'],
-).Str, "text/html; charset=iso-8859-1";
+).Str, "text/html; charset=iso-8859-1", "got correct string with charset";
 
 subtest {
     my $mt = HTTP::MediaType.new(
         type       => 'multipart/form-data',
     );
     $mt.param('boundary', 'XxYyZ');
-    is $mt.Str, 'multipart/form-data; boundary=XxYyZ';
+    is $mt.Str, 'multipart/form-data; boundary=XxYyZ', "update param";
 }, 'update param';
 
 done-testing;

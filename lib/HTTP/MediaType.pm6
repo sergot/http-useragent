@@ -51,6 +51,8 @@ my class MediaTypeAction {
     method media-type($/) {
         $/.make: HTTP::MediaType.new(
             type => $<type>.made ~ "/" ~ $<subtype>.made,
+            major-type => $<type>.made,
+            sub-type   => $<subtype>.made,
             parameters => $<parameter>».made())
     }
     method type($/) { $/.make: ~$/ }
@@ -61,7 +63,13 @@ my class MediaTypeAction {
 }
 
 has Str $.type;
+has Str $.major-type;
+has Str $.sub-type;
 has %.parameters;
+
+method charset(HTTP::MediaType:D:) returns Str {
+    (%!parameters<charset> // '').lc;
+}
 
 method parse(Str $content-type) {
     my $result = MediaTypeGrammar.parse($content-type, :actions(MediaTypeAction));
