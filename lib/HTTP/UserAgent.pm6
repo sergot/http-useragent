@@ -117,26 +117,26 @@ method auth(Str $login, Str $password) {
     $!auth_password = $password;
 }
 
-multi method get(URI $uri is copy, *%header ) {
+multi method get(URI $uri is copy, Bool :$bin,  *%header ) {
     my $request  = HTTP::Request.new(GET => $uri, |%header);
-    self.request($request);
+    self.request($request, :$bin);
 }
 
-multi method get(Str $uri is copy, *%header ) {
-    self.get(URI.new(_clear-url($uri)), |%header);
+multi method get(Str $uri is copy, Bool :$bin,  *%header ) {
+    self.get(URI.new(_clear-url($uri)), :$bin, |%header);
 }
 
-multi method post(URI $uri is copy, %form , *%header) {
+multi method post(URI $uri is copy, %form , Bool :$bin,  *%header) {
     my $request = HTTP::Request.new(POST => $uri, |%header);
     $request.add-form-data(%form);
-    self.request($request);
+    self.request($request, :$bin);
 }
 
-multi method post(Str $uri is copy, %form, *%header ) {
+multi method post(Str $uri is copy, %form, Bool :$bin, *%header ) {
     self.post(URI.new(_clear-url($uri)), %form, |%header);
 }
 
-method request(HTTP::Request $request) returns HTTP::Response {
+method request(HTTP::Request $request, Bool :$bin) returns HTTP::Response {
     my HTTP::Response $response;
 
     # add cookies to the request
@@ -151,7 +151,7 @@ method request(HTTP::Request $request) returns HTTP::Response {
     my Connection $conn = self.get-connection($request);
 
     if $conn.send-request($request) {
-         $response = self.get-response($request, $conn);
+         $response = self.get-response($request, $conn, :$bin);
     }
     $conn.close;
     
@@ -239,7 +239,7 @@ method get-chunked-content(Connection $conn, Blob $content is rw ) returns Blob 
     return $content;
 }
 
-method get-response(HTTP::Request $request, Connection $conn) returns HTTP::Response {
+method get-response(HTTP::Request $request, Connection $conn, Bool :$bin) returns HTTP::Response {
     my Blob[uint8] $first-chunk = Blob[uint8].new;
     my $msg-body-pos;
 
@@ -296,7 +296,7 @@ method get-response(HTTP::Request $request, Connection $conn) returns HTTP::Resp
             $content = self.get-content($conn, $content);
         }
 
-        $response.content = $content andthen $response.content = $response.decoded-content;
+        $response.content = $content andthen $response.content = $response.decoded-content(:$bin);
     }
     return $response;
 }
@@ -468,12 +468,19 @@ Sets username and password needed to HTTP Auth.
 
 =head2 method get
 
-    multi method get(HTTP::UserAgent:, Str $url is copy, *%headers) returns HTTP::Response
-    multi method get(HTTP::UserAgent: URI $uri, *%headers) returns HTTP::Response
+    multi method get(Str $url is copy, :bin?, *%headers) returns HTTP::Response
+    multi method get(URI $uri, :bin?, *%headers) returns HTTP::Response
 
 Requests the $url site, returns HTTP::Response, except if throw-exceptions
 is set as described above whereby an exception will be thrown if the
 response indicates that the request wasn't successfull.
+
+If the Content-Type of the response indicates that the content is text the
+C<content> of the Response will be a decoded string, otherwise it will be
+left as a L<Blob>.
+
+If the ':bin' adverb is supplied this will force the response C<content> to
+always be an undecoded L<Blob>
 
 Any additional named arguments will be applied as headers in the request.
 
@@ -490,17 +497,42 @@ request.
 An L<HTTP::Response> will be returned, except if throw-exceptions has been set
 and the response indicates the request was not successfull.
 
+If the Content-Type of the response indicates that the content is text the
+C<content> of the Response will be a decoded string, otherwise it will be
+left as a L<Blob>.
+
+If the ':bin' adverb is supplied this will force the response C<content> to
+always be an undecoded L<Blob>
+
 If greater control over the content of the request is required you should
 create an L<HTTP::Request> directly and populate it as needed,
 
 =head2 method request
 
-    method request(HTTP::UserAgent: HTTP::Request $request) returns HTTP::Response
+    method request(HTTP::Request $request, :bin?) returns HTTP::Response
 
 Performs the request described by the supplied L<HTTP::Request>, returns
 a L<HTTP::Response>, except if throw-exceptions is set as described above
 whereby an exception will be thrown if the response indicates that the
-request wasn't successfull.
+request wasn't successful.
+
+If the response has a 'Content-Encoding' header that indicates that the
+content was compressed, then it will attempt to inflate the data using
+L<Compress::Zlib>, if the module is not installed then an exception will
+be thrown. If you do not have or do not want to install L<Compress::Zlib>
+then you should be able to send an 'Accept-Encoding' header with a value
+of 'identity' which should cause a well behaved server to send the content
+verbatim if it is able to.
+
+If the Content-Type of the response indicates that the content is text the
+C<content> of the Response will be a decoded string, otherwise it will be
+left as a L<Blob>. The content-types that are always considered to be
+binary (and thus left as a L<Blob> ) are those with the major-types of
+'image','audio' and 'video', certain 'application' types are considered to
+be 'text' (e.g. 'xml', 'javascript', 'json').
+
+If the ':bin' adverb is supplied this will force the response C<content> to
+always be an undecoded L<Blob>
 
 You can use the helper subroutines defined in L<HTTP::Request::Common> to
 create the L<HTTP::Request> for you or create it yourself if you have more
