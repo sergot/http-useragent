@@ -42,6 +42,21 @@ multi sub POST(URI $uri, Hash :$content, *%headers) is export {
     POST($uri, content => $content.Array, |%headers);
 }
 
+multi sub POST(Str $uri, Blob :$content, *%headers is copy) is export {
+    samewith(URI.new($uri), :$content, |%headers);
+}
+
+multi sub POST(URI $uri, Blob :$content, *%headers is copy) is export {
+    my $request = HTTP::Request.new(POST => $uri, :bin);
+    %headers<Content-Length> = $content.elems;
+    if ! ( %headers<Content-Type>:exists or %headers<content-type>:exists ) {
+        %headers<Content-Type> = 'application/octet-stream';
+    }
+    $request.header.field(|%headers);
+    $request.content = $content;
+    $request;
+}
+
 multi sub POST(Str $uri, :$content, *%headers) is export {
     POST(URI.new($uri), :$content, |%headers)
 }
@@ -76,7 +91,7 @@ multi sub DELETE(Str $uri, *%headers) is export {
     DELETE(URI.new($uri), |%headers)
 }
 
-multi sub PUT(URI $uri, :$content, *%headers) is export {
+multi sub PUT(URI $uri, Str :$content, *%headers) is export {
     my $request  = HTTP::Request.new(PUT => $uri);
     $request.header.field(|%headers);
     if $content {
@@ -85,8 +100,23 @@ multi sub PUT(URI $uri, :$content, *%headers) is export {
     return $request;
 }
 
-multi sub PUT(Str $uri, :$content, *%headers) is export {
+multi sub PUT(Str $uri, Str :$content, *%headers) is export {
     PUT(URI.new($uri), :$content, |%headers)
+}
+
+multi sub PUT(Str $uri, Blob :$content, *%headers) is export {
+    PUT(URI.new($uri), :$content, |%headers);
+}
+
+multi sub PUT(URI $uri, Blob :$content, *%headers is copy) is export {
+    my $request = HTTP::Request.new(PUT => $uri, :bin);
+    %headers<Content-Length> = $content.elems;
+    if ! ( %headers<Content-Type>:exists or %headers<content-type>:exists ) {
+        %headers<Content-Type> = 'application/octet-stream';
+    }
+    $request.header.field(|%headers);
+    $request.content = $content;
+    $request;
 }
 
 multi sub PATCH(URI $uri, :$content, *%headers) is export {

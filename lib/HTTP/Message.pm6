@@ -221,14 +221,25 @@ method parse($raw_message) {
     self;
 }
 
-method Str($eol = "\n", :$debug) {
+method Str($eol = "\n", :$debug, Bool :$bin) {
     my constant $max_size = 300;
     my $s = $.header.Str($eol);
-    $s ~= $eol ~ $.content ~ $eol if $.content and !$debug;
+    $s ~= $eol if $.content;
+    
+    # The :bin will be passed from the H::UA
+    if not $bin {
+        $s ~=  $.content ~ $eol if $.content and !$debug;
+    }
     if $.content and $debug {
-      $s ~= $eol ~ "=Content size: "~$.content.Str.chars~" chars";
-      $s ~= "- Displaying only $max_size" if $.content.Str.chars > $max_size;
-      $s ~= $eol ~ $.content.Str.substr(0, $max_size) ~ $eol;
+        if $bin {
+            $s ~= $eol ~ "=Content size : " ~ $.content.elems ~ " bytes ";
+            $s ~= "$eol ** Not showing binary content ** $eol";
+        }
+        else {
+            $s ~= $eol ~ "=Content size: "~$.content.Str.chars~" chars";
+            $s ~= "- Displaying only $max_size" if $.content.Str.chars > $max_size;
+            $s ~= $eol ~ $.content.Str.substr(0, $max_size) ~ $eol;
+        }
     }
 
     return $s;

@@ -21,7 +21,7 @@ my $CRLF = "\r\n";
 
 constant $HRC_DEBUG = %*ENV<HRC_DEBUG>.Bool;
 
-multi method new(*%args) {
+multi method new(Bool :$bin, *%args) {
 
     if %args.keys.elems >= 1 {
         my ($method, $url, $file, %fields, $uri);
@@ -38,7 +38,7 @@ multi method new(*%args) {
     
         $method //= 'GET';
 
-        self.new($method, $uri, $header);
+        self.new($method, $uri, $header, :$bin);
     }
     else {
         self.bless;
@@ -49,7 +49,7 @@ multi method new(*@a where *.elems == 0 ) {
     self.bless;
 }
 
-multi method new(RequestMethod $method, URI $uri, HTTP::Header $header) {
+multi method new(RequestMethod $method, URI $uri, HTTP::Header $header, Bool :$bin) {
     my $url = $uri.grammar.parse_result.orig;
     my $file = $uri.path_query || '/';
 
@@ -57,7 +57,7 @@ multi method new(RequestMethod $method, URI $uri, HTTP::Header $header) {
         $header.field(Host => get-host-value($uri));
     }
 
-    self.bless(:$method, :$url, :$header, :$file, :$uri);
+    self.bless(:$method, :$url, :$header, :$file, :$uri, binary => $bin);
 }
 
 
@@ -267,9 +267,9 @@ method make-boundary(int $size=10) {
 }
 
 
-method Str (:$debug) {
+method Str (:$debug, Bool :$bin) {
     my $s = "$.method $.file $.protocol";
-    $s ~= $CRLF ~ callwith($CRLF, :debug($debug));
+    $s ~= $CRLF ~ callwith($CRLF, :debug($debug), :$bin);
 }
 
 method parse($raw_request) {

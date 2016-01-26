@@ -48,7 +48,13 @@ class X::HTTP::Header is X::HTTP::Server {
 role Connection {
     method send-request(HTTP::Request $request ) {
         $request.field(Connection => 'close') unless $request.field('Connection');
-        self.print($request.Str ~ "\r\n");
+        if $request.binary {
+            self.print($request.Str(:bin));
+            self.write($request.content);
+        }
+        else {
+            self.print($request.Str ~ "\r\n");
+        }
     }
 }
 
