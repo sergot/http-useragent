@@ -5,7 +5,7 @@ use v6;
 use Test;
 
 use HTTP::UserAgent;
-plan 4;
+plan 5;
 
 if %*ENV<NETWORK_TESTING> {
     my $ua = HTTP::UserAgent.new;
@@ -42,6 +42,12 @@ if %*ENV<NETWORK_TESTING> {
         is $res.content.elems, 1024, "and got the right length";
         is $res.content.elems, ~$res.field('Content-Length'), "and got the right length";
     }, "get octet-stream (not-chunked)";
+    subtest {
+        my $res;
+        lives-ok { $res = $ua.get("http://httpbin.org/get", :bin) }, "get otherwise 'text' content with ':bin' over-ride";
+        ok $res.is-text, "and the result says it's text";
+        ok $res.content ~~ Blob, "but we got back a Blob";
+    }, "get text with a :bin over-ride";
 }
 else {
     skip-rest("'NETWORK_TESTING' not set not performing tests");
