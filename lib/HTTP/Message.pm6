@@ -9,6 +9,9 @@ has $.content is rw;
 
 has $.protocol is rw = 'HTTP/1.1';
 
+has Bool $.binary = False;
+has Str  @.text-types;
+
 my $CRLF = "\r\n";
 
 method new($content?, *%fields) {
@@ -57,6 +60,56 @@ method charset() returns Str {
     }
 }
 
+# This is already a candidate for refactoring
+# Just want to get it working
+method is-text() returns Bool {
+    my Bool $ret = do {
+        if $!binary {
+            False;
+        }
+        else {
+            if self.media-type -> $mt {
+                if $mt.type ~~ any(@!text-types) {
+                    True;
+                }
+                else {
+                    given $mt.major-type {
+                        when 'text' {
+                            True;
+                        }
+                        when any(<image audio video>) {
+                            False;
+                        }
+                        when 'application' {
+                            given $mt.sub-type {
+                                when /xml|javascript|json/ {
+                                    True;
+                                }
+                                default {
+                                    False;
+                                }
+                            }
+                        }
+                        default {
+                            # Not sure about this
+                            True;
+                        }
+                    }
+                }
+            }
+            else {
+                # No content type, try and blow up
+                True;
+            }
+        }
+    }
+    $ret;
+}
+
+method is-binary() returns Bool {
+    !self.is-text;
+}
+
 method content-encoding() {
     $!header.field('Content-Encoding');
 }
@@ -84,23 +137,31 @@ method inflate-content() returns Blob {
     }
 }
 
-method decoded-content {
+method decoded-content(:$bin) {
     return $!content if $!content ~~ Str || $!content.bytes == 0;
 
     my $content = self.inflate-content;
     # [todo]
     # If charset is missing from Content-Type, then before defaulting
     # to anything it should attempt to extract it from $.content like (for HTML):
-    # <meta charset="UTF-8"> <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    my $charset = self.charset;
+    # <meta charset="UTF-8"> 
+    # <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    
+    my $decoded_content;
 
-    my $decoded_content = try {
-        Encode::decode($charset, $content);
-    } || try {
-        $content.decode('iso-8859-1');
-    } || try { 
-        $content.unpack("A*") 
-    } || X::Decoding.new(content => $content, response => self).throw;
+    if !$bin && self.is-text {
+        my $charset = self.charset;
+        $decoded_content = try {
+            Encode::decode($charset, $content);
+        } || try {
+            $content.decode('iso-8859-1');
+        } || try { 
+            $content.unpack("A*") 
+        } || X::Decoding.new(content => $content, response => self).throw;
+    }
+    else {
+        $decoded_content = $content;
+    }
 
     $decoded_content
 }
