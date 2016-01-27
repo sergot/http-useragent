@@ -6,67 +6,26 @@ use Test;
 use HTTP::UserAgent;
 use HTTP::Request::Common;
 
-sub server(Promise $done-promise) returns Promise {
-    my $server-promise = start {
-        sub _index_buf(Blob $input, Blob $sub) {
-            my $end-pos = 0;
-            while $end-pos < $input.bytes {
-                if $sub eq $input.subbuf($end-pos, $sub.bytes) {
-                    return $end-pos;
-                }
-                $end-pos++;
-            }
-            return -1;
-        }
-        react {
-            whenever $done-promise {
-                die $_;
-                done;
-            }
-            whenever IO::Socket::Async.listen('localhost',3333) -> $conn {
-                my Buf $in-buf = Buf.new;
-                whenever $conn.Supply(:bin) -> $buf { 
-                    if $in-buf.elems == 0 {
-                        my $header-end = _index_buf($buf, Buf.new(13,10));
-                        $in-buf ~= $buf.subbuf($header-end + 2);
-                    }
-                    else {
-                        $in-buf ~= $buf;
-                    }
+use lib $*PROGRAM.parent.child('lib').Str;
 
-
-                    if (my $header-end = _index_buf($in-buf, Buf.new(13,10,13,10))) > 0 {
-                        my $header = $in-buf.subbuf(0, $header-end).decode('ascii');
-
-                        if $header ~~ /Content\-Length\:\s+$<length>=[\d+]/ {
-                            my $length = $<length>.Int; 
-                            if $in-buf.subbuf($header-end + 4) == $length {
-                                await $conn.write: "HTTP/1.0 200 OK\r\n".encode ~ $in-buf ;
-                                $conn.close;
-                            }
-                        }
-                    }
-                } 
-            }
-        }
-    }
-
-    $server-promise;
-}
-
+use TestServer;
 
 my sub get-rand-buff() {
     Buf.new((0 .. 0xFF).pick((10 .. 75).pick));
 }
 
+my $port = 3333;
+
 my $p = Promise.new;
-my $s  = server($p);
+my $s  = test-server($p, port => $port);
+
+my $uri = "http://localhost:$port";
 
 subtest {
     my $ua = HTTP::UserAgent.new;
     my $buf = get-rand-buff();
     my $req;
-    lives-ok { $req = POST('http://localhost:3333', content => $buf);  }, "create POST with Buf";
+    lives-ok { $req = POST($uri, content => $buf);  }, "create POST with Buf";
     ok $req.content ~~ Blob, "content is a blob";
     is $req.content.elems, $buf.elems, "content is right length";
     is ~$req.header.field('Content-Length'), $buf.elems, "right 'Content-Length'";
@@ -84,7 +43,7 @@ subtest {
     my $ua = HTTP::UserAgent.new;
     my $buf = get-rand-buff();
     my $req;
-    lives-ok { $req = POST('http://localhost:3333', content => $buf, Content-Type => 'image/x-something', Content-Length => 158); }, "create POST with Buf (supplying Content-Type and Content-Length";
+    lives-ok { $req = POST($uri, content => $buf, Content-Type => 'image/x-something', Content-Length => 158); }, "create POST with Buf (supplying Content-Type and Content-Length";
     ok $req.content ~~ Blob, "content is a blob";
     is $req.content.elems, $buf.elems, "content is right length";
     is ~$req.header.field('Content-Length'), $buf.elems, "right 'Content-Length'";
@@ -104,7 +63,7 @@ subtest {
     # need the "\n" because our server is so crap
     my $buf = "Hello, World!\r\n".encode;
     my $req;
-    lives-ok { $req = POST('http://localhost:3333', content => $buf, Content-Type => 'text/plain', Content-Length => 158); }, "create POST with Buf (supplying Content-Type and Content-Length";
+    lives-ok { $req = POST($uri, content => $buf, Content-Type => 'text/plain', Content-Length => 158); }, "create POST with Buf (supplying Content-Type and Content-Length";
     ok $req.content ~~ Blob, "content is a blob";
     is $req.content.elems, $buf.elems, "content is right length";
     is ~$req.header.field('Content-Length'), $buf.elems, "right 'Content-Length'";
@@ -124,7 +83,7 @@ subtest {
     my $ua = HTTP::UserAgent.new;
     my $buf = get-rand-buff();
     my $req;
-    lives-ok { $req = PUT('http://localhost:3333', content => $buf); }, "create PUT with Buf";
+    lives-ok { $req = PUT($uri, content => $buf); }, "create PUT with Buf";
     ok $req.content ~~ Blob, "content is a blob";
     is $req.content.elems, $buf.elems, "content is right length";
     is ~$req.header.field('Content-Length'), $buf.elems, "right 'Content-Length'";
@@ -142,7 +101,7 @@ subtest {
     my $ua = HTTP::UserAgent.new;
     my $buf = get-rand-buff();
     my $req;
-    lives-ok { $req = PUT('http://localhost:3333', content => $buf, Content-Type => 'image/x-something', Content-Length => 158); }, "create PUT with Buf (supplying Content-Type and Content-Length";
+    lives-ok { $req = PUT($uri, content => $buf, Content-Type => 'image/x-something', Content-Length => 158); }, "create PUT with Buf (supplying Content-Type and Content-Length";
     ok $req.content ~~ Blob, "content is a blob";
     is $req.content.elems, $buf.elems, "content is right length";
     is ~$req.header.field('Content-Length'), $buf.elems, "right 'Content-Length'";
@@ -161,7 +120,7 @@ subtest {
     # need the "\n" because our server is so crap
     my $buf = "Hello, World!\n".encode;
     my $req;
-    lives-ok { $req = PUT('http://localhost:3333', content => $buf, Content-Type => 'text/plain', Content-Length => 158); }, "create PUT with Buf (supplying Content-Type and Content-Length";
+    lives-ok { $req = PUT($uri, content => $buf, Content-Type => 'text/plain', Content-Length => 158); }, "create PUT with Buf (supplying Content-Type and Content-Length";
     ok $req.content ~~ Blob, "content is a blob";
     is $req.content.elems, $buf.elems, "content is right length";
     is ~$req.header.field('Content-Length'), $buf.elems, "right 'Content-Length'";
