@@ -6,9 +6,6 @@ use Test;
 use HTTP::UserAgent;
 use HTTP::Request::Common;
 
-use URI;
-my $u = URI.new;
-
 sub server(Promise $done-promise) returns Promise {
     my $server-promise = start {
         sub _index_buf(Blob $input, Blob $sub) {
@@ -53,8 +50,6 @@ sub server(Promise $done-promise) returns Promise {
             }
         }
     }
-
-    sleep 2;
 
     $server-promise;
 }
