@@ -12,25 +12,39 @@ constant $HRC_DEBUG = %*ENV<HRC_DEBUG>.Bool;
 
 # TODO: multipart/form-data
 multi sub POST(URI $uri, %form, *%headers) is export {
-    POST($uri, content => %form, |%headers);
+    samewith($uri, content => %form, |%headers);
 }
 
 multi sub POST(Str $uri, %form, *%headers) is export {
-    POST(URI.new($uri), content => %form, |%headers)
+    samewith(URI.new($uri), content => %form, |%headers)
 }
 
 multi sub POST(URI $uri, Array :$content, *%headers) is export {
-    my $request  = HTTP::Request.new(POST => $uri);
-    $request.header.field(|%headers);
-
+    my $request  = get-request('POST', $uri, |%headers);
     $request.add-form-data($content);
-
     return $request;
 }
 
+multi sub POST(Str $uri, :$content, *%headers) is export {
+    samewith(URI.new($uri), :$content, |%headers)
+}
+
+multi sub POST(URI $uri, Hash :$content, *%headers) is export {
+    samewith($uri, content => $content.Array, |%headers);
+}
+
 multi sub POST(URI $uri, Str :$content, *%headers) is export {
-    my $request  = HTTP::Request.new(POST => $uri);
+    send-text-content('POST', $uri, :$content, |%headers);
+}
+
+my sub get-request(Str $meth, URI $uri, Bool :$bin, *%headers) returns HTTP::Request {
+    my $request  = HTTP::Request.new(|($meth.uc => $uri), :$bin);
     $request.header.field(|%headers);
+    $request;
+}
+
+my sub send-text-content(Str $meth, URI $uri, :$content, *%headers is copy ) returns HTTP::Request {
+    my $request = get-request($meth, $uri, |%headers);
 
     if $content.defined {
         $request.add-content: $content;
@@ -38,66 +52,52 @@ multi sub POST(URI $uri, Str :$content, *%headers) is export {
     $request;
 }
 
-multi sub POST(URI $uri, Hash :$content, *%headers) is export {
-    POST($uri, content => $content.Array, |%headers);
-}
 
-multi sub POST(Str $uri, Blob :$content, *%headers is copy) is export {
-    samewith(URI.new($uri), :$content, |%headers);
-}
-
-multi sub POST(URI $uri, Blob :$content, *%headers is copy) is export {
-    my $request = HTTP::Request.new(POST => $uri, :bin);
+my sub send-binary-content(Str $meth, URI $uri, Blob :$content, *%headers is copy) {
     %headers<Content-Length> = $content.elems;
     if ! ( %headers<Content-Type>:exists or %headers<content-type>:exists ) {
         %headers<Content-Type> = 'application/octet-stream';
     }
-    $request.header.field(|%headers);
+    my $request = get-request($meth, $uri, |%headers, :bin);
     $request.content = $content;
     $request;
 }
 
-multi sub POST(Str $uri, :$content, *%headers) is export {
-    POST(URI.new($uri), :$content, |%headers)
+multi sub POST(Str $uri, Blob :$content, *%headers ) is export {
+    samewith(URI.new($uri), :$content, |%headers);
 }
 
+multi sub POST(URI $uri, Blob :$content, *%headers ) is export {
+    send-binary-content('POST', $uri, :$content, |%headers);
+}
+
+
 multi sub GET(URI $uri, *%headers) is export {
-    my $request  = HTTP::Request.new(GET => $uri);
-    $request.header.field(|%headers);
-    return $request;
+    get-request('GET', $uri, |%headers);
 }
 
 multi sub GET(Str $uri, *%headers) is export {
-    GET(URI.new($uri), |%headers)
+    samewith(URI.new($uri), |%headers)
 }
 
 multi sub HEAD(URI $uri, *%headers) is export {
-    my $request  = HTTP::Request.new(HEAD => $uri);
-    $request.header.field(|%headers);
-    return $request;
+    get-request('HEAD', $uri, |%headers);
 }
 
 multi sub HEAD(Str $uri, *%headers) is export {
-    HEAD(URI.new($uri), |%headers)
+    samewith(URI.new($uri), |%headers)
 }
 
 multi sub DELETE(URI $uri, *%headers) is export {
-    my $request  = HTTP::Request.new(DELETE => $uri);
-    $request.header.field(|%headers);
-    return $request;
+    get-request('DELETE', $uri, |%headers);
 }
 
 multi sub DELETE(Str $uri, *%headers) is export {
-    DELETE(URI.new($uri), |%headers)
+    samewith(URI.new($uri), |%headers)
 }
 
 multi sub PUT(URI $uri, Str :$content, *%headers) is export {
-    my $request  = HTTP::Request.new(PUT => $uri);
-    $request.header.field(|%headers);
-    if $content {
-        $request.add-content: $content;
-    }
-    return $request;
+    send-text-content('PUT', $uri, :$content, |%headers);
 }
 
 multi sub PUT(Str $uri, Str :$content, *%headers) is export {
@@ -105,29 +105,19 @@ multi sub PUT(Str $uri, Str :$content, *%headers) is export {
 }
 
 multi sub PUT(Str $uri, Blob :$content, *%headers) is export {
-    PUT(URI.new($uri), :$content, |%headers);
+    samewith(URI.new($uri), :$content, |%headers);
 }
 
-multi sub PUT(URI $uri, Blob :$content, *%headers is copy) is export {
-    my $request = HTTP::Request.new(PUT => $uri, :bin);
-    %headers<Content-Length> = $content.elems;
-    if ! ( %headers<Content-Type>:exists or %headers<content-type>:exists ) {
-        %headers<Content-Type> = 'application/octet-stream';
-    }
-    $request.header.field(|%headers);
-    $request.content = $content;
-    $request;
+multi sub PUT(URI $uri, Blob :$content, *%headers ) is export {
+    send-binary-content('PUT', $uri, :$content, |%headers);
 }
 
 multi sub PATCH(URI $uri, :$content, *%headers) is export {
-    my $request  = HTTP::Request.new(PATCH => $uri);
-    $request.header.field(|%headers);
-    $request.add-content: $content;
-    return $request;
+    send-text-content('PATCH', $uri, :$content, |%headers);
 }
 
 multi sub PATCH(Str $uri, :$content, *%headers) is export {
-    PATCH(URI.new($uri), :$content, |%headers)
+    samewith(URI.new($uri), :$content, |%headers)
 }
 
 
@@ -193,6 +183,5 @@ Like GET() but the method in the request is "PATCH".
 =head2 C<POST $url, Header => Value,..., content => $form_ref>
 
 =head2 C<POST $url, Header => Value,..., content => $content>
-
 
 =end pod
