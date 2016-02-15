@@ -19,7 +19,7 @@ has Str $.scheme is rw;
 
 my $CRLF = "\r\n";
 
-constant $HRC_DEBUG = %*ENV<HRC_DEBUG>.Bool;
+my $HRC_DEBUG = %*ENV<HRC_DEBUG>.Bool;
 
 multi method new(Bool :$bin, *%args) {
 

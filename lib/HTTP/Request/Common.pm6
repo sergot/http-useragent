@@ -8,7 +8,7 @@ use MIME::Base64;
 use HTTP::Header;
 
 constant $CRLF = "\x0d\x0a";
-constant $HRC_DEBUG = %*ENV<HRC_DEBUG>.Bool;
+my $HRC_DEBUG = %*ENV<HRC_DEBUG>.Bool;
 
 # TODO: multipart/form-data
 multi sub POST(URI $uri, %form, *%headers) is export {
