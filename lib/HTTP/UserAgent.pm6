@@ -5,8 +5,6 @@ use HTTP::Request;
 use HTTP::Cookies;
 use HTTP::UserAgent::Common;
 
-try require IO::Socket::SSL;
-
 use Encode;
 use URI;
 
@@ -338,6 +336,7 @@ multi method get-connection(HTTP::Request $request ) returns Connection {
 multi method get-connection(HTTP::Request $request, Str $host, Int $port?) returns Connection {
     my $conn;
     if $request.scheme eq 'https' {
+        try require IO::Socket::SSL;
         die "Please install IO::Socket::SSL in order to fetch https sites" if ::('IO::Socket::SSL') ~~ Failure;
         $conn = ::('IO::Socket::SSL').new(:$host, :port($port // 443), :timeout($.timeout))
     }
