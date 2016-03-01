@@ -2,6 +2,7 @@ use v6;
 
 use HTTP::UserAgent;
 BEGIN {
+    try require IO::Socket::SSL;
     if ::('IO::Socket::SSL') ~~ Failure {
         print("1..0 # Skip: IO::Socket::SSL not available\n");
         exit 0;
