@@ -20,5 +20,6 @@ my $url = 'https://github.com/';
 my $ssl = HTTP::UserAgent.new;
 my $get = ~$ssl.get($url);
 
-is $get.substr($get.chars - 9), "</html>\n\r\n", 'get 1/1';
+my $search-html = "</html>\n\n\r\n";
+is $get.substr($get.chars - $search-html.chars), $search-html, 'get 1/1';
 # it should definitely have more/better tests
