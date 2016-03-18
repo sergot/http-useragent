@@ -15,7 +15,9 @@ our grammar HTTP::Header::Grammar {
     }
 
     token field-value {
-        [ <!before \h>  $<field-content>=[ <-[\r\n]>+ ]  || \h+ ]* 
+        [ <!before \h> ['W' | 'w']? '/'? <quot>?
+            $<field-content>=[ <-[\r\n"]>+ ]  || \h+ ]*
+        <quot>?
     }
     token quot {
         <['"]>

@@ -53,8 +53,7 @@ is $h.hash<Two>, "two", "Got two (hash 2/2)";
 
 $h = HTTP::Header.new();
 
-lives-ok { $h.parse('ETag: "1201-51b0ce7ad3900"') }, "parse";
-todo("got the parsing wrong");
+lives-ok { $h.parse('ETag: W/"1201-51b0ce7ad3900"') }, "parse";
 is ~$h.field('ETag'), "1201-51b0ce7ad3900", "got the value we expected";
 
 subtest {
