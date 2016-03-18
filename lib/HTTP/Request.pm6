@@ -125,7 +125,7 @@ method add-cookies($cookies) {
 
 multi method add-content(Str $content) {
     self.content ~= $content;
-    self.header.field(content-length => self.content.encode.bytes.Str);
+    self.header.field(Content-Length => self.content.encode.bytes.Str);
 
 }
 
@@ -139,7 +139,7 @@ multi method add-form-data(%data, :$multipart) {
 
 multi method add-form-data(Array $data, :$multipart) {
     my $ct = do {
-        my $f = self.header.field('content-type');
+        my $f = self.header.field('Content-Type');
         if $f {
             $f.values[0];
         } else {
@@ -159,7 +159,7 @@ multi method add-form-data(Array $data, :$multipart) {
                 @parts.push: uri-escape(.key) ~ "=" ~ uri-escape(.value);
             }
             self.content = @parts.join("&").encode;
-            self.header.field(content-length => self.content.bytes.Str);
+            self.header.field(Content-Length => self.content.bytes.Str);
         }
         when m:i,^ "multipart/form-data" \s* ( ";" | $ ), {
             say 'generating form-data' if $HRC_DEBUG;
@@ -171,10 +171,10 @@ multi method add-form-data(Array $data, :$multipart) {
             $ct = $mt.Str;
             my Str $encoded-content = $generated-content;
             self.content = $encoded-content;
-            self.header.field(content-length => $encoded-content.encode('ascii').bytes.Str);
+            self.header.field(Content-Length => $encoded-content.encode('ascii').bytes.Str);
         }
     }
-    self.header.field(content-type => $ct);
+    self.header.field(Content-Type => $ct);
 }
 
 
@@ -204,18 +204,18 @@ method form-data(Array $content, Str $boundary) {
                 if ($file) {
                     # TODO: dynamic file upload support
                     $content = $file.IO.slurp;
-                    unless $headers.field('content-type') {
+                    unless $headers.field('Content-Type') {
                         # TODO: LWP::MediaTypes
-                        $headers.field(content-type => 'application/octet-stream');
+                        $headers.field(Content-Type => 'application/octet-stream');
                     }
                 }
-                if $headers.field('content-disposition') {
-                    $disp = $headers.field('content-disposition');
-                    $headers.remove-field('content-disposition');
+                if $headers.field('Content-Disposition') {
+                    $disp = $headers.field('Content-Disposition');
+                    $headers.remove-field('Content-Disposition');
                 }
-                if $headers.field('content') {
-                    $content = $headers.field('content');
-                    $headers.remove-field('content');
+                if $headers.field('Content') {
+                    $content = $headers.field('Content');
+                    $headers.remove-field('Content');
                 }
                 my $head = ["Content-Disposition: $disp",
                             $headers.Str($CRLF),
