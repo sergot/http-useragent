@@ -284,7 +284,7 @@ method get-response(HTTP::Request $request, Connection $conn, Bool :$bin) return
         # Turn the inner exceptions to ours
         # This may really want to be outside
         CATCH {
-            when HTTP::Response::X::ContentLength {
+            when X::HTTP::ContentLength {
                 X::HTTP::Header.new( :rc($_.message), :response($response) ).throw
             }
         }

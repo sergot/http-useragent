@@ -6,7 +6,7 @@ use Test;
 
 use HTTP::Response;
 
-plan 26;
+plan 27;
 
 # new
 my $r = HTTP::Response.new(200, a => 'a');
@@ -59,8 +59,22 @@ is $r.code, 403, "got the code we expected";
 is $r.field('ETag').values[0], "1201-51b0ce7ad3900", "got a header we expected";
 
 lives-ok { $r = HTTP::Response.new(200, Content-Length => "hsh") }, "create a response with a Content-Length";
-throws-like { $r.content-length }, HTTP::Response::X::ContentLength;
+throws-like { $r.content-length }, X::HTTP::ContentLength;
 lives-ok { $r = HTTP::Response.new(200, Content-Length => "888") }, "create a response with a Content-Length";
 lives-ok { $r.content-length }, "content-length lives";
 is $r.content-length, 888, "got the right value";
 isa-ok $r.content-length, Int, "and it is an Int";
+
+subtest {
+    my $r;
+    throws-like { $r = HTTP::Response.new(Buf.new) }, X::HTTP::NoResponse, "create with an empty buf";
+    my $garbage = Buf.new(('a' .. 'z', 'A' .. 'Z').pick(20).map({$_.ords}).flat);
+    lives-ok { 
+        $r = HTTP::Response.new($garbage); 
+    }, "create with garbage";
+    is $r.code, 500, "and got a 500 response";
+
+}, "failure modes";
+
+
+# vim: expandtab shiftwidth=4 ft=perl6

@@ -10,11 +10,16 @@ has HTTP::Request $.request is rw;
 
 my $CRLF = "\r\n";
 
-class HTTP::Response::X is Exception {
+class X::HTTP::Response is Exception {
     has $.message;
 }
 
-class HTTP::Response::X::ContentLength is HTTP::Response::X {
+class X::HTTP::ContentLength is X::HTTP::Response {
+}
+
+class X::HTTP::NoResponse is X::HTTP::Response {
+    has $.message = "missing or incomplete response line";
+    has $.got;
 }
 
 submethod BUILD(:$!code) {
@@ -24,9 +29,14 @@ submethod BUILD(:$!code) {
 # This candidate makes it easier to test weird responses
 multi method new(Blob $header-chunk) {
     my ( $rl, $header ) = $header-chunk.decode('ascii').split(/\r?\n/, 2);
-    my $code = $rl.split(' ')[1].Int;
+    if not $rl {
+        X::HTTP::NoResponse.new.throw;
+    }
+    my $code = (try $rl.split(' ')[1].Int) // 500;
     my $response = self.new($code);
-    $response.header.parse( $header.subst(/"\r"?"\n"$$/, '') );
+    if $header.defined {
+        $response.header.parse( $header.subst(/"\r"?"\n"$$/, '') );
+    }
     return $response;
 }
 
@@ -41,7 +51,7 @@ method content-length() returns Int {
     if $content-length.defined {
         my $c = $content-length;
         if not ($content-length = try +$content-length).defined {
-            HTTP::Response::X::ContentLength.new(message => "Content-Length header value '$c' is not numeric").throw;
+            X::HTTP::ContentLength.new(message => "Content-Length header value '$c' is not numeric").throw;
         }
     }
     else {
