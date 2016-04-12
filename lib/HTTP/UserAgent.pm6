@@ -19,6 +19,7 @@ class X::HTTP is Exception {
 }
 
 class X::HTTP::Internal is Exception {
+    has $.rc;
     has $.reason;
 
     method message {
@@ -270,6 +271,12 @@ method get-response(HTTP::Request $request, Connection $conn, Bool :$bin) return
         # Assume we have the whole header because if the server
         # didn't send it we're stuffed anyway
         $first-chunk;
+    }
+
+    CATCH {
+        when X::HTTP::NoResponse {
+            X::HTTP::Internal.new(rc => 500, reason => "server returned no data").throw;
+        }
     }
 
     my HTTP::Response $response = HTTP::Response.new($header-chunk);
