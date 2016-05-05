@@ -165,6 +165,9 @@ method request(HTTP::Request $request, Bool :$bin) returns HTTP::Response {
     self.save-response($response);
     $.debug-handle.say("<<==Recv\n" ~ $response.Str(:debug)) if $.debug;
 
+    # save cookies
+    $.cookies.extract-cookies($response);
+
     given $response.code {
         when /^30<[0123]>/ { 
             when $.max-redirects < +@.history
@@ -186,8 +189,6 @@ method request(HTTP::Request $request, Bool :$bin) returns HTTP::Response {
         }
     }        
 
-    # save cookies
-    $.cookies.extract-cookies($response);
     return $response;
 }
 
