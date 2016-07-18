@@ -355,9 +355,22 @@ multi method get-connection(HTTP::Request $request, Str $host, Int $port?) retur
     $conn;
 }
 
+# heuristic to determine whether we are running in the CGI
+# please adjust as required
+method is-cgi() returns Bool {
+    %*ENV<request_method>:exists or %*ENV<REQUEST_METHOD>:exists;
+}
+
+has $.http-proxy;
 # want the request to possibly match scheme, no_proxy etc
 method get-proxy(HTTP::Request $request) {
-    %*ENV<http_proxy> || %*ENV<HTTP_PROXY>;
+    $!http-proxy //= do if self.is-cgi {
+        %*ENV<cgi_http_proxy> || %*ENV<CGI_HTTP_PROXY>;
+    }
+    else {
+        %*ENV<http_proxy> || %*ENV<HTTP_PROXY>;
+    }
+    $!http-proxy;
 }
 
 multi sub basic-auth-token(Str $login, Str $passwd ) returns Str {
