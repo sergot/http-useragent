@@ -33,7 +33,7 @@ class X::Decoding is Exception {
 }
 
 method content-type() returns Str {
-    $!header.field('Content-Type').values[0] // '';
+    $!header.field('Content-Type').values[0] || '';
 }
 
 has HTTP::MediaType $!media-type;
