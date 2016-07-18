@@ -39,7 +39,14 @@ lives-ok { HTTP::UserAgent.new.get('http://www.baidu.com') }, 'Lived through gb2
 lives-ok { HTTP::UserAgent.new.get('http://rakudo.org') }, "issue#51 - get rakudo.org (chunked encoding foul-up results in incomplete UTF-8 data)";
 
 subtest {
-    my Bool $have-json = ::("&from-json") ~~ Callable;
+    my Bool $have-json = True;
+    CATCH {
+        when X::CompUnit::UnsatisfiedDependency {
+            $have-json = False;
+        }
+    }
+    require JSON::Fast <&from-json>;
+    
     my $uri = 'http://httpbin.org/post';
     my %data = (foo => 'bar', baz => 'quux');
     subtest {
