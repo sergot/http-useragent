@@ -49,7 +49,7 @@ Please see the documentation links listed below:
 - [HTTP::Message](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Message.pm6#L97)
 - [HTTP::Request](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Request.pm6#L79)
 - [HTTP::Response](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Response.pm6#L35)
-- [HTTP::UserAgent](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/UserAgent.pm6#L238)
+- [HTTP::UserAgent](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/UserAgent.pm6#L424)
     - [HTTP::UserAgent::Common](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/UserAgent/Common.pm6#L20)
 
 
