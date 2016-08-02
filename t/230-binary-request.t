@@ -10,6 +10,8 @@ use lib $*PROGRAM.parent.child('lib').Str;
 
 use TestServer;
 
+%*ENV<NO_PROXY> = 'localhost';
+
 my sub get-rand-buff() {
     Buf.new((0 .. 0xFF).pick((10 .. 75).pick));
 }

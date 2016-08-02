@@ -16,6 +16,8 @@ my $p = start {
 
 }
 
+%*ENV<NO_PROXY> = 'localhost';
+
 my $ua = HTTP::UserAgent.new;
 
 my $res;
