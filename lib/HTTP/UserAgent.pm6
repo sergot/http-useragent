@@ -370,7 +370,41 @@ method get-proxy(HTTP::Request $request) {
     else {
         %*ENV<http_proxy> || %*ENV<HTTP_PROXY>;
     }
-    $!http-proxy;
+    if self.use-proxy( $request ) {
+        $!http-proxy;
+    }
+}
+
+has @.no-proxy;
+
+has Bool $!no-proxy-check = False;
+
+method no-proxy() {
+    if @!no-proxy.elems == 0 {
+        if not $!no-proxy-check {
+            if (%*ENV<no_proxy> || %*ENV<NO_PROXY> ) -> $no-proxy {
+                @!no-proxy = $no-proxy.split: /\s*\,\s*/;
+            }
+            $!no-proxy-check = True;
+        }
+    }
+    @!no-proxy;
+}
+
+multi method use-proxy(HTTP::Request $request) returns Bool {
+    samewith $request.host;
+}
+
+multi method use-proxy(Str $host) returns Bool {
+    my $rc = True;
+
+    for self.no-proxy -> $no-proxy {
+        if $host ~~ /$no-proxy/ {
+            $rc = False;
+            last;
+        }
+    }
+    $rc;
 }
 
 multi sub basic-auth-token(Str $login, Str $passwd ) returns Str {
