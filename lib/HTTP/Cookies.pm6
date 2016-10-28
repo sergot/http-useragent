@@ -1,8 +1,8 @@
 unit class HTTP::Cookies;
 
 use HTTP::Cookie;
-use HTTP::Response;
-use HTTP::Request;
+use HTTP::Response:auth<github:sergot>;
+use HTTP::Request:auth<github:sergot>;
 use DateTime::Parse;
 
 has @.cookies;

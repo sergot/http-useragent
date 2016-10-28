@@ -1,6 +1,6 @@
 use HTTP::Message;
 use HTTP::Status;
-use HTTP::Request;
+use HTTP::Request:auth<github:sergot>;
 
 unit class HTTP::Response is HTTP::Message;
 

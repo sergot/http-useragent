@@ -2,7 +2,7 @@ unit class HTTP::Request::Common;
 
 use URI;
 use URI::Escape;
-use HTTP::Request;
+use HTTP::Request:auth<github:sergot>;
 use HTTP::MediaType;
 use MIME::Base64;
 use HTTP::Header;
