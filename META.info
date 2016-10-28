@@ -1,7 +1,7 @@
 {
 	 "perl"      : "6.c",
     "name"      : "HTTP::UserAgent",
-    "version"   : "1.1.22",
+    "version"   : "1.1.23",
     "author"   : "github:sergot",
     "description"   : "Web user agent",
     "depends"   : [
