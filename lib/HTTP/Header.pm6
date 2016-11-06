@@ -52,6 +52,8 @@ method new(*%fields) {
     self.bless(:@fields);
 }
 
+proto method field(|c) { * }
+
 # set fields
 multi method field(*%fields) {
     for %fields.kv -> $k, $v {
