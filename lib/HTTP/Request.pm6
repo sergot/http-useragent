@@ -21,6 +21,8 @@ my $CRLF = "\r\n";
 
 my $HRC_DEBUG = %*ENV<HRC_DEBUG>.Bool;
 
+proto method new(|c) { * }
+
 multi method new(Bool :$bin, *%args) {
 
     if %args.keys.elems >= 1 {
@@ -75,6 +77,8 @@ sub get-host-value(URI $uri --> Str) {
 
 method set-method($method) { $.method = $method.uc }
 
+proto method uri(|c) { * }
+
 multi method uri($uri is copy where URI|Str) {
     $!uri = $uri.isa(Str) ?? URI.new($uri) !! $uri ;
     $!url = $!uri.grammar.parse_result.orig;
@@ -87,12 +91,16 @@ multi method uri() is rw {
     $!uri;
 }
 
+proto method host(|c) { * }
+
 multi method host() returns Str is rw {
     if not $!host.defined {
          $!host = ~self.field('Host').values;
     }
     $!host;
 }
+
+proto method port(|c) { * }
 
 multi method port() returns Int is rw {
     if not $!port.defined {
@@ -103,6 +111,8 @@ multi method port() returns Int is rw {
     }
     $!port;
 }
+
+proto method scheme(|c) { * }
 
 multi method scheme() returns Str is rw {
     if not $!scheme.defined {
@@ -123,11 +133,15 @@ method add-cookies($cookies) {
     }
 }
 
+proto method add-content(|c) { * }
+
 multi method add-content(Str $content) {
     self.content ~= $content;
     self.header.field(Content-Length => self.content.encode.bytes.Str);
 
 }
+
+proto method add-form-data(|c) { * }
 
 multi method add-form-data(:$multipart, *%data) {
     self.add-form-data(%data.Array, :$multipart);
