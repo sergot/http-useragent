@@ -17,7 +17,8 @@ my grammar HTTP::Cookies::Grammar {
     token cookie   {
         <name> '=' <value> ';'? \s* [<arg> \s*]* <secure>? ';'? \s* <httponly>? ';'?
     }
-    token name     { \w+ }
+    token separator { <[()<>@,;:\"/\[\]?={}\s\t]> }
+    token name     { <[\S] - [()<>@,;:\"/\[\]?={}]>+ }
     token value    { <-[;]>+ }
     token arg      { <name> '=' <value> ';'? }
     token secure   { Secure }
