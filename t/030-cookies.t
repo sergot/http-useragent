@@ -5,7 +5,7 @@ use HTTP::Cookies;
 require HTTP::Request;
 require HTTP::Response;
 
-plan 29;
+plan 30;
 
 BEGIN my $file = './cookies.dat';
 LEAVE try $file.IO.unlink;
@@ -184,3 +184,39 @@ ok ! $c.cookies.grep({ .name eq 'n1' }), 'clear-expired 3/3';
 # autosave
 $c.clear;
 is $c.cookies.elems, 0, 'autosave 1/1';
+
+subtest {
+
+    lives-ok {
+        my $c = HTTP::Cookies.new; 
+        lives-ok { $c.set-cookie('Set-Cookie: mykey=myvalue;'); }, "set cookie with mykey=myvalue";
+        is $c.cookies.elems, 1, "got one cookie";
+        is $c.cookies[0].name, "mykey", "got the expected name";
+        is $c.cookies[0].value, "myvalue", "got the expected value";
+    }, "no hyphen in either key or value";
+
+    lives-ok {
+        my $c = HTTP::Cookies.new; 
+        lives-ok { $c.set-cookie('Set-Cookie: mykey=my-value;'); }, "set cookie with mykey=my-value";
+        is $c.cookies.elems, 1, "got one cookie";
+        is $c.cookies[0].name, "mykey", "got the expected name";
+        is $c.cookies[0].value, "my-value", "got the expected value";
+    }, "hyphen in value";
+
+    lives-ok {
+        my $c = HTTP::Cookies.new; 
+        lives-ok { $c.set-cookie('Set-Cookie: my-key=myvalue;'); }, "set cookie with my-key=myvalue";
+        is $c.cookies.elems, 1, "got one cookie";
+        is $c.cookies[0].name, "my-key", "got the expected name";
+        is $c.cookies[0].value, "myvalue", "got the expected value";
+    }, "hyphen in name";
+
+    lives-ok {
+        my $c = HTTP::Cookies.new; 
+        lives-ok { $c.set-cookie('Set-Cookie: my-key=my-value;'); }, "set cookie with my-key=my-value";
+        is $c.cookies.elems, 1, "got one cookie";
+        is $c.cookies[0].name, "my-key", "got the expected name";
+        is $c.cookies[0].value, "my-value", "got the expected value";
+    }, "hyphen in name and value";
+
+}, "issue #154";
