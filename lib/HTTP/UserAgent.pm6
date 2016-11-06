@@ -122,6 +122,8 @@ method auth(Str $login, Str $password) {
     $!auth_password = $password;
 }
 
+proto method get(|c) { * }
+
 multi method get(URI $uri is copy, Bool :$bin,  *%header ) {
     my $request  = HTTP::Request.new(GET => $uri, |%header);
     self.request($request, :$bin);
@@ -130,6 +132,8 @@ multi method get(URI $uri is copy, Bool :$bin,  *%header ) {
 multi method get(Str $uri is copy, Bool :$bin,  *%header ) {
     self.get(URI.new(_clear-url($uri)), :$bin, |%header);
 }
+
+proto method post(|c) { * }
 
 multi method post(URI $uri is copy, %form , Bool :$bin,  *%header) {
     my $request = HTTP::Request.new(POST => $uri, |%header);
@@ -191,6 +195,8 @@ method request(HTTP::Request $request, Bool :$bin) returns HTTP::Response {
 
     return $response;
 }
+
+proto method get-content(|c) { * }
 
 # When we have a content-length
 multi method get-content(Connection $conn, Blob $content is rw, $content-length) returns Blob {
@@ -322,6 +328,7 @@ method save-response(HTTP::Response $response) {
     @!history.push($response-copy);
 }
 
+proto method get-connection(|c) { * }
 
 multi method get-connection(HTTP::Request $request ) returns Connection {
     my $host = $request.host;
@@ -390,6 +397,8 @@ method no-proxy() {
     }
     @!no-proxy;
 }
+
+proto method use-proxy(|c) { * }
 
 multi method use-proxy(HTTP::Request $request) returns Bool {
     samewith $request.host;
