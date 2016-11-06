@@ -26,6 +26,8 @@ submethod BUILD(:$!code) {
     $!status-line = self.set-code($!code);
 }
 
+proto method new(|c) { * }
+
 # This candidate makes it easier to test weird responses
 multi method new(Blob $header-chunk) {
     my ( $rl, $header ) = $header-chunk.decode('ascii').split(/\r?\n/, 2);
