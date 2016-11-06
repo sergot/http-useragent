@@ -81,6 +81,8 @@ method parse(Str $content-type) {
     }
 }
 
+proto method param(|c) { * }
+
 multi method param(Str $name) {
     %!parameters{$name};
 }
