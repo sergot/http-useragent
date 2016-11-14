@@ -5,6 +5,9 @@ use v6;
 use Test;
 use HTTP::UserAgent;
 use HTTP::Request::Common;
+use Test::Util::ServerPort; 
+         
+
 
 use lib $*PROGRAM.parent.child('lib').Str;
 
@@ -16,7 +19,7 @@ my sub get-rand-buff() {
     Buf.new((0 .. 0xFF).pick((10 .. 75).pick));
 }
 
-my $port = 3333;
+my $port = get-unused-port(); 
 
 my $p = Promise.new;
 my $s  = test-server($p, port => $port);
