@@ -86,6 +86,7 @@ method next-request() returns HTTP::Request {
 
     my $location = ~self.header.field('Location').values;
 
+
     if $location.defined {
         # Special case for the HTTP status code 303 (redirection):
         # The response to the request can be found under another URI using
@@ -96,12 +97,15 @@ method next-request() returns HTTP::Request {
              $!request.method eq any('POST', 'PUT', 'DELETE', 'PATCH');
 
         my %args = $method => $location;
+
         $new-request = HTTP::Request.new(|%args);
+
         if not ~$new-request.field('Host').values {
             my $hh = ~$!request.field('Host').values;
             $new-request.field(Host => $hh);
-            $new-request.host = $!request.host;
-            $new-request.port = $!request.port;
+            $new-request.scheme = $!request.scheme;
+            $new-request.host   = $!request.host;
+            $new-request.port   = $!request.port;
         }
     }
 
