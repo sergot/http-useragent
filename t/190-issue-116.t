@@ -3,12 +3,12 @@ use v6;
 use HTTP::UserAgent;
 use Test;
 
-BEGIN {
-    try require IO::Socket::SSL;
-    if ::('IO::Socket::SSL') ~~ Failure {
-        print("1..0 # Skip: IO::Socket::SSL not available\n");
-        exit 0;
-    }
+plan 2;
+
+try require IO::Socket::SSL;
+if ::('IO::Socket::SSL') ~~ Failure {
+    skip-rest("IO::Socket::SSL not available");
+    exit 0;
 }
 
 my $ua = HTTP::UserAgent.new;

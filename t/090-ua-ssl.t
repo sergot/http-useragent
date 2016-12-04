@@ -1,17 +1,16 @@
 use v6;
 
 use HTTP::UserAgent;
-BEGIN {
-    try require IO::Socket::SSL;
-    if ::('IO::Socket::SSL') ~~ Failure {
-        print("1..0 # Skip: IO::Socket::SSL not available\n");
-        exit 0;
-    }
-}
 
 use Test;
 
 plan 2;
+
+try require IO::Socket::SSL;
+if ::('IO::Socket::SSL') ~~ Failure {
+    skip-rest("IO::Socket::SSL not available");
+    exit 0;
+}
 
 throws-like 'use HTTP::UserAgent; my $ssl = HTTP::UserAgent.new(:throw-exceptions); $ssl.get("https://httpbin.org/status/403")', X::HTTP::Response, message => "Response error: '403 Forbidden'";
 
