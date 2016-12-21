@@ -1,6 +1,8 @@
 use HTTP::Request;
 use Test;
 
+use URI;
+
 plan 28;
 
 my $url = 'http://testsite.ext/cat/f.h?q=1&q=2';

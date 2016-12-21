@@ -2,6 +2,7 @@ use v6;
 use HTTP::UserAgent;
 use HTTP::UserAgent::Common;
 use Test;
+use URI;
 
 plan 10;
 
@@ -46,7 +47,7 @@ subtest {
         }
     }
     require JSON::Fast <&from-json>;
-    
+
     my $uri = 'http://httpbin.org/post';
     my %data = (foo => 'bar', baz => 'quux');
     subtest {
