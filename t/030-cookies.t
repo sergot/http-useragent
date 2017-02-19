@@ -5,7 +5,7 @@ use HTTP::Cookies;
 require HTTP::Request;
 require HTTP::Response;
 
-plan 30;
+plan 31;
 
 BEGIN my $file = './cookies.dat';
 LEAVE try $file.IO.unlink;
@@ -220,3 +220,15 @@ subtest {
     }, "hyphen in name and value";
 
 }, "issue #154";
+
+subtest {
+    my $c = HTTP::Cookies.new; 
+    lives-ok { $c.set-cookie('Set-Cookie: icwp-app-flash=deleted; expires=Thu, 01-Jan-1970 00:00:01 GMT; Max-Age=0; path=/'); }, "set cookie with representative values";
+    is $c.cookies.elems, 1, "got one cookies";
+    is $c.cookies[0].name, "icwp-app-flash", "got right name";
+    is $c.cookies[0].value, "deleted", "and the right value";
+    is $c.cookies[0].fields.elems, 1, "and got the one field that was expected";
+    is $c.cookies[0].fields<Max-Age>,0, "and the field is correct";
+}, "issue #163";
+
+# vim: expandtab shiftwidth=4 ft=perl6
