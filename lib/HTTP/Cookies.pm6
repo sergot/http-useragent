@@ -37,7 +37,6 @@ my class HTTP::Cookies::Actions {
             if <version expires path domain>.grep($a<name>.lc) {
               $h."{$a<name>.lc}"() = ~$a<value>;
             } else {
-              say $a<name>~"="~$a<value>;
               $h.fields.push: $a<name> => ~$a<value>;
             }
         }
