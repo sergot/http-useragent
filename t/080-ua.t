@@ -1,6 +1,8 @@
 use v6;
 use HTTP::UserAgent;
 use HTTP::UserAgent::Common;
+use URI;
+
 use Test;
 
 plan 10;

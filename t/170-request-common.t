@@ -1,4 +1,5 @@
 use v6;
+use URI;
 use Test;
 
 use HTTP::Request::Common;

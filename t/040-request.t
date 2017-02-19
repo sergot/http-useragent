@@ -1,4 +1,5 @@
 use HTTP::Request;
+use URI;
 use Test;
 
 plan 28;
