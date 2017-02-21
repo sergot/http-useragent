@@ -8,7 +8,9 @@ use HTTP::UserAgent;
 use HTTP::Request::Common;
 
 %*ENV<NO_PROXY> = 'localhost, foo.bar.com , baz.quux.com';
+%*ENV<no_proxy>:delete;
 %*ENV<HTTP_PROXY> = "http://cannibal.local/";
+%*ENV<http_proxy>:delete;
 
 my $ua;
 
