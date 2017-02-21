@@ -4,21 +4,26 @@ use Test::IO::Capture;
 
 plan 7;
 
-my $url = 'http://perlmonkeys.org/';
+if %*ENV<NETWORK_TESTING> {
+    my $url = 'http://perlmonkeys.org/';
 
-my $get = get $url;
+    my $get = get $url;
 
-is $get.substr($get.chars - 9), "\n</html>\n", 'get 1/1';
-my $code;
-prints-stdout-ok { $code = getprint $url }, $get, 'getprint 1/2';
-is $code, 200, 'getprint 2/2';
-getstore $url, 'newfile';
-is slurp('newfile'), $get, 'getstore 1/1';
-unlink 'newfile';
+    is $get.substr($get.chars - 9), "\n</html>\n", 'get 1/1';
+    my $code;
+    prints-stdout-ok { $code = getprint $url }, $get, 'getprint 1/2';
+    is $code, 200, 'getprint 2/2';
+    getstore $url, 'newfile';
+    is slurp('newfile'), $get, 'getstore 1/1';
+    unlink 'newfile';
 
-throws-like "use HTTP::UserAgent :simple; get('http://perlmonkeys.org/404here')", X::HTTP::Response, message => "Response error: '404 Not Found'";
+    throws-like "use HTTP::UserAgent :simple; get('http://perlmonkeys.org/404here')", X::HTTP::Response, message => "Response error: '404 Not Found'";
 
-my $head;
+    my $head;
 
-lives-ok { $head = head $url }, "head works";
-is $head.elems, 5, "got the right number of elements";
+    lives-ok { $head = head $url }, "head works";
+    is $head.elems, 5, "got the right number of elements";
+}
+else {
+    skip-rest "NETWORK_TESTING not set won't do network tests";
+}
