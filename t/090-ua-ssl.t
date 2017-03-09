@@ -6,7 +6,7 @@ use Test;
 
 plan 2;
 
-try require IO::Socket::SSL;
+try require ::("IO::Socket::SSL");
 if ::('IO::Socket::SSL') ~~ Failure {
     skip-rest("IO::Socket::SSL not available");
     exit 0;
