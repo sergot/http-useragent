@@ -7,7 +7,7 @@ use HTTP::UserAgent;
 plan 2;
 
 if %*ENV<NETWORK_TESTING> {
-    try require Compress::Zlib;
+    try require ::('Compress::Zlib');
     if ::('Compress::Zlib::Stream') ~~ Failure {
         skip-rest("'Compress::Zlib' not installed won't test");
     }

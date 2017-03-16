@@ -123,7 +123,7 @@ method inflate-content() returns Blob {
         # This is a guess
         $v = 'zlib' if $v eq 'compress' ;
         $v = 'zlib' if $v eq 'deflate';
-        try require Compress::Zlib;
+        try require ::('Compress::Zlib');
         if ::('Compress::Zlib::Stream') ~~ Failure {
             X::Deflate.new(message => "Please install 'Compress::Zlib' to uncompress '$v' encoded content").throw;
         }
