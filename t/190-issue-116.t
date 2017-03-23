@@ -14,7 +14,7 @@ if ::('IO::Socket::SSL') ~~ Failure {
 my $ua = HTTP::UserAgent.new;
 
 my HTTP::Response $res;
-my $request = HTTP::Request.new(GET => 'http://httpstat.us/304');
+my $request = HTTP::Request.new(GET => 'http://httpbin.org/status/304');
 lives-ok { $res = $ua.request($request) }, "another request that always results in 304 lives";
 is $res.code , 304, "and it is actually a 304";
 
