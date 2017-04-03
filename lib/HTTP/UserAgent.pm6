@@ -66,7 +66,7 @@ has HTTP::Cookies $.cookies is rw = HTTP::Cookies.new(
 has $.auth_login;
 has $.auth_password;
 has Int $.max-redirects is rw;
-has @.history;
+has $.redirects-in-a-row;
 has Bool $.throw-exceptions;
 has $.debug;
 has IO::Handle $.debug-handle;
@@ -99,7 +99,7 @@ my sub _index_buf(Blob $input, Blob $sub) {
     return -1;
 }
 
-submethod BUILD(:$!useragent, Bool :$!throw-exceptions, :$!max-redirects = 5, :$!debug) {
+submethod BUILD(:$!useragent, Bool :$!throw-exceptions, :$!max-redirects = 5, :$!debug, :$!redirects-in-a-row) {
     $!useragent = get-ua($!useragent) if $!useragent.defined;
     if $!debug.defined {
         if $!debug ~~ Bool and $!debug == True {
@@ -166,32 +166,32 @@ method request(HTTP::Request $request, Bool :$bin) returns HTTP::Response {
     
     X::HTTP::Response.new(:rc('No response')).throw unless $response;
     
-    self.save-response($response);
     $.debug-handle.say("<<==Recv\n" ~ $response.Str(:debug)) if $.debug;
 
     # save cookies
     $.cookies.extract-cookies($response);
 
-    given $response.code {
-        when /^30<[0123]>/ { 
-            when $.max-redirects < +@.history
-            && all(@.history.reverse[0..$.max-redirects]>>.code)  {
-                X::HTTP::Response.new(:rc('Max redirects exceeded'), :response($response)).throw;
+    if $response.code ~~ /^30<[0123]>/ {
+        $!redirects-in-a-row++;
+        if $.max-redirects < $.redirects-in-a-row {
+            X::HTTP::Response.new(:rc('Max redirects exceeded'), :response($response)).throw;
+        }
+        my $new-request = $response.next-request();
+        return self.request($new-request);
+    }
+    else {
+        $!redirects-in-a-row = 0;
+    }
+    if $!throw-exceptions {
+        given $response.code {
+            when /^4/ {
+                X::HTTP::Response.new(:rc($response.status-line), :response($response)).throw;
             }
-            default {
-                my $new-request = $response.next-request();
-                return self.request($new-request);
-            }
-        } 
-        if $!throw-exceptions {
-            when /^4/ { 
-                X::HTTP::Response.new(:rc($response.status-line), :response($response)).throw 
-            }
-            when /^5/ { 
-                X::HTTP::Server.new(:rc($response.status-line), :response($response)).throw 
+            when /^5/ {
+                X::HTTP::Server.new(:rc($response.status-line), :response($response)).throw;
             }
         }
-    }        
+    }
 
     return $response;
 }
@@ -319,14 +319,6 @@ method get-response(HTTP::Request $request, Connection $conn, Bool :$bin) return
     return $response;
 }
 
-method save-response(HTTP::Response $response) {
-    # Is there a better way to save history without saving content?
-    # Or should content be optionally cached? 
-    # (useful for serving 304 Not Modified)
-    my $response-copy = $response.clone();
-    $response-copy.content = $response.content.WHAT;
-    @!history.push($response-copy);
-}
 
 proto method get-connection(|c) { * }
 
