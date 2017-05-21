@@ -414,7 +414,7 @@ multi sub basic-auth-token(Str $login, Str $passwd ) returns Str {
 }
 
 multi sub basic-auth-token(Str $creds where * ~~ /':'/) returns Str {
-    "Basic " ~ MIME::Base64.encode-str($creds);
+    "Basic " ~ MIME::Base64.encode-str($creds, :oneline);
 }
 
 method setup-auth(HTTP::Request $request) {
