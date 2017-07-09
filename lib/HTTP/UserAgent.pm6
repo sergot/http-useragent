@@ -255,6 +255,14 @@ method get-response(HTTP::Request $request, Connection $conn, Bool :$bin) return
     my Blob[uint8] $first-chunk = Blob[uint8].new;
     my $msg-body-pos;
 
+    CATCH {
+        when X::HTTP::NoResponse {
+            X::HTTP::Internal.new(rc => 500, reason => "server returned no data").throw;
+        }
+        when /'Connection reset by peer'/ {
+            X::HTTP::Internal.new(rc => 500, reason => "Connection reset by peer").throw;
+        }
+    }
 
     # Header can be longer than one chunk
     while my $t = $conn.recv( :bin ) {
@@ -280,11 +288,6 @@ method get-response(HTTP::Request $request, Connection $conn, Bool :$bin) return
         $first-chunk;
     }
 
-    CATCH {
-        when X::HTTP::NoResponse {
-            X::HTTP::Internal.new(rc => 500, reason => "server returned no data").throw;
-        }
-    }
 
     my HTTP::Response $response = HTTP::Response.new($header-chunk);
     $response.request = $request;
