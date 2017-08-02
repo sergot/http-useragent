@@ -17,7 +17,7 @@ method Str {
     $s ~= "; Version=$.version" if $.version;
     $s ~= "; Path=$.path" if $.path;
     $s ~= "; Expires=$.expires" if $.expires;
-    $s ~= ';' ~ (%.fields.flatmap( *.fmt("%s=%s") )).join('; ') if %.fields.elems > 1;
+    $s ~= ';' ~ (%.fields.map( *.fmt("%s=%s") )).flat.join('; ') if %.fields.elems > 1;
     $s ~= "; $.secure" if $.secure;
     $s ~= "; $.httponly" if $.httponly;
     $s;

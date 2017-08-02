@@ -45,7 +45,7 @@ my class HTTP::Cookies::Actions {
 }
 
 method extract-cookies(HTTP::Response $response) {
-    self.set-cookie($_) for $response.field('Set-Cookie').grep({ $_.defined }).flatmap({ "Set-Cookie: $_"  });
+    self.set-cookie($_) for $response.field('Set-Cookie').grep({ $_.defined }).map({ "Set-Cookie: $_"  }).flat;
     self.save if $.autosave;
 }
 
@@ -55,7 +55,7 @@ method add-cookie-header(HTTP::Request $request) {
         #next if $cookie.domain.defined
         #        && $cookie.domain ne $request.field('Host');
         # TODO : path/domain restrictions
-        my $cookiestr = "{$cookie.name}={$cookie.value}; {($cookie.fields.flatmap( *.fmt("%s=%s") )).join('; ')}";
+        my $cookiestr = "{$cookie.name}={$cookie.value}; { ($cookie.fields.map( *.fmt("%s=%s") )).flat.join('; ') }";
         if $cookie.version.defined and $cookie.version >= 1 {
             $cookiestr ~= ',$Version='~ $cookie.version;
         } else {
@@ -116,7 +116,7 @@ method push-cookie(HTTP::Cookie $c) {
 }
 
 method Str {
-    @.cookies.flatmap({ "Set-Cookie: {$_.Str}" }).join("\n");
+    @.cookies.map({ "Set-Cookie: {$_.Str}" }).flat.join("\n");
 }
 
 =begin pod

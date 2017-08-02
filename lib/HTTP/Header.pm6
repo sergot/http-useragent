@@ -110,7 +110,7 @@ method clear() {
 
 # get header as string
 method Str($eol = "\n") {
-    @.fields.flatmap({ "{$_.name}: {self.field($_.name)}$eol" }).join;
+    @.fields.map({ "{$_.name}: {self.field($_.name)}$eol" }).flat.join;
 }
 
 method parse($raw) {
