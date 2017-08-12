@@ -1,6 +1,7 @@
 use HTTP::Message;
 use HTTP::Status;
 use HTTP::Request:auth<github:sergot>;
+use HTTP::UserAgent::Exception;
 
 unit class HTTP::Response is HTTP::Message;
 
@@ -10,17 +11,6 @@ has HTTP::Request $.request is rw;
 
 my $CRLF = "\r\n";
 
-class X::HTTP::Response is Exception {
-    has $.message;
-}
-
-class X::HTTP::ContentLength is X::HTTP::Response {
-}
-
-class X::HTTP::NoResponse is X::HTTP::Response {
-    has $.message = "missing or incomplete response line";
-    has $.got;
-}
 
 submethod BUILD(:$!code) {
     $!status-line = self.set-code($!code);

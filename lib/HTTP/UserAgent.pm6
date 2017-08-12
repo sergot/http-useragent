@@ -4,6 +4,7 @@ use HTTP::Response:auth<github:sergot>;
 use HTTP::Request:auth<github:sergot>;
 use HTTP::Cookies;
 use HTTP::UserAgent::Common;
+use HTTP::UserAgent::Exception;
 
 use Encode;
 use URI;
@@ -13,34 +14,6 @@ use MIME::Base64;
 
 constant CRLF = Buf.new(13, 10);
 
-class X::HTTP is Exception {
-    has $.rc;
-    has HTTP::Response $.response;
-}
-
-class X::HTTP::Internal is Exception {
-    has $.rc;
-    has $.reason;
-
-    method message {
-        "Internal Error: '$.reason'";
-    }
-}
-
-class X::HTTP::Response is X::HTTP {
-    method message {
-        "Response error: '$.rc'";
-    }
-}
-
-class X::HTTP::Server is X::HTTP {
-    method message {
-        "Server error: '$.rc'";
-    }
-}
-
-class X::HTTP::Header is X::HTTP::Server {
-}
 
 # placeholder role to make signatures nicer
 # and enable greater abstraction
