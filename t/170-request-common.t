@@ -16,7 +16,7 @@ subtest {
             content-type => 'multipart/form-data; boundary=XxYyZ'
         );
         todo("issue with line endings on travis");
-        is $req.Str, slurp("t/dat/multipart-1.dat");
+        is $req.Str.encode, slurp("t/dat/multipart-1.dat", :bin);
     }, 'uri';
 }, 'POST(multi-part)';
 
