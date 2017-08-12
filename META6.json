@@ -22,6 +22,7 @@
     "provides" : {
         "HTTP::UserAgent" : "lib/HTTP/UserAgent.pm6",
         "HTTP::UserAgent::Common" : "lib/HTTP/UserAgent/Common.pm6",
+		"HTTP::UserAgent::Exception" : "lib/HTTP/UserAgent/Exception.pm6",
         "HTTP::Cookie" : "lib/HTTP/Cookie.pm6",
         "HTTP::Cookies" : "lib/HTTP/Cookies.pm6",
         "HTTP::Header" : "lib/HTTP/Header.pm6",
