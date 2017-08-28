@@ -1,37 +1,52 @@
 {
-    "meta-version" : 0,
-    "perl"      : "6.c",
-    "name"      : "HTTP::UserAgent",
-    "license"   : "MIT",
-    "version"   : "1.1.34",
-    "author"   : "github:sergot",
-    "description"   : "Web user agent",
-    "depends"   : [
-        "HTTP::Status",
-        "File::Temp",
-        "DateTime::Parse",
-        "Encode",
-        "MIME::Base64",
-        "URI"
-    ],
-    "test-depends" : [
-        "URI",
-        "IO::Capture::Simple",
-        "Test::Util::ServerPort"
-    ],
-    "provides" : {
-        "HTTP::UserAgent" : "lib/HTTP/UserAgent.pm6",
-        "HTTP::UserAgent::Common" : "lib/HTTP/UserAgent/Common.pm6",
-		"HTTP::UserAgent::Exception" : "lib/HTTP/UserAgent/Exception.pm6",
-        "HTTP::Cookie" : "lib/HTTP/Cookie.pm6",
-        "HTTP::Cookies" : "lib/HTTP/Cookies.pm6",
-        "HTTP::Header" : "lib/HTTP/Header.pm6",
-        "HTTP::Header::Field" : "lib/HTTP/Header/Field.pm6",
-        "HTTP::Message" : "lib/HTTP/Message.pm6",
-        "HTTP::Request" : "lib/HTTP/Request.pm6",
-        "HTTP::Request::Common" : "lib/HTTP/Request/Common.pm6",
-        "HTTP::Response" : "lib/HTTP/Response.pm6",
-        "HTTP::MediaType" : "lib/HTTP/MediaType.pm6"
-    },
-    "source-url"    : "git://github.com/sergot/http-useragent.git"
+  "name": "HTTP::UserAgent",
+  "source-url": "git://github.com/sergot/http-useragent.git",
+  "support": {
+    "source": "git://github.com/sergot/http-useragent.git",
+    "bugtracker" : "https://github.com/sergot/http-useragent/issues"
+  },
+  "perl": "6.c",
+  "resources": [],
+  "build-depends": [],
+  "author": "github:sergot",
+  "auth": "github:sergot",
+  "depends": [
+    "HTTP::Status",
+    "File::Temp",
+    "DateTime::Parse",
+    "Encode",
+    "MIME::Base64",
+    "URI"
+  ],
+  "tags": [
+    "http",
+    "useragent",
+    "client"
+  ],
+  "license": "MIT",
+  "test-depends": [
+    "URI",
+    "IO::Capture::Simple",
+    "Test::Util::ServerPort"
+  ],
+  "provides": {
+    "HTTP::UserAgent::Exception": "lib/HTTP/UserAgent/Exception.pm6",
+    "HTTP::Cookies": "lib/HTTP/Cookies.pm6",
+    "HTTP::Message": "lib/HTTP/Message.pm6",
+    "HTTP::Request::Common": "lib/HTTP/Request/Common.pm6",
+    "HTTP::MediaType": "lib/HTTP/MediaType.pm6",
+    "HTTP::Header::Field": "lib/HTTP/Header/Field.pm6",
+    "HTTP::Request": "lib/HTTP/Request.pm6",
+    "HTTP::Response": "lib/HTTP/Response.pm6",
+    "HTTP::Cookie": "lib/HTTP/Cookie.pm6",
+    "HTTP::Header": "lib/HTTP/Header.pm6",
+    "HTTP::UserAgent": "lib/HTTP/UserAgent.pm6",
+    "HTTP::UserAgent::Common": "lib/HTTP/UserAgent/Common.pm6"
+  },
+  "version": "1.1.35",
+  "meta-version": "0",
+  "authors": [
+    "sergot"    
+  ],
+  "description": "Web user agent"
 }
