@@ -182,6 +182,7 @@ multi method get-content(Connection $conn, Blob $content is rw, $content-length)
 
 # fallback when not chunked and no content length
 multi method get-content(Connection $conn, Blob $content is rw ) returns Blob {
+
     while my $new_content = $conn.recv(:bin) {
         $content ~= $new_content;
     }
@@ -217,7 +218,9 @@ method get-chunked-content(Connection $conn, Blob $content is rw ) returns Blob 
             # fill the requested size.
             #
             # It cause hang-up on socket reading.
-            $chunk ~= $conn.recv(1, :bin);
+            my $byte = $conn.recv(1, :bin); 
+            last PARSE_CHUNK unless $byte.elems;
+            $chunk ~= $byte;
         }
     };
 
@@ -269,6 +272,7 @@ method get-response(HTTP::Request $request, Connection $conn, Bool :$bin) return
         if !$msg-body-pos.defined {
             X::HTTP::Internal.new(rc => 500, reason => "server returned no data").throw;
         }
+
 
         my $content = $first-chunk.subbuf($msg-body-pos);
         # Turn the inner exceptions to ours
