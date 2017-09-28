@@ -2,7 +2,7 @@ use Test;
 
 use HTTP::Header;
 
-plan 19;
+plan 23;
 
 # new
 my $h = HTTP::Header.new(a => "A", b => "B");
@@ -53,8 +53,15 @@ is $h.hash<Two>, "two", "Got two (hash 2/2)";
 
 $h = HTTP::Header.new();
 
-lives-ok { $h.parse('ETag: W/"1201-51b0ce7ad3900"') }, "parse";
+lives-ok { $h.parse('ETag: W/"1201-51b0ce7ad3900"') }, "parses ETag";
 is ~$h.field('ETag'), "1201-51b0ce7ad3900", "got the value we expected";
+
+lives-ok { $h.parse('expires: Wed, 27 Jan 2016 17:44:43 GMT') }, "parses date on a Wed";
+ok $h.field('expires') ~~ /^^Wed/, "Does not trip start of field value starting with 'W'";
+
+# ugexe++ -- See http://irclog.perlgeek.de/perl6/2017-09-27#i_15227591
+lives-ok { $h.parse('Custom-Auth-Header: W/7fhEfhkjafeHF') }, "parses ETag like";
+is ~$h.field('Custom-Auth-Header'), 'W/7fhEfhkjafeHF', 'got the non truncated value';
 
 subtest {
    my $htest = q:to/EOH/;
