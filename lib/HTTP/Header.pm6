@@ -15,7 +15,7 @@ our grammar HTTP::Header::Grammar {
     }
 
     token field-value {
-        [ <!before \h> ['W' | 'w']? '/'? <quot>?
+        [ <!before \h> ( ['W/' | 'w/'] )? <quot>?
             $<field-content>=[ <-[\r\n"]>+ ]  || \h+ ]*
         <quot>?
     }
@@ -26,18 +26,26 @@ our grammar HTTP::Header::Grammar {
 
 our class HTTP::Header::Actions {
     method message-header($/) {
-        my $k = ~$<field-name>;
-        if $k && $<field-value>.made -> $v {
-            if $*OBJ.field($k) {
-                $*OBJ.push-field: |($k => $v);
-            } else {
-                $*OBJ.field: |($k => $v);
-            }
+      my $value = $<field-value>.made;
+      my $k = ~$<field-name>;
+      my @v = $value<content>.Array;
+
+      @v[0] = $value<prefix> ~ @v[0] if $value<prefix> && $k.lc ne 'etag';
+      if $k && @v -> $v {
+        if $*OBJ.field($k) {
+          $*OBJ.push-field: |($k => $v);
+        } else {
+          $*OBJ.field: |($k => $v);
         }
+      }
     }
+
     method field-value($/) {
-        make $<field-content>
-            ?? $<field-content>.Str.split(',')>>.trim !! Nil
+        make {
+          prefix => $0,
+          content => $<field-content> ??
+            $<field-content>.Str.split(',')>>.trim !! Nil
+        }
     }
 }
 
