@@ -12,6 +12,12 @@ if ::('IO::Socket::SSL') ~~ Failure {
     exit 0;
 }
 
+unless %*ENV<NETWORK_TESTING> {
+  diag "NETWORK_TESTING was not set";
+  skip-rest("NETWORK_TESTING was not set");
+  exit;
+}
+
 todo "OpenSSL is having trouble with httpbin.org";
 throws-like 'use HTTP::UserAgent; my $ssl = HTTP::UserAgent.new(:throw-exceptions); $ssl.get("https://httpbin.org/status/403")', X::HTTP::Response, message => "Response error: '403 Forbidden'";
 

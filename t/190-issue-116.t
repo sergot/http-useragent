@@ -11,6 +11,12 @@ if ::('IO::Socket::SSL') ~~ Failure {
     exit 0;
 }
 
+unless %*ENV<NETWORK_TESTING> {
+  diag "NETWORK_TESTING was not set";
+  skip-rest("NETWORK_TESTING was not set");
+  exit;
+}
+
 my $ua = HTTP::UserAgent.new;
 
 my HTTP::Response $res;

@@ -2,7 +2,15 @@ use v6;
 use HTTP::UserAgent;
 use Test;
 
+plan 2;
+
 #TODO:  This test could be done better locally.
+
+unless %*ENV<NETWORK_TESTING> {
+  diag "NETWORK_TESTING was not set";
+  skip-rest("NETWORK_TESTING was not set");
+  exit;
+}
 
 my @recv_log;
 
