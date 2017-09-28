@@ -43,7 +43,7 @@
     "HTTP::UserAgent": "lib/HTTP/UserAgent.pm6",
     "HTTP::UserAgent::Common": "lib/HTTP/UserAgent/Common.pm6"
   },
-  "version": "1.1.35",
+  "version": "1.1.36",
   "meta-version": "0",
   "authors": [
     "sergot"    
