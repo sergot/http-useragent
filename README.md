@@ -26,8 +26,7 @@ if $response.is-success {
 To install it using Panda (a module management tool bundled with Rakudo Star):
 
 ```
-$ panda update
-$ panda install HTTP::UserAgent
+$ zef install HTTP::UserAgent
 ```
 
 ## Testing
