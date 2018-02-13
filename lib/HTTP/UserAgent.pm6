@@ -195,12 +195,27 @@ method request(HTTP::Request $request, Bool :$bin) returns HTTP::Response {
 proto method get-content(|c) { * }
 
 # When we have a content-length
-multi method get-content(Connection $conn, Blob $content is rw, $content-length) returns Blob {
-    # Let the content grow until we have reached the desired size.
-    while $content-length > $content.bytes {
-        $content ~= $conn.recv($content-length - $content.bytes, :bin);
+multi method get-content(Connection $conn, Blob $content, $content-length) returns Blob {
+    if $content.bytes == $content-length {
+        $content;
+    } else {
+        # Allocate a Buf of the right size upfront, and splice into it until we've
+        # read that amount.
+        my $buf = Buf.allocate($content-length);
+        my int $total-elems-read = 0;
+        my int $total-bytes-read = 0;
+        while $content-length > $total-bytes-read {
+           my $read = $conn.recv($content-length - $total-bytes-read, :bin);
+           my int $read-elems = $read.elems;
+           if $total-elems-read + $read-elems > $content-length {
+               $buf.reallocate($total-elems-read + $read-elems)
+           }
+           $buf.splice($total-elems-read, $read-elems, $read);
+           $total-bytes-read += $read.bytes;
+           $total-elems-read += $read-elems;
+        }
+        $buf;
     }
-    $content;
 }
 
 # fallback when not chunked and no content length
