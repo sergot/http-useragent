@@ -202,8 +202,9 @@ multi method get-content(Connection $conn, Blob $content, $content-length) retur
         # Allocate a Buf of the right size upfront, and splice into it until we've
         # read that amount.
         my $buf = Buf.allocate($content-length);
-        my int $total-elems-read = 0;
-        my int $total-bytes-read = 0;
+        my int $total-elems-read = $content.elems;
+        my int $total-bytes-read = $content.bytes;
+        $buf.splice(0, $total-elems-read, $content);
         while $content-length > $total-bytes-read {
            my $read = $conn.recv($content-length - $total-bytes-read, :bin);
            my int $read-elems = $read.elems;
