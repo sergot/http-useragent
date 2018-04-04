@@ -1,3 +1,4 @@
 Makefile
 blib
 .precomp
+cookies.dat
