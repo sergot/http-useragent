@@ -16,7 +16,10 @@ is $ua.auth_password, 'TEST', "password got set okay";
 my $res;
 
 if %*ENV<NETWORK_TESTING>:exists {
-   lives-ok { $res = $ua.get('http://oha.it/t/auth/') }, "get site that requires auth";
+   lives-ok { $res = $ua.get('http://httpbin.org/basic-auth/xxx/XXX') }, "get site that requires auth (bad credentials)";
+   is $res.code, 401, "and it's a 401";
+
+   lives-ok { $res = $ua.get('http://httpbin.org/basic-auth/test/TEST') }, "get site that requires auth (good credentials)";
    is $res.code, 200, "and it's a 200";
 }
 else {
