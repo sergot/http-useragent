@@ -159,9 +159,9 @@ method request(HTTP::Request $request, Bool :$bin) returns HTTP::Response {
          $response = self.get-response($request, $conn, :$bin);
     }
     $conn.close;
-    
+
     X::HTTP::Response.new(:rc('No response')).throw unless $response;
-    
+
     $.debug-handle.say("<<==Recv\n" ~ $response.Str(:debug)) if $.debug;
 
     # save cookies
@@ -257,7 +257,7 @@ method get-chunked-content(Connection $conn, Blob $content is rw ) returns Blob 
             # fill the requested size.
             #
             # It cause hang-up on socket reading.
-            my $byte = $conn.recv(1, :bin); 
+            my $byte = $conn.recv(1, :bin);
             last PARSE_CHUNK unless $byte.elems;
             $chunk ~= $byte;
         }
@@ -296,7 +296,7 @@ method get-response(HTTP::Request $request, Connection $conn, Bool :$bin) return
     # the end of the header.
     my $header-chunk = do if $msg-body-pos.defined {
         $first-chunk.subbuf(0, $msg-body-pos);
-    } 
+    }
     else {
         # Assume we have the whole header because if the server
         # didn't send it we're stuffed anyway
@@ -512,14 +512,14 @@ Default constructor.
 
 There are four optional named arguments:
 
-=item useragent 
+=item useragent
 
 A string that specifies what will be provided in the C<User-Agent> header in
 the request.  A number of standard user agents are described in
 L<HTTP::UserAgent::Common>, but a string that is not specified there will be
 used verbatim.
 
-=item throw-exceptions 
+=item throw-exceptions
 
 By default the C<request> method will not throw an exception if the
 response from the server indicates that the request was unsuccesful, in
