@@ -359,10 +359,10 @@ multi method get-connection(HTTP::Request $request ) returns Connection {
     self.get-connection($request, $host, $port);
 }
 
+our $https_lock = Lock.new;
 multi method get-connection(HTTP::Request $request, Str $host, Int $port?) returns Connection {
     my $conn;
     if $request.scheme eq 'https' {
-        my $https_lock = Lock.new;
         $https_lock.lock;
         LEAVE $https_lock.unlock;
         try require ::("IO::Socket::SSL");
