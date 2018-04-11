@@ -11,12 +11,13 @@
   "author": "github:sergot",
   "auth": "github:sergot",
   "depends": [
-    "HTTP::Status",
-    "File::Temp",
-    "DateTime::Parse",
-    "Encode",
-    "MIME::Base64",
-    "URI"
+      "HTTP::Status",
+      "File::Temp",
+      "DateTime::Parse",
+      "Encode",
+      "MIME::Base64",
+      "URI",
+      "IO::Socket::SSL"
   ],
   "tags": [
     "http",
