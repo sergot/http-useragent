@@ -35,8 +35,8 @@ is any($h.header-field-names), 'a', 'header-field-names 2/3';
 is any($h.header-field-names), 'b', 'header-field-names 3/3';
 
 # Str
-is $h.Str, "a: a, a2, a3\nb: B\n", 'Str 1/2';
-is $h.Str('|'), 'a: a, a2, a3|b: B|', 'Str 2/2';
+is-deeply $h.Str, "a: a, a2, a3\nb: B\n", 'Str 1/2';
+is-deeply $h.Str('|'), 'a: a, a2, a3|b: B|', 'Str 2/2';
 
 # remove-field
 $h.remove-field('a');
