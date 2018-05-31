@@ -50,7 +50,7 @@ lives-ok { $r1.set-method: 'PUT' }, "set method";
 is $r1.method, 'PUT', 'set-method 1/1';
 
 # parse
-my $req = "GET /index HTTP/1.1\r\nHost: somesite\r\nAccept: test\r\n\r\nname=value&a=b\r\n";
+my $req = "GET /index HTTP/1.1\r\nAccept: test\r\nHost: somesite\r\n\r\nname=value&a=b\r\n"; # Remember to use alphabetical order
 $r1 = HTTP::Request.new.parse($req);
 
 is $r1.method, 'get'.uc, 'parse 1/6';
