@@ -66,7 +66,7 @@ subtest {
    is $r.method, 'GET', "right method";
    is $r.file, '/bar', "right file";
    is $r.field('Host'), 'foo.com', 'got right host';
-}, "positional construcutor";
+}, "positional constructor";
 
 subtest {
     subtest {
