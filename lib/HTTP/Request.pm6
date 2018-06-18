@@ -282,9 +282,7 @@ method make-boundary(int $size=10) {
 
 
 method Str (:$debug, Bool :$bin) {
-    if $.file !~~ /^\// {
-        $.file = '/' ~ $.file;
-    }
+    $.file = '/' ~ $.file unless $.file.starts-with: '/';
     my $s = "$.method $.file $.protocol";
     $s ~= $CRLF ~ callwith($CRLF, :debug($debug), :$bin);
 }
