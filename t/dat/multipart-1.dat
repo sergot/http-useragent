@@ -4,14 +4,14 @@ Content-Type: multipart/form-data; boundary=XxYyZ
 Content-Length: 190
 
 --XxYyZ
+Content-Disposition: form-data; name="foo"
+
+b&r
+--XxYyZ
 Content-Disposition: form-data; name="x"; filename="foo.txt"
 Content-Type: application/octet-stream
 
 bar
 
---XxYyZ
-Content-Disposition: form-data; name="foo"
-
-b&r
 --XxYyZ--
 

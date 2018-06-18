@@ -37,7 +37,7 @@ multi method new(Bool :$bin, *%args) {
         }
 
         my $header = HTTP::Header.new(|%fields);
-    
+
         $method //= 'GET';
 
         self.new($method, $uri, $header, :$bin);
@@ -144,11 +144,11 @@ multi method add-content(Str $content) {
 proto method add-form-data(|c) { * }
 
 multi method add-form-data(:$multipart, *%data) {
-    self.add-form-data(%data.Array, :$multipart);
+    self.add-form-data(%data.sort.Array, :$multipart);
 }
 
 multi method add-form-data(%data, :$multipart) {
-    self.add-form-data(%data.Array, :$multipart);
+    self.add-form-data(%data.sort.Array, :$multipart);
 }
 
 multi method add-form-data(Array $data, :$multipart) {
@@ -391,7 +391,7 @@ inserted, the second (optional) an alternative name to be used in the
 content disposition header and the third an optional Array of Pair that
 will provide addtional header lines for the part.
 
-    
+
 =head2 method Str
 
     method Str returns Str;

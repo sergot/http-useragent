@@ -53,8 +53,8 @@ our class HTTP::Header::Actions {
 method new(*%fields) {
     my @fields;
 
-    for %fields.kv -> $k, $v {
-        @fields.push: HTTP::Header::Field.new(:name($k), :values($v.list));
+    for %fields.sort {
+        @fields.push: HTTP::Header::Field.new(:name(.key), :values(.value.list));
     }
 
     self.bless(:@fields);
@@ -64,7 +64,7 @@ proto method field(|c) { * }
 
 # set fields
 multi method field(*%fields) {
-    for %fields.kv -> $k, $v {
+    for %fields.sort -> (:key($k), :value($v)) {
         my $f = HTTP::Header::Field.new(:name($k), :values($v.list));
         if @.fields.first({ .name.lc eq $k.lc }) {
             @.fields[@.fields.first({ .name.lc eq $k.lc }, :k)] = $f;
@@ -81,7 +81,7 @@ multi method field($field) {
 
 # initialize fields
 method init-field(*%fields) {
-    for %fields.kv -> $k, $v {
+    for %fields.sort -> (:key($k), :value($v)) {
         if not @.fields.grep({ .name.lc eq $k.lc }) {
             @.fields.push: HTTP::Header::Field.new(:name($k), :values($v.list));
         }
@@ -90,7 +90,7 @@ method init-field(*%fields) {
 
 # add value to existing fields
 method push-field(*%fields) {
-    for %fields.kv -> $k, $v {
+    for %fields.sort -> (:key($k), :value($v)) {
         @.fields.first({ .name.lc eq $k.lc }).values.append: $v.list;
     }
 }

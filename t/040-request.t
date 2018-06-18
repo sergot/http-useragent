@@ -99,7 +99,7 @@ subtest {
         my $req = HTTP::Request.new(POST => 'http://127.0.0.1/', Host => '127.0.0.1', content-type => 'multipart/form-data; boundary=XxYyZ');
         lives-ok { $req.add-form-data({ foo => "b&r", x   => ['t/dat/foo.txt'], }) }, "add-form-data";
         todo("issue seen on travis regarding line endings");
-        is $req.Str.encode, slurp("t/dat/multipart-1.dat", :bin);
+        is-deeply Buf[uint8].new($req.Str.encode), slurp("t/dat/multipart-1.dat", :bin);
     }, 'multipart implied by existing content-type';
     subtest {
         my $req = HTTP::Request.new(POST => 'http://127.0.0.1/');
