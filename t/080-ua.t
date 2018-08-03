@@ -37,7 +37,8 @@ lives-ok { HTTP::UserAgent.new.get('http://www.baidu.com') }, 'Lived through gb2
 
 # chunked encoding.
 
-lives-ok { HTTP::UserAgent.new.get('http://rakudo.org') }, "issue#51 - get rakudo.org (chunked encoding foul-up results in incomplete UTF-8 data)";
+skip 'Site changed. Need new site to cover this problem See #208';
+# lives-ok { HTTP::UserAgent.new.get('http://rakudo.org') }, "issue#51 - get rakudo.org (chunked encoding foul-up results in incomplete UTF-8 data)";
 
 subtest {
     my Bool $have-json = True;
