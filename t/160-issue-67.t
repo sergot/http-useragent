@@ -2,6 +2,7 @@ use v6;
 use HTTP::UserAgent;
 use Test;
 
+plan :skip-all<Need a new site to test with>;
 plan 2;
 
 #TODO:  This test could be done better locally.
@@ -21,7 +22,7 @@ my $wrapped = IO::Socket::INET.^find_method('recv').wrap(-> $o, |args {
 });
 
 my $resp = HTTP::UserAgent.new.get(
-    'http://www.punoftheday.com/cgi-bin/todayspun.pl'
+    'https://www.punoftheday.com/cgi-bin/todayspun.pl'
 );
 
 IO::Socket::INET.^find_method('recv').unwrap($wrapped);
