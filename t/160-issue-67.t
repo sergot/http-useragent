@@ -6,6 +6,12 @@ plan 2;
 
 #TODO:  This test could be done better locally.
 
+try require ::('IO::Socket::SSL');
+if ::('IO::Socket::SSL') ~~ Failure {
+    skip-rest("IO::Socket::SSL not available");
+    exit 0;
+}
+
 unless %*ENV<NETWORK_TESTING> {
   diag "NETWORK_TESTING was not set";
   skip-rest("NETWORK_TESTING was not set");
@@ -21,7 +27,7 @@ my $wrapped = IO::Socket::INET.^find_method('recv').wrap(-> $o, |args {
 });
 
 my $resp = HTTP::UserAgent.new.get(
-    'http://www.punoftheday.com/cgi-bin/todayspun.pl'
+    'https://www.punoftheday.com/cgi-bin/todayspun.pl'
 );
 
 IO::Socket::INET.^find_method('recv').unwrap($wrapped);
