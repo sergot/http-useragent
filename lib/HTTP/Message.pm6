@@ -231,7 +231,7 @@ method Str($eol = "\n", :$debug, Bool :$bin) {
         $s ~=  $.content ~ $eol if $.content and !$debug;
     }
     if $.content and $debug {
-        if $bin {
+        if $bin || self.is-binary {
             $s ~= $eol ~ "=Content size : " ~ $.content.elems ~ " bytes ";
             $s ~= "$eol ** Not showing binary content ** $eol";
         }
