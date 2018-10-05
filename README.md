@@ -23,7 +23,7 @@ if $response.is-success {
 
 ## Installation
 
-To install it using Panda (a module management tool bundled with Rakudo Star):
+To install it using Zef (a module management tool bundled with Rakudo Star):
 
 ```
 $ zef install HTTP::UserAgent
