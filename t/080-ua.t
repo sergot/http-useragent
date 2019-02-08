@@ -4,7 +4,6 @@ use HTTP::UserAgent::Common;
 use Test;
 use URI;
 
-plan 10;
 
 # new
 my $ua = HTTP::UserAgent.new;
@@ -19,6 +18,7 @@ is $ua.useragent, $newua, 'new 3/3';
 
 unless %*ENV<NETWORK_TESTING> {
   diag "NETWORK_TESTING was not set";
+  plan 10;
   skip-rest("NETWORK_TESTING was not set");
   exit;
 }
@@ -27,10 +27,13 @@ unless %*ENV<NETWORK_TESTING> {
 like $ua.get('http://httpbin.org/user-agent').content, /$newua/, 'useragent 1/1';
 
 # get
-my $response = $ua.get('filip.sergot.pl/');
-ok $response, 'get 1/3';
-isa-ok $response, HTTP::Response, 'get 2/3';
-ok $response.is-success, 'get 3/3';
+todo "possibly flaky host";
+lives-ok {
+    my $response = $ua.get('filip.sergot.pl/');
+    ok $response, 'get 1/3';
+    isa-ok $response, HTTP::Response, 'get 2/3';
+    ok $response.is-success, 'get 3/3';
+}, "get from 'filip.sergot.pl/'";
 
 # non-ascii encodings (github issue #35)
 lives-ok { HTTP::UserAgent.new.get('http://www.baidu.com') }, 'Lived through gb2312 encoding';
@@ -86,4 +89,6 @@ subtest {
         }
     }, "with URI string";
 }, "post";
+
+done-testing;
 # vim: expandtab shiftwidth=4 ft=perl6
