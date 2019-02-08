@@ -16,79 +16,77 @@ my $newua = get-ua('chrome_linux');
 $ua = HTTP::UserAgent.new(:useragent('chrome_linux'));
 is $ua.useragent, $newua, 'new 3/3';
 
-unless %*ENV<NETWORK_TESTING> {
-  diag "NETWORK_TESTING was not set";
-  plan 10;
-  skip-rest("NETWORK_TESTING was not set");
-  exit;
-}
-
+if %*ENV<NETWORK_TESTING> {
 # user agent
-like $ua.get('http://httpbin.org/user-agent').content, /$newua/, 'useragent 1/1';
+    like $ua.get('http://httpbin.org/user-agent').content, /$newua/, 'useragent 1/1';
 
 # get
-todo "possibly flaky host";
-lives-ok {
-    my $response = $ua.get('filip.sergot.pl/');
-    ok $response, 'get 1/3';
-    isa-ok $response, HTTP::Response, 'get 2/3';
-    ok $response.is-success, 'get 3/3';
-}, "get from 'filip.sergot.pl/'";
+    todo "possibly flaky host", 4;
+    lives-ok {
+        my $response = $ua.get('filip.sergot.pl/');
+        ok $response, 'get 1/3';
+        isa-ok $response, HTTP::Response, 'get 2/3';
+        ok $response.is-success, 'get 3/3';
+    }, "get from 'filip.sergot.pl/'";
 
 # non-ascii encodings (github issue #35)
-lives-ok { HTTP::UserAgent.new.get('http://www.baidu.com') }, 'Lived through gb2312 encoding';
+    lives-ok { HTTP::UserAgent.new.get('http://www.baidu.com') }, 'Lived through gb2312 encoding';
 
 # chunked encoding.
 
-skip 'Site changed. Need new site to cover this problem See #208';
+    skip 'Site changed. Need new site to cover this problem See #208';
 # lives-ok { HTTP::UserAgent.new.get('http://rakudo.org') }, "issue#51 - get rakudo.org (chunked encoding foul-up results in incomplete UTF-8 data)";
 
-subtest {
-    my Bool $have-json = True;
-    CATCH {
-        when X::CompUnit::UnsatisfiedDependency {
-            $have-json = False;
-        }
-    }
-    require JSON::Fast <&from-json>;
-
-    my $uri = 'http://httpbin.org/post';
-    my %data = (foo => 'bar', baz => 'quux');
     subtest {
-        my $ua = HTTP::UserAgent.new;
-        my $res;
-        lives-ok { $res = $ua.post(URI.new($uri), %data, X-Foo => "foodle") }, "make post";
-        my $ret-data;
-
-        if $have-json {
-            lives-ok { $ret-data = from-json($res.decoded-content) }, "get JSON body";
-
-            is $ret-data<headers><X-Foo>, 'foodle', "has got our header";
-            is $ret-data<headers><Content-Type>, "application/x-www-form-urlencoded", "and got the content type we expected";
-            is-deeply $ret-data<form>, %data, "and we sent the right params";
+        my Bool $have-json = True;
+        CATCH {
+            when X::CompUnit::UnsatisfiedDependency {
+                $have-json = False;
+            }
         }
-        else {
-            skip("no json parser", 4);
-        }
-    }, "with URI object";
-    subtest {
-        my $ua = HTTP::UserAgent.new;
-        my $res;
-        lives-ok { $res = $ua.post($uri, %data, X-Foo => "foodle") }, "make post";
-        my $ret-data;
-        if $have-json {
-            lives-ok { $ret-data = from-json($res.decoded-content) }, "get JSON body";
+        require JSON::Fast <&from-json>;
 
-            is $ret-data<headers><X-Foo>, 'foodle', "has got our header";
-            is $ret-data<headers><Content-Type>, "application/x-www-form-urlencoded", "and got the content type we expected";
-            is-deeply $ret-data<form>, %data, "and we sent the right params";
-        }
-        else {
-            skip("no json parser", 4);
+        my $uri = 'http://httpbin.org/post';
+        my %data = (foo => 'bar', baz => 'quux');
+        subtest {
+            my $ua = HTTP::UserAgent.new;
+            my $res;
+            lives-ok { $res = $ua.post(URI.new($uri), %data, X-Foo => "foodle") }, "make post";
+            my $ret-data;
 
-        }
-    }, "with URI string";
-}, "post";
+            if $have-json {
+                lives-ok { $ret-data = from-json($res.decoded-content) }, "get JSON body";
+
+                is $ret-data<headers><X-Foo>, 'foodle', "has got our header";
+                is $ret-data<headers><Content-Type>, "application/x-www-form-urlencoded", "and got the content type we expected";
+                is-deeply $ret-data<form>, %data, "and we sent the right params";
+            }
+            else {
+                skip("no json parser", 4);
+            }
+        }, "with URI object";
+        subtest {
+            my $ua = HTTP::UserAgent.new;
+            my $res;
+            lives-ok { $res = $ua.post($uri, %data, X-Foo => "foodle") }, "make post";
+            my $ret-data;
+            if $have-json {
+                lives-ok { $ret-data = from-json($res.decoded-content) }, "get JSON body";
+
+                is $ret-data<headers><X-Foo>, 'foodle', "has got our header";
+                is $ret-data<headers><Content-Type>, "application/x-www-form-urlencoded", "and got the content type we expected";
+                is-deeply $ret-data<form>, %data, "and we sent the right params";
+            }
+            else {
+                skip("no json parser", 4);
+
+            }
+        }, "with URI string";
+    }, "post";
+}
+else {
+    skip "NETWORK_TESTING not set", 1;
+}
 
 done-testing;
 # vim: expandtab shiftwidth=4 ft=perl6

@@ -10,5 +10,5 @@ unless %*ENV<NETWORK_TESTING> {
   exit;
 }
 
-my $ua = HTTP::UserAgent.new(:debug);
+my $ua = HTTP::UserAgent.new;
 lives-ok { $ua.get("http://httpbin.org/image/png") };
