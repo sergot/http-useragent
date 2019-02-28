@@ -166,11 +166,14 @@ multi method add-form-data(Array $data, :$multipart) {
         }
     };
 
+    sub form-escape(Str $s) {
+        uri-escape($s).subst(:g, '%20', '+').subst(:g, '%2A', '*');
+    }
     given $ct {
         when 'application/x-www-form-urlencoded' {
             my @parts;
             for @$data {
-                @parts.push: uri-escape(.key) ~ "=" ~ uri-escape(.value);
+                @parts.push: form-escape(.key) ~ "=" ~ form-escape(.value);
             }
             self.content = @parts.join("&").encode;
             self.header.field(Content-Length => self.content.bytes.Str);
