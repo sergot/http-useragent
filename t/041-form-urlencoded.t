@@ -1,0 +1,40 @@
+use HTTP::Request;
+use Test;
+
+use URI;
+
+plan 3;
+
+# ref: https://url.spec.whatwg.org/#concept-urlencoded-serializer
+subtest {
+    my $req = HTTP::Request.new(POST => URI.new('http://127.0.0.1/'));
+    lives-ok { $req.add-form-data({ fO0159 => 'safe-*._', }) }, "add-form-data";
+    is $req.method, 'POST';
+    is $req.header.field('content-type'), 'application/x-www-form-urlencoded';
+    is $req.header.field('content-length'), '15';
+    is $req.content.decode, 'fO0159=safe-*._';
+}, 'urlencoded byte serializer - safe characters';
+subtest {
+    my $req = HTTP::Request.new(POST => URI.new('http://127.0.0.1/'));
+    lives-ok { $req.add-form-data({ 'foo bar' => '+ +', }) }, "add-form-data";
+    is $req.method, 'POST';
+    is $req.header.field('content-type'), 'application/x-www-form-urlencoded';
+    is $req.header.field('content-length'), '15';
+    is $req.content.decode, 'foo+bar=%2B+%2B';
+}, 'urlencoded byte serializer - spaces';
+subtest {
+    my $req = HTTP::Request.new(POST => URI.new('http://127.0.0.1/'));
+    lives-ok {
+        $req.add-form-data(
+            {
+                url => 'http://example.com/bar?user=baz&pass=xyzzy#"foo"',
+            }
+        )
+    }, "add-form-data";
+    is $req.method, 'POST';
+    is $req.header.field('content-type'), 'application/x-www-form-urlencoded';
+    is $req.header.field('content-length'), '74';
+    is $req.content.decode,
+      'url='
+      ~ 'http%3A%2F%2Fexample.com%2Fbar%3Fuser%3Dbaz%26pass%3Dxyzzy%23%22foo%22';
+}, 'urlencoded byte serializer - unsafe characters';
