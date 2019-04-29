@@ -48,6 +48,25 @@ if %*ENV<NETWORK_TESTING> {
 
         my $uri = 'http://httpbin.org/post';
         my %data = (foo => 'bar', baz => 'quux');
+	subtest {
+	    my $uri = 'http://eu.httpbin.org/post?foo=42&bar=x';
+            my %data = :72foo, :bar<♵>;
+            my $ua = HTTP::UserAgent.new;
+            my $res;
+            lives-ok { $res = $ua.post(URI.new($uri), %data, X-Foo => "foodle") }, "new make post";
+            my $ret-data;
+
+            if $have-json {
+                lives-ok { $ret-data = from-json($res.decoded-content) }, "get JSON body";
+
+                is $ret-data<headers><X-Foo>, 'foodle', "has got our header";
+                is $ret-data<headers><Content-Type>, "application/x-www-form-urlencoded", "and got the content type we expected";
+                is-deeply $ret-data<form><bar>, %data<bar>, "and we sent the right params";
+            }
+            else {
+                skip("no json parser", 4);
+            }
+        }, "with URI object";
         subtest {
             my $ua = HTTP::UserAgent.new;
             my $res;
