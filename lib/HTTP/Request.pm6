@@ -165,8 +165,7 @@ multi method add-form-data(Array $data, :$multipart) {
             }
         }
     };
-
-    sub form-escape(Str $s) {
+    sub form-escape($s) {
         uri-escape($s).subst(:g, '%20', '+').subst(:g, '%2A', '*');
     }
     given $ct {
@@ -177,6 +176,7 @@ multi method add-form-data(Array $data, :$multipart) {
             }
             self.content = @parts.join("&").encode;
             self.header.field(Content-Length => self.content.bytes.Str);
+
         }
         when m:i,^ "multipart/form-data" \s* ( ";" | $ ), {
             say 'generating form-data' if $HRC_DEBUG;
