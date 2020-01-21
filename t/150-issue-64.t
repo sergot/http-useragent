@@ -15,7 +15,7 @@ unless %*ENV<NETWORK_TESTING> {
 
 my $purl = 'http://purl.org/dc/elements/1.1/';
 
-my $ua = HTTP::UserAgent.new;
+my $ua = HTTP::UserAgent.new( useragent => "firefox_linux" );
 
 my HTTP::Response $resp;
 
