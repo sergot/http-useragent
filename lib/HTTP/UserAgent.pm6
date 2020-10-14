@@ -352,13 +352,13 @@ multi method get-connection(HTTP::Request $request ) returns Connection {
     self.get-connection($request, $host, $port);
 }
 
-our $https_lock = Lock.new;
+my $https_lock = Lock.new;
 multi method get-connection(HTTP::Request $request, Str $host, Int $port?) returns Connection {
     my $conn;
     if $request.scheme eq 'https' {
         $https_lock.lock;
-        LEAVE $https_lock.unlock;
         try require ::("IO::Socket::SSL");
+        $https_lock.unlock;
         die "Please install IO::Socket::SSL in order to fetch https sites" if ::('IO::Socket::SSL') ~~ Failure;
         $conn = ::('IO::Socket::SSL').new(:$host, :port($port // 443), :timeout($.timeout))
     }
