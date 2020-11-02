@@ -20,7 +20,9 @@ proto method new(|c) { * }
 
 # This candidate makes it easier to test weird responses
 multi method new(Blob $header-chunk) {
-    my ( $rl, $header ) = $header-chunk.decode('ascii').split(/\r?\n/, 2);
+    # See https://tools.ietf.org/html/rfc7230#section-3.2.4
+    my ( $rl, $header ) = $header-chunk.decode('ISO-8859-1').split(/\r?\n/, 2);
+
     if not $rl {
         X::HTTP::NoResponse.new.throw;
     }

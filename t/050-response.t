@@ -6,7 +6,7 @@ use Test;
 
 use HTTP::Response;
 
-plan 27;
+plan 28;
 
 # new
 my $r = HTTP::Response.new(200, a => 'a');
@@ -69,12 +69,17 @@ subtest {
     my $r;
     throws-like { $r = HTTP::Response.new(Buf.new) }, X::HTTP::NoResponse, "create with an empty buf";
     my $garbage = Buf.new(('a' .. 'z', 'A' .. 'Z').pick(20).map({$_.ords}).flat);
-    lives-ok { 
-        $r = HTTP::Response.new($garbage); 
+    lives-ok {
+        $r = HTTP::Response.new($garbage);
     }, "create with garbage";
     is $r.code, 500, "and got a 500 response";
 
 }, "failure modes";
 
+subtest {
+    my $res = HTTP::Response.new: "HTTP/1.1 200 OK\r\nX-Duck: 🦆\r\n".encode;
+    is $res.status-line, '200 OK', 'Can parse responses with non-ASCII header values';
+    is $res.header.field('X-Duck'), "ð\x[9F]¦\x[86]", 'Header value decoded as ISO-8859-1';
+}, 'Non-ASCII header values'
 
 # vim: expandtab shiftwidth=4 ft=perl6
