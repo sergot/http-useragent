@@ -285,7 +285,7 @@ method make-boundary(int $size=10) {
 
 
 method Str (:$debug, Bool :$bin) {
-    $.file = '/' ~ $.file unless $.file.starts-with: '/';
+    $.file ~~ s/^([https?':/']?)['/']?/$0\//;
     my $s = "$.method $.file $.protocol";
     $s ~= $CRLF ~ callwith($CRLF, :debug($debug), :$bin);
 }
