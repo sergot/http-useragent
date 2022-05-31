@@ -7,10 +7,7 @@ use HTTP::UserAgent;
 use Test::Util::ServerPort;
 
 if $*DISTRO.is-win {
-    plan 0;
-}
-else {
-    plan 1;
+    skip 'Windows OS error messages are localized';
 }
 
 my $port = get-unused-port();
