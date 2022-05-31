@@ -6,7 +6,12 @@ use Test;
 use HTTP::UserAgent;
 use Test::Util::ServerPort;
 
-plan 1;
+if $*DISTRO.is-win {
+    plan 0;
+}
+else {
+    plan 1;
+}
 
 my $port = get-unused-port();
 
