@@ -25,7 +25,7 @@ my $ua = HTTP::UserAgent.new;
 
 my $res;
 
-todo 'Windows OS error messages are localized' if $*DISTRO.is-win;
+# todo 'Windows OS error messages are localized' if $*DISTRO.is-win;
 throws-like { $res = $ua.get("http://localhost:$port/") }, X::HTTP::Internal, rc => 500, "throws the correct exception";
 
 
