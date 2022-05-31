@@ -44,7 +44,7 @@ if %*ENV<NETWORK_TESTING> {
                 $have-json = False;
             }
         }
-        require JSON::Fast;
+        use JSON::Fast;
 
         my $uri = 'http://httpbin.org/post';
         my %data = (foo => 'bar', baz => 'quux');
@@ -57,7 +57,7 @@ if %*ENV<NETWORK_TESTING> {
             my $ret-data;
 
             if $have-json {
-                lives-ok { $ret-data = JSON::Fast::from-json($res.decoded-content) }, "get JSON body";
+                lives-ok { $ret-data = from-json($res.decoded-content) }, "get JSON body";
 
                 is $ret-data<headers><X-Foo>, 'foodle', "has got our header";
                 is $ret-data<headers><Content-Type>, "application/x-www-form-urlencoded", "and got the content type we expected";
@@ -74,7 +74,7 @@ if %*ENV<NETWORK_TESTING> {
             my $ret-data;
 
             if $have-json {
-                lives-ok { $ret-data = JSON::Fast::from-json($res.decoded-content) }, "get JSON body";
+                lives-ok { $ret-data = from-json($res.decoded-content) }, "get JSON body";
 
                 is $ret-data<headers><X-Foo>, 'foodle', "has got our header";
                 is $ret-data<headers><Content-Type>, "application/x-www-form-urlencoded", "and got the content type we expected";
@@ -90,7 +90,7 @@ if %*ENV<NETWORK_TESTING> {
             lives-ok { $res = $ua.post($uri, %data, X-Foo => "foodle") }, "make post";
             my $ret-data;
             if $have-json {
-                lives-ok { $ret-data = JSON::Fast::from-json($res.decoded-content) }, "get JSON body";
+                lives-ok { $ret-data = from-json($res.decoded-content) }, "get JSON body";
 
                 is $ret-data<headers><X-Foo>, 'foodle', "has got our header";
                 is $ret-data<headers><Content-Type>, "application/x-www-form-urlencoded", "and got the content type we expected";
