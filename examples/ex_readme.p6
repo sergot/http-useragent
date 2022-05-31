@@ -13,4 +13,4 @@ if $response.is-success {
     die $response.status-line;
 }
 
-$response = $ua.get('http://filip.sergot.pl/404here');
+$response = $ua.get('https://github.com/404here');

@@ -28,7 +28,8 @@
   "test-depends": [
     "URI",
     "IO::Capture::Simple",
-    "Test::Util::ServerPort"
+    "Test::Util::ServerPort",
+    "JSON::Fast"
   ],
   "provides": {
     "HTTP::UserAgent::Exception": "lib/HTTP/UserAgent/Exception.pm6",

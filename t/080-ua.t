@@ -23,11 +23,11 @@ if %*ENV<NETWORK_TESTING> {
 # get
     todo "possibly flaky host", 4;
     lives-ok {
-        my $response = $ua.get('filip.sergot.pl/');
+        my $response = $ua.get('github.com/');
         ok $response, 'get 1/3';
         isa-ok $response, HTTP::Response, 'get 2/3';
         ok $response.is-success, 'get 3/3';
-    }, "get from 'filip.sergot.pl/'";
+    }, "get from 'github.com/'";
 
 # non-ascii encodings (github issue #35)
     lives-ok { HTTP::UserAgent.new.get('http://www.baidu.com') }, 'Lived through gb2312 encoding';
@@ -44,7 +44,7 @@ if %*ENV<NETWORK_TESTING> {
                 $have-json = False;
             }
         }
-        require JSON::Fast <&from-json>;
+        require JSON::Fast;
 
         my $uri = 'http://httpbin.org/post';
         my %data = (foo => 'bar', baz => 'quux');
@@ -57,7 +57,7 @@ if %*ENV<NETWORK_TESTING> {
             my $ret-data;
 
             if $have-json {
-                lives-ok { $ret-data = from-json($res.decoded-content) }, "get JSON body";
+                lives-ok { $ret-data = JSON::Fast::from-json($res.decoded-content) }, "get JSON body";
 
                 is $ret-data<headers><X-Foo>, 'foodle', "has got our header";
                 is $ret-data<headers><Content-Type>, "application/x-www-form-urlencoded", "and got the content type we expected";
@@ -74,7 +74,7 @@ if %*ENV<NETWORK_TESTING> {
             my $ret-data;
 
             if $have-json {
-                lives-ok { $ret-data = from-json($res.decoded-content) }, "get JSON body";
+                lives-ok { $ret-data = JSON::Fast::from-json($res.decoded-content) }, "get JSON body";
 
                 is $ret-data<headers><X-Foo>, 'foodle', "has got our header";
                 is $ret-data<headers><Content-Type>, "application/x-www-form-urlencoded", "and got the content type we expected";
@@ -90,7 +90,7 @@ if %*ENV<NETWORK_TESTING> {
             lives-ok { $res = $ua.post($uri, %data, X-Foo => "foodle") }, "make post";
             my $ret-data;
             if $have-json {
-                lives-ok { $ret-data = from-json($res.decoded-content) }, "get JSON body";
+                lives-ok { $ret-data = JSON::Fast::from-json($res.decoded-content) }, "get JSON body";
 
                 is $ret-data<headers><X-Foo>, 'foodle', "has got our header";
                 is $ret-data<headers><Content-Type>, "application/x-www-form-urlencoded", "and got the content type we expected";
