@@ -6,6 +6,8 @@ use Test;
 use HTTP::UserAgent;
 use Test::Util::ServerPort;
 
+plan 1;
+
 my $port = get-unused-port();
 
 # Start a really bad server that just closes the connection
@@ -25,7 +27,7 @@ my $ua = HTTP::UserAgent.new;
 
 my $res;
 
-# todo 'Windows OS error messages are localized' if $*DISTRO.is-win;
+todo 'Windows OS error messages are localized' if $*DISTRO.is-win;
 throws-like { $res = $ua.get("http://localhost:$port/") }, X::HTTP::Internal, rc => 500, "throws the correct exception";
 
 
