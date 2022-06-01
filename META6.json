@@ -1,5 +1,5 @@
 {
-  "author": "github:sergot",
+  "author": "Filip Sergot",
   "auth": "github:sergot",
   "description": "Web user agent",
   "build-depends": [
@@ -14,8 +14,9 @@
     "URI",
     "IO::Socket::SSL"
 ],
+  "license": "MIT",
   "name": "HTTP::UserAgent",
-  "perl": "6.c",
+  "perl": "6.*",
   "provides": {
     "HTTP::UserAgent::Exception": "lib/HTTP/UserAgent/Exception.rakumod",
     "HTTP::Cookies": "lib/HTTP/Cookies.rakumod",
@@ -30,7 +31,7 @@
     "HTTP::UserAgent": "lib/HTTP/UserAgent.rakumod",
     "HTTP::UserAgent::Common": "lib/HTTP/UserAgent/Common.rakumod"
   },
-  "rakudo": "6.*",
+  "raku": "6.*",
   "source-url": "git://github.com/sergot/http-useragent.git",
   "support": {
     "source": "git://github.com/sergot/http-useragent.git",
