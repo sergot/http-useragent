@@ -1,6 +1,8 @@
 {
-  "author": "Filip Sergot",
   "auth": "github:sergot",
+  "authors": [
+    "Filip Sergot"
+  ],
   "description": "Web user agent",
   "build-depends": [
 
