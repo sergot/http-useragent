@@ -1,9 +1,6 @@
 # HTTP::UserAgent [![Build Status](https://travis-ci.org/sergot/http-useragent.svg?branch=master)](https://travis-ci.org/sergot/http-useragent)
 
-Web user agent class for Perl 6.
-
-
-
+Web user agent class for [Raku](https://raku.org).
 ## Usage
 
 ```Perl6
@@ -41,15 +38,15 @@ $ prove -e "perl6 -Ilib"
 
 Please see the documentation links listed below:
 
-- [HTTP::Cookies](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Cookies.pm6#L112)
-    - [HTTP::Cookie](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Cookie.pm6#L17)
-- [HTTP::Header](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Header.pm6#L109)
-    - [HTTP::Header::Field](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Header/Field.pm6#L12)
-- [HTTP::Message](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Message.pm6#L97)
-- [HTTP::Request](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Request.pm6#L79)
-- [HTTP::Response](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Response.pm6#L35)
-- [HTTP::UserAgent](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/UserAgent.pm6#L424)
-    - [HTTP::UserAgent::Common](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/UserAgent/Common.pm6#L20)
+- [HTTP::Cookies](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Cookies.rakumod#L112)
+    - [HTTP::Cookie](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Cookie.rakumod#L17)
+- [HTTP::Header](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Header.rakumod#L109)
+    - [HTTP::Header::Field](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Header/Field.rakumod#L12)
+- [HTTP::Message](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Message.rakumod#L97)
+- [HTTP::Request](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Request.rakumod#L79)
+- [HTTP::Response](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/Response.rakumod#L35)
+- [HTTP::UserAgent](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/UserAgent.rakumod#L424)
+    - [HTTP::UserAgent::Common](https://github.com/sergot/http-useragent/blob/master/lib/HTTP/UserAgent/Common.rakumod#L20)
 
 
 ## To-do List and Future Ideas
